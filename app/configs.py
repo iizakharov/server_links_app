@@ -90,7 +90,8 @@ def vpn_key(name: str, client: dict, server: dict, endpoint_host: str, endpoint_
     """AmneziaVPN share key: vpn:// + base64url(qCompress(json)), same as the app's own export."""
     conf = client_conf(client, server, endpoint_host, endpoint_port, dns1, dns2)
     params = {k: str(v) for k, v in server["params"].items()}
-    container = server.get("container") or "amnezia-awg"
+    # AmneziaVPN names the AWG container "amnezia-awg" regardless of the version running on the server
+    container = "amnezia-awg"
     last_config = {
         **params,
         "client_ip": client["ip"],
@@ -111,6 +112,8 @@ def vpn_key(name: str, client: dict, server: dict, endpoint_host: str, endpoint_
             "container": container,
             "awg": {
                 **params,
+                # without this flag AmneziaVPN treats the entry as its own server and offers to install containers
+                "isThirdPartyConfig": True,
                 "last_config": json.dumps(last_config, indent=4),
                 "port": str(endpoint_port),
                 "transport_proto": "udp",

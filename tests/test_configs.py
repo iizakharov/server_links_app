@@ -105,6 +105,8 @@ def test_client_conf_and_vpn_key_use_proxy_endpoint():
     assert doc["hostName"] == "5.5.5.5" and doc["defaultContainer"] == "amnezia-awg"
     awg = doc["containers"][0]["awg"]
     assert awg["port"] == "51820" and awg["H1"] == "111"
+    # AmneziaVPN only treats it as a ready config with this flag, otherwise it offers to install its containers
+    assert awg["isThirdPartyConfig"] is True
     last = json.loads(awg["last_config"])
     assert last["config"] == conf and last["client_ip"] == "10.8.1.2"
 
