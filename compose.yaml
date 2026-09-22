@@ -1,0 +1,9 @@
+services:
+  cascade:
+    build: .
+    ports:
+      - "127.0.0.1:8777:8777"
+    volumes:
+      - ./data:/data
+      - ~/.ssh:/root/.ssh:ro
+    restart: unless-stopped

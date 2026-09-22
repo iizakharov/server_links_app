@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AmneziaWG каскад</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c1f24; --muted:#6b7280; --border:#e3e5e8; --accent:#2563eb; --danger:#dc2626; --ok:#15803d; --warn:#b45309; --warn-bg:#fef3c7; --danger-bg:#fee2e2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111317; --card:#1a1d23; --text:#e7e9ec; --muted:#9aa1ab; --border:#2c3038; --accent:#5b8cff; --danger:#f87171; --ok:#4ade80; --warn:#fbbf24; --warn-bg:#3a2e12; --danger-bg:#3b1818; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui, -apple-system, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  h2 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  h3 { font-size: 13px; margin: 16px 0 8px; color: var(--muted); font-weight: 500; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+  label.check { flex-direction: row; align-items: center; gap: 6px; font-size: 13px; color: var(--text); }
+  input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+  input[type=checkbox] { padding: 0; }
+  button { font: inherit; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.danger { color: var(--danger); }
+  button:disabled { opacity: .5; cursor: wait; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; min-height: 36px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  tr.warn td { background: var(--warn-bg); }
+  tr.bad td { background: var(--danger-bg); }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+  .tag.ok { color: var(--ok); border-color: var(--ok); }
+  .tag.warn { color: var(--warn); border-color: var(--warn); }
+  .tag.bad { color: var(--danger); border-color: var(--danger); }
+  .small { font-size: 12px; color: var(--muted); }
+  .fw { font-size: 12px; font-family: ui-monospace, monospace; }
+  .fw.unknown { color: var(--warn); }
+  .msg { font-size: 13px; color: var(--muted); }
+  .msg.err { color: var(--danger); } .msg.ok { color: var(--ok); }
+  pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px; white-space: pre-wrap; word-break: break-all; font-size: 12px; max-height: 320px; overflow: auto; margin: 10px 0 0; }
+  .scroll { overflow-x: auto; }
+  .nowrap { white-space: nowrap; }
+  #serverForm.editing { outline: 2px solid var(--warn); outline-offset: 6px; border-radius: 4px; }
+  #serverFormTitle.editing { color: var(--warn); }
+  dialog { border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); padding: 18px; max-width: 460px; width: calc(100% - 32px); }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  dialog h3 { margin: 0 0 8px; color: var(--danger); font-size: 15px; }
+  dialog ul { margin: 8px 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+  dialog input { width: 100%; }
+  .cas-form { grid-template-columns: 1fr 2fr 1fr; }
+  @media (max-width: 640px) { .cas-form { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>AmneziaWG каскад</h1>
+  <p class="sub">Клиент → прокси (UDP-проброс) → сервер выхода с AmneziaWG. Существующие пробросы на серверах не изменяются.</p>
+
+  <section>
+    <h2>1. Серверы <button onclick="scanAll()" id="scanAllBtn">Сканировать все</button></h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Имя</th><th>Хост</th><th>ОС</th><th>AmneziaWG</th><th>Существующие пробросы</th><th></th></tr></thead>
+      <tbody id="serverRows"></tbody>
+    </table></div>
+    <div class="row"><span id="serverMsg" class="msg"></span></div>
+    <h3 id="serverFormTitle">Добавить сервер</h3>
+    <form id="serverForm" class="grid" onsubmit="return false">
+      <input type="hidden" name="id">
+      <label>Имя<input name="name" placeholder="MyPraga"></label>
+      <label>IP / хост<input name="host" required></label>
+      <label>SSH-порт<input name="ssh_port" type="number" value="22"></label>
+      <label>Пользователь<input name="user" value="root"></label>
+      <label>Пароль<input name="password" type="password" placeholder="или ключ"></label>
+      <label>Путь к SSH-ключу<input name="key_path" placeholder="/root/.ssh/id_ed25519"></label>
+    </form>
+    <div class="row">
+      <button id="serverSubmit" onclick="saveServer()">Добавить сервер</button>
+      <button id="serverReset" onclick="resetServer()">Очистить</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Каскады</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Прокси → выход</th><th>Порт на прокси</th><th>AWG</th><th>Тип</th><th>Состояние</th><th></th></tr></thead>
+      <tbody id="cascadeRows"></tbody>
+    </table></div>
+    <h3>Новый каскад</h3>
+    <div class="grid cas-form">
+      <label>Прокси<select id="casProxy" onchange="renderExitChecks()"></select></label>
+      <label>Серверы выхода<div class="checks" id="casExits"></div></label>
+      <label>UDP-порт на прокси<input id="casPort" type="number" placeholder="авто (свободный)"></label>
+    </div>
+    <label style="margin-top:8px">Версия AmneziaWG на сервере выхода
+      <select id="casInstance" onchange="instanceHint()">
+        <option value="auto">Как на сервере — использовать установленный, иначе поставить AmneziaWG</option>
+        <option value="legacy">1.0 — для роутеров (Keenetic, OpenWrt)</option>
+        <option value="v2">2.0 — отдельный контейнер</option>
+        <option value="v3">3.x — отдельный контейнер, новейшая маскировка</option>
+      </select></label>
+    <div id="casHint" class="small" style="margin-top:6px"></div>
+    <div class="row">
+      <button class="primary" id="casBtn" onclick="createCascade()">Создать каскад</button>
+      <span id="casMsg" class="msg"></span>
+    </div>
+    <pre id="casLog" hidden></pre>
+  </section>
+
+  <section>
+    <h2>3. Клиенты <button id="trafficBtn" onclick="refreshTraffic()">Обновить трафик</button></h2>
+    <div class="row" style="margin-top:0">
+      <input id="clientName" placeholder="Имя клиента, напр. phone-ivan">
+    </div>
+    <div class="row"><div class="checks" id="clientCascades" style="flex:1"></div></div>
+    <div class="row">
+      <button class="primary" id="clientBtn" onclick="createClient()">Создать конфиг</button>
+      <span id="clientMsg" class="msg"></span>
+    </div>
+    <div class="scroll"><table style="margin-top:12px">
+      <thead><tr><th>Клиент</th><th>Каскад</th><th>AWG</th><th>IP</th><th>Трафик ↓ / ↑</th><th>Подключение</th><th>Создан</th><th></th></tr></thead>
+      <tbody id="clientRows"></tbody>
+    </table></div>
+    <pre id="vpnKey" hidden></pre>
+  </section>
+  <dialog id="confirmDlg">
+    <h3 id="confirmTitle"></h3>
+    <ul id="confirmList"></ul>
+    <label>Для подтверждения введите <b id="confirmName"></b><input id="confirmInput" autocomplete="off"></label>
+    <div class="row">
+      <button class="danger" id="confirmOk" disabled>Удалить</button>
+      <button id="confirmCancel">Отмена</button>
+    </div>
+  </dialog>
+</main>
+
+<script>
+let state = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const srv = (id) => state.servers.find(s => s.id === id) || {name: "?"};
+const casName = (c) => `${srv(c.proxy_id).name} → ${srv(c.exit_id).name}${c.instance === "legacy" ? " (legacy)" : ""}`;
+const verTag = (v) => !v ? "" : v === "1.0" ? `<span class="tag ok" title="подходит для роутеров">AWG 1.0</span>`
+  : v === "3.x" ? `<span class="tag warn" title="нужен клиент с поддержкой AmneziaWG 3.x">AWG 3.x</span>`
+  : `<span class="tag" title="нужен свежий клиент AmneziaVPN/AmneziaWG">AWG 2.0</span>`;
+
+const HINTS = {
+  auto: "Использует AmneziaWG, который уже стоит на сервере. Если его нет — установит AmneziaWG 1.0 напрямую в систему.",
+  legacy: "Поднимет AmneziaWG 1.0 в контейнере cascade-awg-legacy. Понимают роутеры. Если на сервере и так версия 1.0, отдельный контейнер не создаётся.",
+  v2: "Поднимет AmneziaWG 2.0 в контейнере cascade-awg-v2 (диапазоны заголовков, паддинги S3/S4). Нужен современный клиент AmneziaVPN или AmneziaWG.",
+  v3: "Поднимет AmneziaWG 3.x в контейнере cascade-awg-v3: защита заголовков, паддинг содержимого. Нужен клиент с поддержкой 3.x, роутеры и старые приложения не подключатся.",
+};
+
+function instanceHint() { $("casHint").textContent = HINTS[$("casInstance").value] || ""; }
+
+function confirmDelete(name, title, lines) {
+  const dlg = $("confirmDlg"), input = $("confirmInput"), ok = $("confirmOk");
+  $("confirmTitle").textContent = title;
+  $("confirmList").innerHTML = lines.map(l => `<li>${esc(l)}</li>`).join("");
+  $("confirmName").textContent = name;
+  input.value = ""; ok.disabled = true;
+  return new Promise(resolve => {
+    const check = () => ok.disabled = input.value.trim() !== name;
+    const done = (v) => { input.oninput = null; ok.onclick = null; $("confirmCancel").onclick = null; dlg.close(); resolve(v); };
+    input.oninput = check;
+    ok.onclick = () => done(true);
+    $("confirmCancel").onclick = () => done(false);
+    dlg.onclose = () => done(false);
+    dlg.showModal(); input.focus();
+  });
+}
+
+function msg(id, text, cls = "") { const el = $(id); el.textContent = text; el.className = "msg " + cls; }
+function showLog(id, lines) { const el = $(id); el.textContent = lines.join("\n"); el.hidden = !lines.length; }
+
+async function api(method, url, body) {
+  const res = await fetch(url, { method, headers: {"Content-Type": "application/json"}, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || res.statusText);
+  return data;
+}
+
+function awgCell(s) {
+  if (!s.scan) return `<span class="tag">не сканирован</span>`;
+  const a = s.scan.awg;
+  if (!a) return ["awg_legacy", "awg_v2", "awg_v3"].filter(k => s.scan[k])
+    .map(k => `<span class="tag ok">${INSTANCE_LABEL[k]} · UDP ${s.scan[k].listen_port}</span>`).join(" ") || `<span class="tag">нет</span>`;
+  const ours = ["awg_legacy", "awg_v2", "awg_v3"].filter(k => s.scan[k])
+    .map(k => ` <span class="tag ok">${INSTANCE_LABEL[k]} · UDP ${s.scan[k].listen_port}</span>`).join("");
+  return `<span class="tag ok">${a.container ? esc(a.container) : "нативный"} · ${verLabel(a)} · UDP ${a.listen_port}</span>${ours}`;
+}
+
+function forwardsCell(s) {
+  if (!s.forwards || !s.forwards.length) return `<span class="small">${s.scan ? "нет" : ""}</span>`;
+  return s.forwards.map(f => `<div class="fw ${f.known ? "" : "unknown"}" title="${f.known ? "" : "адрес не из списка серверов"}">${esc(f.rule)}</div>`).join("");
+}
+
+const STATUS = {
+  applied: `<span class="tag ok">применён</span>`,
+  missing: `<span class="tag bad">правила нет на прокси</span>`,
+  conflict: `<span class="tag bad">конфликт с чужим правилом</span>`,
+  unknown: `<span class="tag">прокси не сканирован</span>`,
+  external: `<span class="tag warn">работает, правило не наше</span>`,
+};
+
+function render() {
+  $("serverRows").innerHTML = state.servers.map(s => `
+    <tr><td>${esc(s.name)}</td><td>${esc(s.host)}</td><td class="small">${esc(s.scan?.os || "")}${s.scan?.at ? `<br>скан ${esc(s.scan.at)}` : ""}</td>
+    <td>${awgCell(s)}</td><td>${forwardsCell(s)}</td>
+    <td class="nowrap"><button onclick="scan('${s.id}')">Сканировать</button>
+      <button onclick="editServer('${s.id}')">Изменить</button>
+      <button class="danger" onclick="delServer('${s.id}')">Удалить</button></td></tr>`).join("")
+    || `<tr><td colspan="6" class="msg">Добавьте серверы ниже</td></tr>`;
+
+  const rows = state.cascades.map(c => `
+    <tr class="${["conflict","missing"].includes(c.status) ? "bad" : ""}">
+    <td>${esc(casName(c))}</td><td>${c.port}</td><td>${verTag(c.awg_version)}</td>
+    <td>${c.mode === "managed" ? `<span class="tag ok">управляется приложением</span>` : `<span class="tag warn">существующий</span>`}</td>
+    <td>${STATUS[c.status] || ""}</td>
+    <td class="nowrap"><button onclick="checkCascade('${c.id}')">Проверить</button>
+      <button class="danger" onclick="delCascade('${c.id}')">Удалить</button></td></tr>`);
+  const ext = state.external.map(x => `
+    <tr class="warn"><td>${esc(srv(x.proxy_id).name)} → ${esc(srv(x.exit_id).name)}</td><td>${x.port}</td><td></td>
+    <td><span class="tag warn">найден на прокси</span></td>
+    <td class="small">${esc(x.rule)}</td>
+    <td><button onclick="adopt('${x.proxy_id}','${x.exit_id}',${x.port})">Использовать</button></td></tr>`);
+  $("cascadeRows").innerHTML = [...rows, ...ext].join("")
+    || `<tr><td colspan="6" class="msg">Каскадов нет. Отсканируйте серверы — существующие каскады появятся здесь.</td></tr>`;
+
+  const prev = $("casProxy").value;
+  $("casProxy").innerHTML = state.servers.map(s => `<option value="${s.id}">${esc(s.name)} (${esc(s.host)})</option>`).join("");
+  if (prev && state.servers.some(s => s.id === prev)) $("casProxy").value = prev;
+  renderExitChecks();
+
+  $("clientCascades").innerHTML = state.cascades.map(c =>
+    `<label class="check"><input type="checkbox" value="${c.id}"> ${esc(casName(c))} :${c.port} ${verTag(c.awg_version)}</label>`).join("")
+    || `<span class="small">Сначала создайте или выберите «Использовать» у каскада</span>`;
+
+  const byId = Object.fromEntries(state.cascades.map(c => [c.id, c]));
+  $("clientRows").innerHTML = state.clients.slice().reverse().map(c => `
+    <tr><td>${esc(c.name)}</td><td>${byId[c.cascade_id] ? esc(casName(byId[c.cascade_id])) : "?"}</td>
+    <td>${verTag(byId[c.cascade_id]?.awg_version)}</td><td>${c.ip}</td>
+    <td class="nowrap">${c.traffic ? `${bytes(c.traffic.rx)} / ${bytes(c.traffic.tx)}` : `<span class="small">—</span>`}</td>
+    <td class="nowrap small">${handshake(c.handshake)}</td><td>${c.created}</td>
+    <td class="nowrap"><a href="/api/clients/${c.id}/conf"><button>.conf</button></a>
+      <button onclick="showKey('${c.id}')">vpn:// ключ</button>
+      <button class="danger" onclick="delClient('${c.id}')">Удалить</button></td></tr>`).join("")
+    || `<tr><td colspan="8" class="msg">Пока нет клиентов</td></tr>`;
+}
+
+function bytes(n) {
+  if (!n) return "0";
+  const u = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+  const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), u.length - 1);
+  return `${(n / 1024 ** i).toFixed(i ? 1 : 0)} ${u[i]}`;
+}
+
+function handshake(ts) {
+  if (!ts) return "не подключался";
+  const sec = Math.floor(Date.now() / 1000) - ts;
+  if (sec < 180) return `сейчас (${sec} с назад)`;
+  if (sec < 3600) return `${Math.floor(sec / 60)} мин назад`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} ч назад`;
+  return `${Math.floor(sec / 86400)} дн назад`;
+}
+
+const INSTANCE_LABEL = {awg: "сервер", awg_legacy: "1.0", awg_v2: "2.0", awg_v3: "3.x"};
+
+function instancesOf(s) {
+  return Object.entries(INSTANCE_LABEL)
+    .filter(([k]) => s.scan?.[k])
+    .map(([k, label]) => `${label === "сервер" ? verLabel(s.scan[k]) : "AWG " + label} UDP ${s.scan[k].listen_port}`);
+}
+
+function verLabel(a) {
+  return a.params && Object.keys(a.params).some(k => k.toLowerCase() === "headerprotectionkey") ? "AWG 3.x"
+    : isAwg1(a) ? "AWG 1.0" : "AWG 2.0";
+}
+
+function isAwg1(a) {
+  return Object.entries(a.params || {}).every(([k, v]) => {
+    k = k.toLowerCase();
+    if ((k === "s3" || k === "s4") && String(v) === "0") return true;
+    return ["jc","jmin","jmax","s1","s2","h1","h2","h3","h4"].includes(k) && (!k.startsWith("h") || /^\d+$/.test(String(v)));
+  });
+}
+
+function renderExitChecks() {
+  const pid = $("casProxy").value;
+  $("casExits").innerHTML = state.servers.filter(s => s.id !== pid).map(s => {
+    const note = !s.scan ? "не сканирован" : instancesOf(s).join(", ") || "AmneziaWG нет, будет установлен";
+    return `<label class="check"><input type="checkbox" value="${s.id}"> ${esc(s.name)} <span class="small">(${note})</span></label>`;
+  }).join("") || `<span class="small">Нужно минимум два сервера</span>`;
+}
+
+async function load() { state = await api("GET", "/api/state"); render(); }
+
+function formData(form) {
+  const d = Object.fromEntries(new FormData(form));
+  d.ssh_port = Number(d.ssh_port) || 22;
+  if (!d.id) delete d.id;
+  return d;
+}
+function fill(form, obj) {
+  for (const el of form.elements) if (el.name && el.name !== "password") el.value = obj?.[el.name] ?? el.defaultValue;
+  form.elements.password.value = "";
+  form.elements.password.placeholder = obj?.has_password ? "сохранён (оставьте пустым)" : "или ключ";
+}
+
+async function saveServer() {
+  const form = $("serverForm");
+  if (!form.reportValidity()) return;
+  try {
+    const d = formData(form);
+    const old = d.id && srv(d.id);
+    if (old && old.host !== d.host) {
+      const used = state.cascades.filter(c => c.proxy_id === d.id || c.exit_id === d.id);
+      const text = `Вы меняете адрес сервера «${old.name}»: ${old.host} → ${d.host}.\n\n`
+        + (used.length ? `Он используется в каскадах (${used.length}) — они и их клиенты перейдут на новый адрес.\n\n` : "")
+        + `Это тот же сервер с новым IP? OK — сохранить.\nЕсли это другой сервер — нажмите «Отмена», затем «Отмена редактирования» и добавьте его как новый.`;
+      if (!confirm(text)) return;
+    }
+    const r = await api("POST", "/api/servers", d);
+    resetServer(); await load(); scan(r.id);
+  } catch (e) { msg("serverMsg", e.message, "err"); }
+}
+function setEditing(s) {
+  $("serverForm").classList.toggle("editing", !!s);
+  $("serverFormTitle").classList.toggle("editing", !!s);
+  $("serverFormTitle").textContent = s ? `Редактирование: ${s.name} (${s.host})` : "Добавить сервер";
+  $("serverSubmit").textContent = s ? "Сохранить изменения" : "Добавить сервер";
+  $("serverReset").textContent = s ? "Отмена редактирования" : "Очистить";
+}
+function editServer(id) { fill($("serverForm"), srv(id)); setEditing(srv(id)); $("serverForm").scrollIntoView({block: "center"}); }
+function resetServer() { fill($("serverForm"), null); setEditing(null); }
+async function delServer(id) {
+  const s = srv(id), used = state.cascades.filter(c => c.proxy_id === id || c.exit_id === id);
+  const lines = ["Запись удаляется только из приложения — на самом сервере ничего не изменится.",
+    "SSH-пароль или путь к ключу будут потеряны."];
+  if (used.length) lines.push(`Сервер используется в каскадах (${used.length}) — удаление будет отклонено, сначала удалите их.`);
+  if (!await confirmDelete(s.name, `Удалить сервер «${s.name}» (${s.host})?`, lines)) return;
+  try { await api("DELETE", `/api/servers/${id}`); load(); } catch (e) { msg("serverMsg", e.message, "err"); }
+}
+
+async function scan(id) {
+  msg("serverMsg", `Сканирую ${srv(id).name}…`);
+  const r = await api("POST", `/api/servers/${id}/scan`);
+  msg("serverMsg", r.message, r.ok ? "ok" : "err");
+  await load();
+  return r;
+}
+async function scanAll() {
+  const btn = $("scanAllBtn"); btn.disabled = true;
+  const res = await Promise.all(state.servers.map(s => api("POST", `/api/servers/${s.id}/scan`)));
+  const bad = res.filter(r => !r.ok);
+  msg("serverMsg", bad.length ? bad.map(r => r.message).join("; ") : "Все серверы отсканированы", bad.length ? "err" : "ok");
+  btn.disabled = false; load();
+}
+
+async function createCascade() {
+  const exits = [...$("casExits").querySelectorAll("input:checked")].map(i => i.value);
+  const port = Number($("casPort").value) || null;
+  const btn = $("casBtn"); btn.disabled = true; msg("casMsg", "Выполняется (установка AmneziaWG может занять несколько минут)…");
+  try {
+    const r = await api("POST", "/api/cascades", { proxy_id: $("casProxy").value, exit_ids: exits, port, instance: $("casInstance").value });
+    showLog("casLog", r.log); msg("casMsg", r.ok ? "Готово" : "Ошибка — см. лог", r.ok ? "ok" : "err");
+    if (r.ok) $("casPort").value = "";
+  } catch (e) { msg("casMsg", e.message, "err"); }
+  btn.disabled = false; load();
+}
+
+async function checkCascade(id) {
+  msg("casMsg", "Проверяю связь (UDP-пробы в обе стороны)…");
+  try {
+    const r = await api("POST", `/api/cascades/${id}/check`);
+    showLog("casLog", r.log); msg("casMsg", r.ok ? "Связь есть" : "Связи нет — см. лог", r.ok ? "ok" : "err");
+  } catch (e) { msg("casMsg", e.message, "err"); }
+}
+
+async function adopt(proxy_id, exit_id, port) {
+  try { await api("POST", "/api/cascades/adopt", { proxy_id, exit_id, port }); msg("casMsg", "Каскад добавлен, правила на прокси не менялись", "ok"); load(); }
+  catch (e) { msg("casMsg", e.message, "err"); }
+}
+
+async function delCascade(id) {
+  const c = state.cascades.find(x => x.id === id);
+  const clients = state.clients.filter(x => x.cascade_id === id);
+  const lines = c.mode === "managed"
+    ? [`Правило UDP ${c.port} на прокси будет удалено, чужие правила не трогаются.`,
+       `Клиенты каскада (${clients.length}) пропадут из списка; их доступ на сервере выхода останется.`,
+       "Клиенты перестанут подключаться."]
+    : ["Каскад убирается только из приложения, на прокси ничего не изменится.",
+       `Клиенты каскада (${clients.length}) пропадут из списка.`];
+  if (!await confirmDelete(casName(c), `Удалить каскад «${casName(c)}» :${c.port}?`, lines)) return;
+  try { const r = await api("DELETE", `/api/cascades/${id}`); showLog("casLog", r.log); msg("casMsg", r.ok ? "Удалено" : "Ошибка — см. лог", r.ok ? "ok" : "err"); }
+  catch (e) { msg("casMsg", e.message, "err"); }
+  load();
+}
+
+async function createClient() {
+  const ids = [...$("clientCascades").querySelectorAll("input:checked")].map(i => i.value);
+  const btn = $("clientBtn"); btn.disabled = true; msg("clientMsg", "Создаю…");
+  try {
+    const r = await api("POST", "/api/clients", { name: $("clientName").value, cascade_ids: ids });
+    msg("clientMsg", `Создано: ${r.ids.length}`, "ok"); await load();
+    if (r.ids.length === 1) showKey(r.ids[0]);
+  } catch (e) { msg("clientMsg", e.message, "err"); }
+  btn.disabled = false;
+}
+
+async function refreshTraffic() {
+  const btn = $("trafficBtn"); btn.disabled = true; msg("clientMsg", "Опрашиваю серверы выхода…");
+  try {
+    const r = await api("POST", "/api/traffic");
+    msg("clientMsg", r.log.join("; "), r.ok ? "ok" : "err");
+  } catch (e) { msg("clientMsg", e.message, "err"); }
+  btn.disabled = false; load();
+}
+
+async function delClient(id) {
+  const c = state.clients.find(x => x.id === id), cas = state.cascades.find(x => x.id === c.cascade_id);
+  if (!await confirmDelete(c.name, `Удалить клиента «${c.name}» (${c.ip})?`,
+      [`Доступ будет отозван на сервере выхода (${srv(cas.exit_id).name}) — устройство сразу перестанет подключаться.`,
+       "Выданный ранее конфиг станет нерабочим."])) return;
+  msg("clientMsg", "Отзываю доступ…");
+  try {
+    const r = await api("DELETE", `/api/clients/${id}`);
+    msg("clientMsg", r.ok ? r.log.join("; ") : r.log.join("; "), r.ok ? "ok" : "err");
+  } catch (e) { msg("clientMsg", e.message, "err"); }
+  load();
+}
+
+async function showKey(id) {
+  const key = await (await fetch(`/api/clients/${id}/vpnkey`)).text();
+  const pre = $("vpnKey"); pre.textContent = key; pre.hidden = false;
+  try { await navigator.clipboard.writeText(key); msg("clientMsg", "vpn:// ключ скопирован в буфер", "ok"); } catch {}
+}
+
+instanceHint();
+load();
+</script>
+</body>
+</html>

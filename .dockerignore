@@ -1,0 +1,6 @@
+.venv
+data
+tests
+.claude
+__pycache__
+CHANGELOG.md
