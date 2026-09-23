@@ -1,0 +1,43 @@
+{
+  "text": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n[Peer]\nPublicKey = CCC\nAllowedIPs = 10.8.1.2/32\n",
+  "iface": {
+    "PrivateKey": "yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=",
+    "Address": "10.8.1.0/24",
+    "ListenPort": "43210",
+    "Jc": "4",
+    "Jmin": "10",
+    "Jmax": "50",
+    "S1": "97",
+    "S2": "34",
+    "H1": "111",
+    "H2": "222",
+    "H3": "333",
+    "H4": "444",
+    "PostUp": "iptables -A FORWARD -i %i -j ACCEPT"
+  },
+  "peers": [
+    {
+      "PublicKey": "AAA",
+      "PresharedKey": "BBB",
+      "AllowedIPs": "10.8.1.1/32"
+    },
+    {
+      "PublicKey": "CCC",
+      "AllowedIPs": "10.8.1.2/32"
+    }
+  ],
+  "obfuscation": {
+    "Jc": "4",
+    "Jmin": "10",
+    "Jmax": "50",
+    "S1": "97",
+    "S2": "34",
+    "H1": "111",
+    "H2": "222",
+    "H3": "333",
+    "H4": "444"
+  },
+  "drop_AAA": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = CCC\nAllowedIPs = 10.8.1.2/32\n",
+  "drop_CCC": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n",
+  "drop_missing": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n[Peer]\nPublicKey = CCC\nAllowedIPs = 10.8.1.2/32\n"
+}

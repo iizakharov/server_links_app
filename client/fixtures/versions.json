@@ -1,0 +1,85 @@
+[
+  {
+    "params": {
+      "Jc": 4,
+      "Jmin": 8,
+      "Jmax": 80,
+      "S1": 97,
+      "S2": 34,
+      "H1": 111,
+      "H2": 222,
+      "H3": 333,
+      "H4": 444
+    },
+    "is_legacy": true,
+    "awg_version": "1.0"
+  },
+  {
+    "params": {
+      "Jc": "5",
+      "Jmin": "8",
+      "Jmax": "80",
+      "S1": "20",
+      "S2": "90",
+      "S3": "30",
+      "S4": "40",
+      "H1": "5-100005",
+      "H2": "600000000-600100000",
+      "H3": "1100000000-1100200000",
+      "H4": "1700000000-1700300000"
+    },
+    "is_legacy": false,
+    "awg_version": "2.0"
+  },
+  {
+    "params": {
+      "Jc": "5",
+      "Jmin": "8",
+      "Jmax": "80",
+      "S1": "20",
+      "S2": "90",
+      "S3": "30",
+      "S4": "40",
+      "H1": "5-100005",
+      "H2": "600000000-600100000",
+      "H3": "1100000000-1100200000",
+      "H4": "1700000000-1700300000",
+      "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+      "ContentPaddingAddition": "8-64",
+      "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+    },
+    "is_legacy": false,
+    "awg_version": "3.x"
+  },
+  {
+    "params": {
+      "Jc": "4",
+      "S3": "0",
+      "S4": "0",
+      "H1": "1"
+    },
+    "is_legacy": true,
+    "awg_version": "1.0"
+  },
+  {
+    "params": {
+      "Jc": "4",
+      "S3": "12"
+    },
+    "is_legacy": false,
+    "awg_version": "2.0"
+  },
+  {
+    "params": {
+      "jc": "4",
+      "h1": "1-5"
+    },
+    "is_legacy": false,
+    "awg_version": "2.0"
+  },
+  {
+    "params": {},
+    "is_legacy": true,
+    "awg_version": "1.0"
+  }
+]

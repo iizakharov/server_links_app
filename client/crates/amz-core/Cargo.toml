@@ -1,0 +1,16 @@
+[package]
+name = "amz-core"
+description = "АМнеЗинуVPN core: AmneziaWG configs, vpn:// keys, AWG versions, local state"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+indexmap.workspace = true
+base64 = "0.22"
+flate2 = "1"
+rand = "0.8"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+thiserror = "2"

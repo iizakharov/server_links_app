@@ -1,0 +1,754 @@
+[
+  {
+    "version": "v1",
+    "name": "phone",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": 4,
+        "Jmin": 8,
+        "Jmax": 80,
+        "S1": 97,
+        "S2": 34,
+        "H1": 111,
+        "H2": 222,
+        "H3": 333,
+        "H4": 444
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 4\nJmin = 8\nJmax = 80\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAHj3japVXbbuIwEH3vV6C8wtLcaANSH7pdKFBKKZcWlVTIJAYMwckmBgJV_33HdoDQjVaqNuFhOOfMSWY8dj4ucnApjk8ZIhSHkVLJjQTGr49jdK4CkYJWFO8J-oG2M6VwruNQ5UuyIJoOzzS_6CW1IpSTVjaJYkGqWWxP41z5OpPTOWdkPrIu8jRNyyRFoq7rmaQhXA0jkzRFkWbmM0nUn5PQ7aCQ7e58OiW8Uyxc4wythyI2dg4i5cOmHLahizb8txXTVgpHDNonUesMRXGCqim4p0mwfJ0GdQkaadt6ooQmpdFECt1Jo0ZiYBhp1Exe1kz7Oh7BlI1JkNirRauoFUt_K4KQbMZLvJO656dVsNHj8nA43NRKP_fG21DLTxfNTae8sEhMrVl36TyWV1dq9SbDaz05WUVPi-ms63bvHdaqhdV-W9etSTmurXf5p8Hy3rsNV7O8urhq0gyrhvt_JmJNpcWoQRkOp8jB77ZNO1AuYvgB73I3uW9Va9Nb1w1xFEHioZ2Xhg74r3aPY0VxFyBQ4daAeOwPOKHDbNi06UBs8gAmCUJLhCjmIed7GkQwMBDpEBlcWucYHw0IOcjnAUKD8zAEEJrc1ORa-I06GIeiyvXEI44sst6Y-eW4vW8-vrYebnu9Oen_buwm8Zs6MLb3LTLATa3zMLV2y-2NaBCO5ijErsyuBXe7-TYqO_H21X8x42qLTZubRbOd3z-_dDuNnud1X2fYD15kizzP32K30eFdUkUj1Eu1kKtULnmNVeoGPqEMyFJR3JWSZumc6sDRSCIGa_-AcYA8ssG84BKv7LSwcz9ibbTCcmkTjxS_Yutk4PWzDRkc3WFAcTAW_skeS-cHfsg4LN7qhEbL01x_qyMn5wiHGxyeb5FvLc3JCskmw-aOuM9I4pI79vyol7hYAEUi7zb9zDo6efH8HBTFZwlYiGjEVXBq-Mzn2rUbKGfCz4vz6F36KC6eorXH7v79hQNZ5IQkYMQXH6tg7lN85GgkPyhyp6VgXcJi3x3gw6iIiuSgKBeffwDJnvoi",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "4",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "97",
+            "S2": "34",
+            "H1": "111",
+            "H2": "222",
+            "H3": "333",
+            "H4": "444",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"4\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"97\",\n    \"S2\": \"34\",\n    \"H1\": \"111\",\n    \"H2\": \"222\",\n    \"H3\": \"333\",\n    \"H4\": \"444\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 4\\nJmin = 8\\nJmax = 80\\nS1 = 97\\nS2 = 34\\nH1 = 111\\nH2 = 222\\nH3 = 333\\nH4 = 444\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"4\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"97\",\n                \"S2\": \"34\",\n                \"H1\": \"111\",\n                \"H2\": \"222\",\n                \"H3\": \"333\",\n                \"H4\": \"444\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"4\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"97\\\",\\n    \\\"S2\\\": \\\"34\\\",\\n    \\\"H1\\\": \\\"111\\\",\\n    \\\"H2\\\": \\\"222\\\",\\n    \\\"H3\\\": \\\"333\\\",\\n    \\\"H4\\\": \\\"444\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 4\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 97\\\\nS2 = 34\\\\nH1 = 111\\\\nH2 = 222\\\\nH3 = 333\\\\nH4 = 444\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v1",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": 4,
+        "Jmin": 8,
+        "Jmax": 80,
+        "S1": 97,
+        "S2": 34,
+        "H1": 111,
+        "H2": 222,
+        "H3": 333,
+        "H4": 444
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 4\nJmin = 8\nJmax = 80\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAIAXjapVVrT6NAFP3ur2j4tBvdyqsuNPGD6_po1dptfUUxZoShnZYOLAwt1fjf994ZbKlLNjELDbk959wD984deN1qwKH5MReEcZpmWrvxIDE8XlfRpgpEGplx-sLIN7IYaTubOoTaH5Il0fUx0_6gV9SMcSSdepIUktTr2KGBnPu9ljORs2pveSrzDMOoJWWiaZq1pCVdLauWtGWRdu09WXY1ZmnQJ6lYHsY8ZNgpkea0RhuRTDz57yLt1eMIe9BFD_57mu1pOysM2qdQZwMlRYnqFXhoKND9XgVNBVpV29NSCU2qoqUUulNFrdLAsqqoXT6sXfX1I0a5eGJJaa83nabRbP2tSFI2f5rSpdL9upwlc7Nw7-7u5setHy_W_Z2xHU668747cVjBndFg6l-4sz39aL_GK39eW2WXk3A0CAYnvjg_To-ueqbpPLvFcb7cvryenkQH6Wy0rU_2urzGqhP8n4lcU2Xx0OGCpiHx6aPn8T6USwQ9o8vGfuNT1Xr8IAhSmmWQ-N7OXcsE_GdviFhTnjsQ6HAaQFxcXSNhwmx4vOtDbGMAkwShI0NSYIj80IAIBgYiEyILpaeI4WhAiCDOA4QW8jAEENpoaqMWfg99SlNZZf4cMV8VedoZxW7Re-le3J6fHQyHY3b1u7N8Lu71a2txcs6uadfon4XOcrrYlw2i2ZikNFDZx8nhcrzIXL9Y3MY3dnF0LsLufNLtbb_8uhn0O8MoGtyOaJzcqBZFUbygQaePXdJlI_RdfafRbu9ijUc8SGLGBZCtpjzbLcMxkerDq5FlAtb-jNKERGxOseAWVrZe2HGciR6ZUbW0pUeFn4m8HHhzY0MmK3cYUJo8Sf9yj1XzkzgVCMunWqPZdD3Xn-rI2jmj6Zymm1vkU0uztiKqybC5M_R5ULjiVj1f6RUuF0BTyKPH3-penVg8vgdl8XUCkRKeoQreGrGIUZsHibYhfNvajB6VjxbQkOSROPz3Fw5kmZ-yRLBYfqy8XLcNH6-WLq9l3PgimRCvtmKovBKJGDJ2Gl5uGq7ZkFpLYq1KRtU3UBmSDb-unoZn6hOm9nYFNhUsd_o7_D6csodqNLWttz8b7hjN",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "4",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "97",
+            "S2": "34",
+            "H1": "111",
+            "H2": "222",
+            "H3": "333",
+            "H4": "444",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"4\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"97\",\n    \"S2\": \"34\",\n    \"H1\": \"111\",\n    \"H2\": \"222\",\n    \"H3\": \"333\",\n    \"H4\": \"444\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 4\\nJmin = 8\\nJmax = 80\\nS1 = 97\\nS2 = 34\\nH1 = 111\\nH2 = 222\\nH3 = 333\\nH4 = 444\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"4\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"97\",\n                \"S2\": \"34\",\n                \"H1\": \"111\",\n                \"H2\": \"222\",\n                \"H3\": \"333\",\n                \"H4\": \"444\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"4\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"97\\\",\\n    \\\"S2\\\": \\\"34\\\",\\n    \\\"H1\\\": \\\"111\\\",\\n    \\\"H2\\\": \\\"222\\\",\\n    \\\"H3\\\": \\\"333\\\",\\n    \\\"H4\\\": \\\"444\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 4\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 97\\\\nS2 = 34\\\\nH1 = 111\\\\nH2 = 222\\\\nH3 = 333\\\\nH4 = 444\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v1",
+    "name": "phone",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": 4,
+        "Jmin": 8,
+        "Jmax": 80,
+        "S1": 97,
+        "S2": 34,
+        "H1": 111,
+        "H2": 222,
+        "H3": 333,
+        "H4": 444
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 4\nJmin = 8\nJmax = 80\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAHJXjapVVdU-IwFH33VzB9lcV-oS0zPriuCqjICswyUocJbYDwkXbbAEXH_773JgWK29kZZxseLuecnObe3KTvJyV4ND_kgjBO40SrlQYSw-d9Hx2rQKSRJadvjHwjm4lWPtYhVPs0WRJNH2fan_SKWjKOpFNMklSSehHbMZBzLwo5Ezmr8JV1Oc8wjEJSTjRNs5C0pKtlFZK2TNIufCdLulMWB20Si-11yMcMKyXiFS3QLkgihv5OpL17HGEPqujBf0-zPa28x6B8CnWOUJJmqJ6DO4YC3Ys8aCrQytvWMyUUKY9mUqhOHrUyA8vKo3a2WDvv6y8Y5WLIosxer7gVvXLxtyKK2Xo4p1ul-_m0jNZm6vb7_fVt9fub9dI3Tsez5rrtzhyWcmfyPPcf3eW5fnNZ4LUaHaySp9l48hw83_ni4Ta-6bZM0xm56e1qe_rUm98truLl5FSfnTd5gVUj-D8TuafKYtDggsZj4tNXz-NtSJcIek-3pcvSl7L1-FUQxDRJYOKunGeWCfiPVgexihxlCHQYBhCP3R4SJvSGx5s-xDYG0EkQOjIkKYbIdwyIoGEgMiGyUFpHDFsDQgSxHyC0kIcmgNBGUxu18Bu0KY1llqvRgvkqyXpjErpp6635-Ovh_qrTmbLu78Z2lL7oPWtz98B6tGm078fOdr6RSS4W4YYGjTbmqctU9DO9XKrVznCVNzyIQsYFkNWKHLWq4ZhIteFyY4mA3bunNCILtqa45Cqu7bA10zARLbKkanMyjxy_FKusZc2jIxXt3aHFaDSU_tkpyc-PwlggLFd1QJP5oTNz6oTGaxofN-6XCnawIqpwcOQS9BkoXHH7Ou71CpdF1RTy6vGPogsNE8LbSSZUJBAx4Qmq4CyHIkTtKoi0I-HHyXH0qny0gI7JaiGu__3dAVnixywSLJSfkGgacrrneKKuedX_OdhUsDwNO3i3_TIjtfnayccfYkPUGA",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "4",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "97",
+            "S2": "34",
+            "H1": "111",
+            "H2": "222",
+            "H3": "333",
+            "H4": "444",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"4\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"97\",\n    \"S2\": \"34\",\n    \"H1\": \"111\",\n    \"H2\": \"222\",\n    \"H3\": \"333\",\n    \"H4\": \"444\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 4\\nJmin = 8\\nJmax = 80\\nS1 = 97\\nS2 = 34\\nH1 = 111\\nH2 = 222\\nH3 = 333\\nH4 = 444\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"4\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"97\",\n                \"S2\": \"34\",\n                \"H1\": \"111\",\n                \"H2\": \"222\",\n                \"H3\": \"333\",\n                \"H4\": \"444\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"4\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"97\\\",\\n    \\\"S2\\\": \\\"34\\\",\\n    \\\"H1\\\": \\\"111\\\",\\n    \\\"H2\\\": \\\"222\\\",\\n    \\\"H3\\\": \\\"333\\\",\\n    \\\"H4\\\": \\\"444\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 4\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 97\\\\nS2 = 34\\\\nH1 = 111\\\\nH2 = 222\\\\nH3 = 333\\\\nH4 = 444\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v1",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": 4,
+        "Jmin": 8,
+        "Jmax": 80,
+        "S1": 97,
+        "S2": 34,
+        "H1": 111,
+        "H2": 222,
+        "H3": 333,
+        "H4": 444
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 4\nJmin = 8\nJmax = 80\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAHl3japVVrb9owFP3eX4HyaVMZzYs2QeqHrusDaCkroKGSCpnEUPNwssTh0ar_fffaAUIXTaqWIOtyzvGJ7_V18nZUgkvzQy4I4zROtFppIDG83nbRoQpEGllw-srIN7KaaOVDHUK1D5Ml0fBxpv1Br6gF40g6xSRZS1IvYjsGcu5ZIWciZxU-8lbOMwyjkJQTTdMsJC3palmFpC2TtAufyZLuC4uDNonF5jLkY4aVEnFKC7RzkoihvxVpbx5H2IMqevDf02xPK-8wKJ9CnQOUrDNUz8EdQ4HuWR40FWjlbW8zJRQpj2ZSqE4etTIDy8qjdrZYO-_rzxnlYsiizF6vuBW9cva3IorZcjijG6X7-bCIluba7ff7y-vq91frqW8cj6eNZdudOmzNncnjzL93F6f61XmBVzraWyUP0_HkMXi88cXddXzVbZmmM3LX1-nm-KE3u5lfxIvJsT49bfACq3rwfyZyT5XFoM4FjcfEp8-ex9uQLhG0STel89KnsvX4RRDENElg4racJ5YJ-I9WB7GKvMsQ6HAbQNx3e0iY0Bseb_gQ2xhAJ0HoyJCsMUS-Y0AEDQORCZGF0lvEsDUgRBD7AUILeWgCCG00tVELv0Gb0lhmmY7mzFdJ3tYnobtuvTbuf901LzqdF9b9Xd-M1k96z1rd3LEebRjt5tjZzFYyyfk8XNGg3sY8dZmKfqKXS7XaCa7yigdRyLgAslqRd61qOCZSbXi5sUTA7jUpjcicLSkuuYpr22_NS5iIFllQtTmZR45fiDRrWfPgSEU7d2gxGg2lf3ZK8vOjMBYIy1Xt0WS278ycOqHxksaHjfupgu2tiCocHLkEfQYKV9yujju9wmVRNYU8e_y96IWGCeHbSSZUJBAx4Qmq4CyHIkRtGkTagfD96DB6Vj5aQMcknYvLf393QJb4MYsEC-UnxEt12_BxtHQ5ZnHpi2TGONqKoXIkEjFk7JS81DRcsyS1lsSquRl530DNkOz46241PFEfFnXicrCpYHn-tvC24WQNVbtpR-9_AMMR8rQ",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "4",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "97",
+            "S2": "34",
+            "H1": "111",
+            "H2": "222",
+            "H3": "333",
+            "H4": "444",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"4\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"97\",\n    \"S2\": \"34\",\n    \"H1\": \"111\",\n    \"H2\": \"222\",\n    \"H3\": \"333\",\n    \"H4\": \"444\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 4\\nJmin = 8\\nJmax = 80\\nS1 = 97\\nS2 = 34\\nH1 = 111\\nH2 = 222\\nH3 = 333\\nH4 = 444\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"4\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"97\",\n                \"S2\": \"34\",\n                \"H1\": \"111\",\n                \"H2\": \"222\",\n                \"H3\": \"333\",\n                \"H4\": \"444\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"4\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"97\\\",\\n    \\\"S2\\\": \\\"34\\\",\\n    \\\"H1\\\": \\\"111\\\",\\n    \\\"H2\\\": \\\"222\\\",\\n    \\\"H3\\\": \\\"333\\\",\\n    \\\"H4\\\": \\\"444\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 4\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 97\\\\nS2 = 34\\\\nH1 = 111\\\\nH2 = 222\\\\nH3 = 333\\\\nH4 = 444\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v2",
+    "name": "phone",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAIsHjapVZbU-IwGH33VzB9BbEXcFtmfHBdkJuIXJSROkxoAwRK2m0DFBz_--ZSoHXjzjjb8nB6zsmX5MuXhPeLHH0Ux8cEIAzDSKnkxpxjz_sJZV3UpIA1hgcELsFurhSyPkZVPjXmQtNhLcuf_EJaI8xEUy6CmIuqTO1rTNPlms40S64ZTDPkWolpJalW5_2VLzWVPtLJ1Hmv12ryXFLEzfJwfBiadnIzqH9t5yPTfpztFBpf2lE0WKDQ7YKQ7O98PENsaUi4gRKvByIycY4m5d3GjLbpstn021bKtlI4cXS9BGtmWBAnrJqi-5og9QypC9LKkIYgjQxZEmQpTdaTmMd1SEtJZMkCpF1JV9LMp31J79KUp3yOhyAmExQkdrVoFrVi-W9HEKLtZAX3wvf0uA62emyNRqNtrfzzYLyOtPxs2dx2raWJYmzOeyvnwVpfq9UbSazN9BwqelzO5j23d--Qdi2sDjq6bk6tuLbZ5x-Hq3vvNlzP8-ryuokloRru_wXhZSNCjBuYwHAGHPhm27hLpwsIbMF97ib3rdna-NZ1QxhFtOExnVeGTvlfnT7jivwtUKDSV6PCw2DIBJ2Wn42bDsVlBmixUmhyCGIGmd7XKNI50imyODIoMjgqUVRiqM58pzqj38wtKy4qsebyiqIiiygvIxvT37gLYchTtpl6yBEZqzfmvhV3Ds2Hl3brtt9foMHvxn4av6pDY3ffRkPY1Lqtmblf7W54tmG0ACF0RetacLdf7CLLiXcv_nMprrbJrLldNjv5w9Nzr9voe17vZQ794Fnk2_P8HXQbXZZylWdVvVILuUrlio2xit3AR5iwdBT5WylrJs9gl94dKCK0kFoQBsBDW8iSy9KVqpKFH5EOWMNk64oYKX1NNsnu0TMHSHCKTqsdBhMePzlT0u0DPySM5qM6s9HqvEm-lZFz5AiGWxhm99u3luYcCogk05MiYnHGghfaKecnv-D5AiiCebPxh-yoZ5PnNxObvMxAQoAj5qJHkE985t24gZIxflxk0ZuIo7hwBjYeufv3XwBqi5wQBQT5_DYPFj6GJw1H_OZMtm2K1gXNN_GRPpYKn5EoFOXi4w_JXjC3",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v2",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAJInjapVZdT9swFH3nV1R52gSUfJUllXhgDGgLlK7lSyMImcRp3aZOljhtCuK_z9dO22TzJqEllXVyzvGNfX3t9G2nwS_NjylDhOI009qNR8HB9bZBdRc3aWhO8StB-2g51vbqPqDav3UWQs-Hnq3f_FKaEwqioxZRIURdpY4M0Ey1ZoLmqjULNEut2aDZSq0j3tfaN3R-KSfTEW891MtrnyNhVocTwzCMjRug-Xe7GJnxZWvn0PqrnWQ3E5IGA5Sy1UlMQwJLw9IcK7wRytizvzZpbx4F2uPL5vFnT2t52t6G4-slWafGoqJk9Qo9MiRp1khTkm6NtCRp1UhbknaV7JQx1-tQlcrIigWouspXKTNf9ZVvV6a84vMjgil7Jklp15tO02i2_nQkKVk8z_BK-r5fz5OFWbgPDw-Ls9bXV-vHg7EbTnuLgTt1SEGd8XDmX7nzQ_30SBErf9mGyq6n4XgYDM99dnmWnt70TdN5cYuzfLV7fTs7j47T-XhXnx72qCJUN_i_IKJsZIjHLmU4DZGPnzyPDvh0EcMXeNU4anxoth49DoIUZxnvuE7ngWVy_lt_BFxT3Hsc6Pw2uHB1cwuCycvPoz2f4xYAXqwcOgKiAiDoI4MjUyCTI1cgiyNLIJsjG1AHfJs648_gVhUXl6C7uqK4CBHVZeRR_nscYJyKlOUvEfFlxjrdcewW_dfe1f3lxfFoNCE3P7url-KHfmstzy_JLe4Zg4vQWc2WRyLbOJugFAey91lysposM9cvlvfxnV2cXrKwt5j2-ruv3--Gg-4oiob3YxwndzLfURQvcdAdQMp1kVX9QN9rtNsHMMZTGiQxoQzS0RR3u2U4IoMD_u0gGeOFdIFxgiKywJBcSFelSiZxxvpojsutK2NU9DnLy91j1g6QZBOdVztOnkX88kyp9k_ilAEtRrVls9l2k3woI9vIGU4XOK3vtw8tzTYUkknmJ0UGcR4lL7VNzjd-yYsF0CTz5NF31VEPkxdfJpi8ysBSRDNw8SMoZjF48yDRasb3nTp6knG0AIcoj9jJv_8CcFvmpyRhJBZfcy_XbcOHlm8paEvc-CSUEFpbKli0SDCGwE7Dy03DNRvCawmuVelRjRvIHkINP29GQzPxrS4PigptSlocG2t6XZwih7I0tZ33X2TCT1M",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v2",
+    "name": "phone",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAIRnjapVVdU-IwFH33VzB9FbEfoC0zPri7Kh-KrMAsI3WY0AYIH2m3DVB0_O-bm5TSunFnnG15OJxzctN7c5O8nZT4o3kBZYhQHMVavTQSHDxvGSq6uElDa4pfCTpDu5lWLvqAqn8YLISWByNrH_xSWhMKoq0WUSJEXaX2DNBMtWaC5qg1CzRLrVVBqyq1hpivdmbo_FEm0xCzXujpc8aRMKvDic8wjMwN0PzcLr7MuDzaObQ-tZO4PyeR30UR238P6JTA0rBogxXeFYrZ2DuYtDeXAu3yZXP5f1eruVo54_h6SdYusChJWT1H9wxJmgXSlKRTIC1JWgWyKslqnmykMQ_rkJfSyIoFyLvSqZSVz_vS2ZUlz_m8FcGUjUmY2vWKU9Erl387wohsx0u8l76fj-twaybOcDjc3ta-vVrPQ-N0umhtu87CJgm1Z09L78FZX-g3V4pYm8kxVPy4mM6e_Kc7j93fRjf9jmnaEye53exPHwfLu9V1tJ6d6ouLFlWEavr_F0S0jQwxalKGoyny8Ivr0i5PFzHcxvvSVelL2br02vcjHMd84KGc55bJ-R-dHnAV8ZY50PlrcOGhPwDB5O3n0pbHcQ0Ab1YObQFRAhD0nsGRKZDJkSOQxZElUJWjKqAG-LI-4__BrWouLsFwdUdxESKq28il_DfqYhyJkm0mK-LJijWas8BJOq-th1_37eteb076v5v7SfKsD6zd3T0Z4JbRbU_t_XInKrZaBTvsN7tQNF3URT_Xy6V6_RxmuaF-GBDKIKGKeOs1wxY16PLTn8SMt0Ib4xCtyBZDeSDh3DrPg5h10Bqnm0_GyOlrtkn73ywcAWEWnfcrDscifnoq5MeHQcSAFl91ZOPlsc1z7hhHWxwVd8GXCnYMhWTh-P6NIc5I8lLL6pj5JS-KqknmxaXvqgMYEhL3BSSkMrAI0Rhc_GAIWADejR9qBeP7SRG9yDiaj6dos2Lf_30xc1vsRSRkJBB3bDgPKM40Gov7LN1MOdqUtNhaB_qw_CIjufjayfsfzmIKrQ",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v2",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAIuHjapVVdT9swFH3nV1R52gSUfLQsqbQHtgFt-eooaGgEIZO4xbR1ssQpLYj_vnuv0zbZvEnTnCo6Pef42r6-dl63GtCsKJGKCcmz3Oo0bonD9rpGdReYLDaT_EWwXfY8tnbqPqQ6v3QmoR9hz_Yvfi3NhETRN4tsQaJtUocOaq5Zc1ELzJqHmmfWWqi1jFqXxmvvOjY042K6NOq-XbZdQGQ2h6NpOM7ajdD9s51m5nzY2AF6f7SL_OpRZPGAZWr5OZEjgVujsoIbvFOWq_toZbJeQ4l0CNsWwv_QaofWzpqD_dKsX2PZomTtCj10NOnWSFeTQY30NOnVyJYmW1WyW8Zc7UNVKiMbNqDqKocyZr7qK0c3przii6aCS3Uv0tJuN4Om3fzwuyPNxPx-wpfa9_Vils7dRXBzczM_an968b7fONujp_58EDz5YiH98eUkOgtm-_bhR0Os4mETKr94Go0v48vjSJ0eZYdX567rPwSLo2K5fXE9OZ4eZLPxtv2035eGUL34_4JQ2egQtz2peDZiEb8LQzmA5TLFT_iy8bHxT6sN5UEcZzzPoeMqnXueC_yX8yFyTXp2ANjwOCCcXV2j4EL5hbIfAW4jgGIF6BNkC4SoDx1ALiEXUEDIA-QRagFqIeqib11n8B_dpuICCbubKwpEjGguo1DC73bAeUYpKx6mItIZ6_bGSbA4f-mffTs9ORgOH8XVj97yYfHdvvaej0_FNe87g5ORv5w8U8am0-SZx70BJs2mvNh79k6j09nDUQ5lnCZCKlxQk55O2_EpBwO4_UWuoBROOE_ZVMw5pgcXXNnnxyRX52zGy8OnY1T0mSrK-ndrV0C6jg71ytN7il_eCtX-aZIppGlWGzafbMq84s55NudZ_RT8U8I2oZhOHJzfHOPcal5r6zyu_ZqnpFqauQvlm-kCxgXR9wIXZDKojMkcXXAxJCpBbxGnVs34tlVHdzqOFfMRK6bq898_zGDLo0ykSiT0jQ0Lu-VE-IZCx3eJG-9IGeG7pRVOb0aMQ9hvhIXrBG6DvB5x7UqPatxY9yB19H49G5nTF7Q8vhXa1TQd5hW9KjjKoS43a-vtJ3hTKUk",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v3",
+    "name": "phone",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000",
+        "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+        "ContentPaddingAddition": "8-64",
+        "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nContentPaddingAddition = 8-64\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAK1XjapVZrU-JKEP3ur6DyVcU8gAUKqfJ6VUDFLPiqNZY1JAMEwiQ3GSBo-d9v9ySEZJ3dKnYTSppzznTS02fG-TgowaXYPuPEZTSMlGbpRWB4fWRRUQUihSwYfXfJMVlPlKOiDqHmT4MF0bNxZPUnfUItXIZkXU6SWJCqjB1qyOlyTkeuIecM5Aw5V0GuIuU64nnVY02FS1pMRzy1pqbXMURCLE8nXkPTMjWG-q_l4s20bzs5hMav5ZQ4NDRDn1Obuz67phscfxmcb6brqGHH6yf_sRJf3PBxbzXr9Q_fvz8OzO7Q8wZPE-oHjxensrTnYAXKuEkcx2WTM_iLyUWPjmsV2YiumLXWqKTG4xoZGXrt25i0W3Y7g9ot3m6FJU1tt9Ycv2Rp3Oh-6oaOSUK-gZcYu2g1Hi6pROuRiL_ZW5HyYTGELbChBb8tpWopRxkG_kvQegElcYqqOXioJaBeAPUEbBRAIwGNAlhJwEoe7KQ5t77KU2lmiaHyqvRRUifldenTpRbK6746Jxm4j3dy-eSWSWcXTJOTdtO52MstufG258KT3twgrVQt18taufpVEYTu6m2-Lez73SJY6XHj-fl5dVn959348awdjme9ldmY1d2Y1SeDuX3bWNTUQmHbXMvRLlV0NxtPBs7gyuY3l-HFfV_X66NGfLncHN49zK-8s3AxOVRntR6TpOo6f5dEOD5J8dKFSQ_HxKavlsVMKJdwCp0snZb2qtZi0LCQRhEM3E7niaED_m9_iFhZ3EcQqHBrQNzePyChw8qxWM-GuIoBrDMI6yIkMYbIDzWIdBHpEDVEZEBkiKgCUQWjDuqyJQK_US1bF0DhcPliABIzylcAkF-dD-q9bG8xud2xXvS6xbpYyX4Gtxh8XkxKQ9HM5chz7eTdOt2J34j7773bp5vrs-Fw6t7_192M4h_qg7G-unEfaE8zr8f1zXx9KnxAoykJqfNHlZ15nr-mTtdEM6ii3-qJelRqNk9w9i6YE_gu49iosribVa0uemvCAcONcFquKQ2I564oth0bmfPv1I94nyxouh8mOXL8gi_Tda0XduUgyw7rkAZvIn-6UefHB37IERZvtUOj-W75_uEWF9FwRcPiTrBXa3apSDLJsIdFmOclwRMum_NMn-CiAUqCvFrsU_b_E4sXxxcsXibgIWERqmBz9LmP2qUTKAXh50Exek3yKA4dk6XHz39_TgRZZIdusD0xBFOf0YxjkTgopBtKDtYTWGwvW3hrFVFRYhTl4PN_v3vUzQ",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+            "ContentPaddingAddition": "8-64",
+            "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"ContentPaddingAddition\": \"8-64\",\n    \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nContentPaddingAddition = 8-64\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n                \"ContentPaddingAddition\": \"8-64\",\n                \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"HeaderProtectionKey\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"ContentPaddingAddition\\\": \\\"8-64\\\",\\n    \\\"I1\\\": \\\"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nContentPaddingAddition = 8-64\\\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v3",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.8.1.5",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000",
+        "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+        "ContentPaddingAddition": "8-64",
+        "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.8.1.5/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nContentPaddingAddition = 8-64\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAALR3japVZrU-JIFP3ur0jl026pmAcwQCFVrqsCKmbAV42xrCbpQHh0skmAoOV_33u7AyRjz1YxG6x4Oefcm-6-p5t8HChwqU7AEuIzGsVqQ3nhGF4f26ioApFK5oy---SYrEbqUVGHUOOnZE50Hcys_KQX1NxnSNbkJEk5qcnYgY6cIecM5OpyzkTOlHNl5MpSrs2fVznWNbikk2nzp1a17DqGiIvl5fgwdH2rxtD4tZyPTP-2k0No_lpOiUsjKwoS6iR-wK7pGvMvw_P1eBXXnXT1FDyW04ubxOsuJ93e4fv3x77VGcxm_acRDcLHi1NZ2XOwAmWJRVzXZ6MzuGNx3qPjalmW0eGr1hwqWupVydA0qt880mo6rS3UaiatZqToWqu5SvCfrIwf34_9yLVIlKxhEJ6PVkuiBZVoZyRO3pyNSP2wGcI22NCG77ZasdWjLQb-E2itgJI0Q7UcPNAFaBRAQ4D1AmgK0CyAZQGW82A7q7nxVZ7KKksMlVdlj5I6Ka_Lni61UF731TkicR_v5OrJLZOtLpgmJ-1ka7GXW3L5zsyHJ735YTZTrVQr6aXKV0UY-cu36WZi3-_m4dJI68_Pz8vLyl_v5o9n_dCbdJdWfVLzU1Yb9afObX1e1QoT29RaDHel4ruJN-q7_SsnubmMLu57hlEb1tPLxfrw7mF6NTuL5qNDbVLtMkmpjvv_inDHixIvHVj0yCMOfbVtZsF0SUKhk8qpstdsbQYNi2gcQ-JmOU9MA_C_ewPESvxzBIEGHx2I2_sHJAzYOTbrOhBXMIB9BmGNhyTFEPmBDpHBIwOiOo9MiEwelSEqY9RG3XaLwHdUy_YFUJgu3wxAYkX5DgDyq_NBvZftbSa3O84XvW6zDs5kP4PbDP5eLEoj3szFcOY7Ymztziiop7337u3TzfXZYDD27__prIfpD-3BXF3d-A-0q1vXXm09XZ1yH9B4TCLq_tbMzmazYEXdjoVm0Hi_tRPtSGk0TnD1LpgbBj5LsFEl_mlU9BrvrQUvGH6My3JNaUhm_pJi27GROf-OgzjpkTnNzkNRI8fPk0W2r43CqRxuq8M-pOEbr58d1Pn8MIgShPmodmg83W3f3zziYhotaVQ8CfZqza4UEYsMZ1iMdV4ELrjtmm_1AucNUAXyarNP2e8nTp6_vuDkZYIkIixGFRyOQRKgduGGakH4eVCMXkUd1aUeWcyS8_9-TwRZ7ER-uHljsBdaWXfwDpsd71ms_MEZD-9lwVB-JxzReVxT7IWh1w2Fa02OVXIZ-bquyOCs9-d2NCzmrybZEZaDDQHzA20Db8zJ11BYUz34_Bdw8vNp",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+            "ContentPaddingAddition": "8-64",
+            "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"ContentPaddingAddition\": \"8-64\",\n    \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n    \"client_ip\": \"10.8.1.5\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.8.1.5/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nContentPaddingAddition = 8-64\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n                \"ContentPaddingAddition\": \"8-64\",\n                \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"HeaderProtectionKey\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"ContentPaddingAddition\\\": \\\"8-64\\\",\\n    \\\"I1\\\": \\\"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\",\\n    \\\"client_ip\\\": \\\"10.8.1.5\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.8.1.5/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nContentPaddingAddition = 8-64\\\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nPresharedKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v3",
+    "name": "phone",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000",
+        "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+        "ContentPaddingAddition": "8-64",
+        "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nContentPaddingAddition = 8-64\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAKa3japVZtT-pKEP7uryD9qmJfACnhkHg8KqBiBd9yrDFLu0ChbHvbBYrG_35ntgXa456bkNsSGJ7n2dmdnZltPw9KcClOwDjxGI1ipVF6FRhen1urqAKRQuaMfnjkmKzGylFRh1Djj8GC6Do4svqHPqXmHkOyLidJIkhVxg405HQ5pyNnyjkDOUPOVZCrSLm2mK96rKlwSYNpi1lranYdgyXEcndiGZq2VaOp_10uVqad7uRgGn-XU-LSyIoCTh3uBeyarnH8ZXi-nqxi00lWz8FTJbm44aPuctrtHX7cP_WtzsD3-89jGoRPFz9kbs-hFCjjFnFdj43P4Budixwd1yqyER2xa81hSU1GNTI09NrpiLSaTmsLtZq81YxKmtpqrjj-yNx48cPEi1yLRHwNixh5WGo8WlCJ1icxf3c2IuXTZgjbUIY2_LeVqq0cbTGovxStF1CSZKiagwdaCuoFUE9BswAaKWgUwEoKVvJgO_O5qas8lXmWFFRelU0lraS8LptdWkJ53ffKSQfuUzs5f_KSyXYXiiYn7WR7sVe15MY7vgczvXthFqlaNstq-fS7Ioy85ftsE9j93Txc6on58vKyvKz-_DB-v2iHo2l3aZnTupew-rg_c27NeU0tBLbxtRjuXMV309G47_avHH5zGV089HS9PjSTy8X68O5xduWfRfPxoTqtdZnEVcf9f05ExacuXjuw6dGIOPTNtpkF4RJOIZOlH6W9orUZJCyicQwDN9t5YuiA_-oNECuL-wgMFW4NiNuHRyR06BybdR2wq2hAn4FZFyZJ0ER-oIGlC0sHyxSWAZYhrApYFbTaqNu2CPxHtawvgMLh8mYAEj3KOwDI75UP6r3K3mbycsd4sdZt1sFI9itwm8Hn1aI0EslcDH3PSdfW7owDM-l9dG-fb67PBoOJ9_BPZz1MfquPxurqxnukXc26HtXXs5XIpe8HK-p2LEynKjKmnqhHpUbjBOO_YG4YeIzjVpfF3ahqdZEdC14RvBgDu6Y0JL63pJg4TEWuAidBzHtkTrMTLfWR4-d8kXWmXjhXw6136CQavgv_2VGbHx8GEUdYrGqHxrNdA-bUMY2WNCr2514btnNF0o2DkyVGP68pnnLbfdzqU1xsqpIibzb7kj3VMCDxUoEByQQ8IixGFRxZAQ9Qu3BDpSD8Oihab6kfxaUjsvD5-X-_vYEsdiIv3DzHw0nA6JZjsXh8Z22eg_UUFk2_gTfpFxGlyVcOvv4F0c-uww",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+            "ContentPaddingAddition": "8-64",
+            "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"ContentPaddingAddition\": \"8-64\",\n    \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nContentPaddingAddition = 8-64\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "phone",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n                \"ContentPaddingAddition\": \"8-64\",\n                \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"HeaderProtectionKey\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"ContentPaddingAddition\\\": \\\"8-64\\\",\\n    \\\"I1\\\": \\\"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nContentPaddingAddition = 8-64\\\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"phone\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  },
+  {
+    "version": "v3",
+    "name": "Мама (Прокси → Германия)",
+    "client": {
+      "ip": "10.9.0.7",
+      "private_key": "QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=",
+      "public_key": "sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=",
+      "psk": ""
+    },
+    "server": {
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "5",
+        "Jmin": "8",
+        "Jmax": "80",
+        "S1": "20",
+        "S2": "90",
+        "S3": "30",
+        "S4": "40",
+        "H1": "5-100005",
+        "H2": "600000000-600100000",
+        "H3": "1100000000-1100200000",
+        "H4": "1700000000-1700300000",
+        "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+        "ContentPaddingAddition": "8-64",
+        "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+      }
+    },
+    "endpoint_host": "5.5.5.5",
+    "endpoint_port": 51820,
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
+    "conf": "[Interface]\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\nAddress = 10.9.0.7/32\nDNS = 1.1.1.1, 1.0.0.1\nMTU = 1280\nJc = 5\nJmin = 8\nJmax = 80\nS1 = 20\nS2 = 90\nS3 = 30\nS4 = 40\nH1 = 5-100005\nH2 = 600000000-600100000\nH3 = 1100000000-1100200000\nH4 = 1700000000-1700300000\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\nContentPaddingAddition = 8-64\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\n\n[Peer]\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = 5.5.5.5:51820\nPersistentKeepalive = 25\n",
+    "vpn_key": "vpn://AAAK3XjapVZtU-JIEP7ur0jl022pmDeQUCxVnqcCKmbBt1pjWUMywUiY5JIAQcv_vt2TAMk6e1XUBSs2z_N0Z7qne8jHngSX7IQsJT6jcSK3pCeO4fWxsaoqEMlkxui7Tw7JciIfVHUItX5z5kTfQc_6b_qcmvkMyaaYJBknFRE7UpHTxJyGnCnmdOR0MWcgZwi5Ln9e_VBV4BIm0-VPbSjFdQgWF4vD8WWo6kaNpvZnOV-ZeryVg6n_WU6JS2MrDlPqpH7ILukK_c-j09XrMjGdbPkQ3hvZ2VXq9Rdv_cH--4_7odUbBcHwYULD6P7suyjsKbQCZalFXNdnkxO4Y3C-R4cNQ-TR41VrjyUl8xpkrGuNY4902k5nA3XaaacdS6rSaS9T_CcK4ye3r37sWiROV7AIz8dWS-M5FWgDkqQvzlokf9gMYRva0Ibvtly35YMNBv2Xo80KSrICVUrwSM1BrQJqOWhWQD0H9Qpo5KBRBrtFzHVflakisqChyqriUcJOKuuKpwtbqKz72jm54y69U4onbpmiutA0JWmvqMVO3VLydwIfnvTiR0WmSs2sKbXjr4oo9hcv03ViP25m0ULLzMfHx8V5_e93_eejuu-99ReW-db0M9acDKfOtTlrKJXE1rHm422o5ObNmwzd4YWTXp3HZ7cDTWuOzex8vtq_uZteBCfxbLKvvDX6TBCq5_6_ILzj8xBPPSh67BGHPts2syBdklLYSem7tFO2NoMNi2mSgOO6nEe6Bvg_gxFiNf45AEOBjwrE9e0dEhpMjs36Dth1NGDOwGxyk2RoIj9SwdK4pYFlcksHS-eWAZaBVhd1mxGB76gWzQVQ6C4eBiAxongCgPza-aDeqe1tJm53zBd73WY9zGS3BrcZ_D1ZlMZ8M-fjwHfytXV7k9DMBu_964ery5PR6NW__be3Gmc_lTt9eXHl39G-al16zdV0yfcyCMIldXsWbqfCd0w5Ug6kVusI8z9jbhT6LMVS1_inVVebfHcseEXwE0zsktKIBP6C4sbhVpQ68DVM0gGZ0eJEy2OU-Fk6LyZTq5yr0SY6TBKNXnj84qgt-0dhnCLMV7VFk-l2AEvqhMYLGlfnc6eCbUORvHBwsiQY5ynHc25Tx40-x3lR5Rx5ttmn6FcNE-IvFZiQSJDGhCWogiMrTEPUzt1Irgg_96rWcx5HdqlH5kF6-t9vbyBLnNiP1r_j9lwxVAfvMIJ4L2zpL854eDdyhvI74YjK7aZkzzXV1CSu1TlWL3mU47q5B2e9b5vVsIS_MBQHSwnWcpgfM2t43XC8hnm7yXufvwCR081f",
+    "vpn_doc": {
+      "containers": [
+        {
+          "container": "amnezia-awg",
+          "awg": {
+            "Jc": "5",
+            "Jmin": "8",
+            "Jmax": "80",
+            "S1": "20",
+            "S2": "90",
+            "S3": "30",
+            "S4": "40",
+            "H1": "5-100005",
+            "H2": "600000000-600100000",
+            "H3": "1100000000-1100200000",
+            "H4": "1700000000-1700300000",
+            "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
+            "ContentPaddingAddition": "8-64",
+            "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>",
+            "isThirdPartyConfig": true,
+            "last_config": "{\n    \"Jc\": \"5\",\n    \"Jmin\": \"8\",\n    \"Jmax\": \"80\",\n    \"S1\": \"20\",\n    \"S2\": \"90\",\n    \"S3\": \"30\",\n    \"S4\": \"40\",\n    \"H1\": \"5-100005\",\n    \"H2\": \"600000000-600100000\",\n    \"H3\": \"1100000000-1100200000\",\n    \"H4\": \"1700000000-1700300000\",\n    \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n    \"ContentPaddingAddition\": \"8-64\",\n    \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n    \"client_ip\": \"10.9.0.7\",\n    \"client_priv_key\": \"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\",\n    \"client_pub_key\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n    \"config\": \"[Interface]\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\nAddress = 10.9.0.7/32\\nDNS = 1.1.1.1, 1.0.0.1\\nMTU = 1280\\nJc = 5\\nJmin = 8\\nJmax = 80\\nS1 = 20\\nS2 = 90\\nS3 = 30\\nS4 = 40\\nH1 = 5-100005\\nH2 = 600000000-600100000\\nH3 = 1100000000-1100200000\\nH4 = 1700000000-1700300000\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\nContentPaddingAddition = 8-64\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\n\\n[Peer]\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\nAllowedIPs = 0.0.0.0/0, ::/0\\nEndpoint = 5.5.5.5:51820\\nPersistentKeepalive = 25\\n\",\n    \"hostName\": \"5.5.5.5\",\n    \"mtu\": \"1280\",\n    \"persistent_keep_alive\": \"25\",\n    \"port\": 51820,\n    \"psk_key\": \"\",\n    \"server_pub_key\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n    \"allowed_ips\": [\n        \"0.0.0.0/0\",\n        \"::/0\"\n    ]\n}",
+            "port": "51820",
+            "transport_proto": "udp"
+          }
+        }
+      ],
+      "defaultContainer": "amnezia-awg",
+      "description": "Мама (Прокси → Германия)",
+      "dns1": "1.1.1.1",
+      "dns2": "1.0.0.1",
+      "hostName": "5.5.5.5"
+    },
+    "vpn_json": "{\n    \"containers\": [\n        {\n            \"container\": \"amnezia-awg\",\n            \"awg\": {\n                \"Jc\": \"5\",\n                \"Jmin\": \"8\",\n                \"Jmax\": \"80\",\n                \"S1\": \"20\",\n                \"S2\": \"90\",\n                \"S3\": \"30\",\n                \"S4\": \"40\",\n                \"H1\": \"5-100005\",\n                \"H2\": \"600000000-600100000\",\n                \"H3\": \"1100000000-1100200000\",\n                \"H4\": \"1700000000-1700300000\",\n                \"HeaderProtectionKey\": \"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\",\n                \"ContentPaddingAddition\": \"8-64\",\n                \"I1\": \"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\",\n                \"isThirdPartyConfig\": true,\n                \"last_config\": \"{\\n    \\\"Jc\\\": \\\"5\\\",\\n    \\\"Jmin\\\": \\\"8\\\",\\n    \\\"Jmax\\\": \\\"80\\\",\\n    \\\"S1\\\": \\\"20\\\",\\n    \\\"S2\\\": \\\"90\\\",\\n    \\\"S3\\\": \\\"30\\\",\\n    \\\"S4\\\": \\\"40\\\",\\n    \\\"H1\\\": \\\"5-100005\\\",\\n    \\\"H2\\\": \\\"600000000-600100000\\\",\\n    \\\"H3\\\": \\\"1100000000-1100200000\\\",\\n    \\\"H4\\\": \\\"1700000000-1700300000\\\",\\n    \\\"HeaderProtectionKey\\\": \\\"FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\",\\n    \\\"ContentPaddingAddition\\\": \\\"8-64\\\",\\n    \\\"I1\\\": \\\"<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\",\\n    \\\"client_ip\\\": \\\"10.9.0.7\\\",\\n    \\\"client_priv_key\\\": \\\"QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\",\\n    \\\"client_pub_key\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"clientId\\\": \\\"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\\\",\\n    \\\"config\\\": \\\"[Interface]\\\\nPrivateKey = QOmpv2x9XXXvF5Bz3ZX1+fjJvP9j8ixn8gRkcM9m60E=\\\\nAddress = 10.9.0.7/32\\\\nDNS = 1.1.1.1, 1.0.0.1\\\\nMTU = 1280\\\\nJc = 5\\\\nJmin = 8\\\\nJmax = 80\\\\nS1 = 20\\\\nS2 = 90\\\\nS3 = 30\\\\nS4 = 40\\\\nH1 = 5-100005\\\\nH2 = 600000000-600100000\\\\nH3 = 1100000000-1100200000\\\\nH4 = 1700000000-1700300000\\\\nHeaderProtectionKey = FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=\\\\nContentPaddingAddition = 8-64\\\\nI1 = <b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>\\\\n\\\\n[Peer]\\\\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\\nAllowedIPs = 0.0.0.0/0, ::/0\\\\nEndpoint = 5.5.5.5:51820\\\\nPersistentKeepalive = 25\\\\n\\\",\\n    \\\"hostName\\\": \\\"5.5.5.5\\\",\\n    \\\"mtu\\\": \\\"1280\\\",\\n    \\\"persistent_keep_alive\\\": \\\"25\\\",\\n    \\\"port\\\": 51820,\\n    \\\"psk_key\\\": \\\"\\\",\\n    \\\"server_pub_key\\\": \\\"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\\\",\\n    \\\"allowed_ips\\\": [\\n        \\\"0.0.0.0/0\\\",\\n        \\\"::/0\\\"\\n    ]\\n}\",\n                \"port\": \"51820\",\n                \"transport_proto\": \"udp\"\n            }\n        }\n    ],\n    \"defaultContainer\": \"amnezia-awg\",\n    \"description\": \"\\u041c\\u0430\\u043c\\u0430 (\\u041f\\u0440\\u043e\\u043a\\u0441\\u0438 \\u2192 \\u0413\\u0435\\u0440\\u043c\\u0430\\u043d\\u0438\\u044f)\",\n    \"dns1\": \"1.1.1.1\",\n    \"dns2\": \"1.0.0.1\",\n    \"hostName\": \"5.5.5.5\"\n}"
+  }
+]

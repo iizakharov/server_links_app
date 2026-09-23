@@ -52,3 +52,12 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```bash
 .venv/bin/python -m pytest -q
 ```
+
+## Приложение АМнеЗинуVPN (`client/`, в разработке)
+
+Кроссплатформенное приложение (macOS, Windows, Linux, Android) в стиле AmneziaVPN со своим туннелем и управлением каскадами. Ядро переписывается на Rust; эта панель остаётся эталоном: `tests/golden/gen.py` запускает Python-код и пишет эталонные ответы в `client/fixtures/`, а Rust-тесты сверяются с ними.
+
+```bash
+.venv/bin/python -m tests.golden.gen   # обновить фикстуры после изменений в app/
+cd client && cargo test                # ядро amz-core: .conf, vpn://, версии AWG, ключи, state.json
+```
