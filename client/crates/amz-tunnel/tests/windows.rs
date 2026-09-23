@@ -42,7 +42,7 @@ fn plan_by_split_mode() {
     let opts = |mode, kill| UpOptions { kill_switch: kill, allow_lan: false, split: Split { mode, entries: vec![] } };
 
     let all = plan(&cfg, &opts(SplitMode::All, true), &[]);
-    assert!(all.kill_switch);
+    assert!(all.kill_switch && !all.allow_lan);
     assert_eq!((all.addresses.clone(), all.dns.clone(), all.mtu), (s(&["10.9.3.2/32"]), s(&["1.1.1.1", "1.0.0.1"]), 1280));
     assert_eq!(all.routes.len(), 32 + 2);
     assert!(!all.routes.contains(&"5.6.7.8/32".to_string()));

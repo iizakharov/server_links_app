@@ -37,8 +37,7 @@
     <Toggle checked={s.kill_switch} label="Kill switch" disabled={s.split.mode !== "all"}
             hint={s.split.mode !== "all" ? "Недоступно при раздельном туннелировании" : "Блокировать интернет, если VPN отключится сам"}
             onchange={(v) => saveSettings({ kill_switch: v })} />
-    <!-- Windows: the kill switch (WFP) has no exception for the local network yet -->
-    {#if s.kill_switch && s.split.mode === "all" && !isWindows}
+    {#if s.kill_switch && s.split.mode === "all"}
       <Toggle checked={s.allow_lan} label="Разрешить локальную сеть" hint="Принтеры, роутер, NAS доступны при kill switch"
               onchange={(v) => saveSettings({ allow_lan: v })} />
     {/if}

@@ -6,7 +6,7 @@
       "../../target/wintun/bin/amd64/wintun.dll": "wintun.dll"
     },
     "windows": {
-      "nsis": { "languages": ["Russian"], "installMode": "currentUser" }
+      "nsis": { "languages": ["Russian"], "installMode": "currentUser", "installerHooks": "./windows/hooks.nsh" }
     }
   }
 }

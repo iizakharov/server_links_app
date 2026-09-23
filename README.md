@@ -100,6 +100,6 @@ brew install mingw-w64 makensis && rustup target add x86_64-pc-windows-gnu
 cd client/app && npm run build:windows                    # target/x86_64-pc-windows-gnu/release/bundle/nsis/*-setup.exe
 ```
 
-На Windows служба ставится из приложения («Настройки» → «Установить службу», подтверждение UAC): копируется в `C:\Program Files\AmnezinuVPN`, работает как служба `AmnezinuVPN`, журнал — `C:\ProgramData\AmnezinuVPN\helper.log`. Перед удалением приложения удалите службу там же.
+На Windows служба ставится из приложения («Настройки» → «Установить службу», подтверждение UAC): копируется в `C:\Program Files\AmnezinuVPN`, работает как служба `AmnezinuVPN`, журнал — `C:\ProgramData\AmnezinuVPN\helper.log`. При удалении приложения служба удаляется тоже (подтверждение UAC).
 
 При первом подключении `amz` запоминает SSH-ключ сервера (`host_key`) и дальше отказывается подключаться, если ключ изменился.

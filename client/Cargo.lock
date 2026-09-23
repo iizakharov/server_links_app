@@ -130,6 +130,7 @@ dependencies = [
  "anyhow",
  "ctrlc",
  "libc",
+ "serde",
  "serde_json",
  "windows-service",
  "windows-sys 0.61.2",

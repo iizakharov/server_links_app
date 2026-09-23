@@ -16,6 +16,23 @@ extern "C" {
 #[cfg(windows)]
 extern "C" {
     fn awgNetSet(handle: i32, plan: *const c_char) -> i32;
+    fn awgBlock(allow_lan: i32) -> i32;
+    fn awgUnblock();
+}
+
+/// Windows: kill switch without a tunnel (after the helper was restarted following a crash): everything
+/// but this process, loopback, DHCP and optionally the local network is blocked until `unblock`.
+#[cfg(windows)]
+pub fn block(allow_lan: bool) -> Result<()> {
+    if unsafe { awgBlock(allow_lan as i32) } < 0 {
+        return Err(anyhow!("блокировка: {}", take(unsafe { awgLastError() }).unwrap_or_default()));
+    }
+    Ok(())
+}
+
+#[cfg(windows)]
+pub fn unblock() {
+    unsafe { awgUnblock() }
 }
 
 /// Takes ownership of a string returned by libawg.

@@ -11,8 +11,8 @@ import (
 	"net/netip"
 
 	"github.com/amnezia-vpn/amneziawg-go/v3/tun"
+	"github.com/iizakharov/amnezinu-vpn/libawg/firewall"
 	"golang.org/x/sys/windows"
-	"golang.zx2c4.com/wireguard/windows/tunnel/firewall"
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
 )
 
@@ -23,6 +23,7 @@ type netPlan struct {
 	DNS        []string `json:"dns"`
 	MTU        int      `json:"mtu"`
 	KillSwitch bool     `json:"kill_switch"`
+	AllowLAN   bool     `json:"allow_lan"`
 }
 
 type netState struct {
@@ -118,9 +119,11 @@ func applyPlan(t *tunnel, p *netPlan) error {
 	}
 	_ = luid.SetDNS(windows.AF_INET6, dns6, nil)
 
-	// kill switch: WFP filters in a dynamic session, so they go away with this process
+	// kill switch: WFP filters in a dynamic session, so they go away with this process.
+	// A block left by awgBlock (after a crash) is replaced by the tunnel's rules.
 	if p.KillSwitch && !t.net.firewall {
-		if err := firewall.EnableFirewall(uint64(luid), false, all); err != nil {
+		firewall.DisableFirewall()
+		if err := firewall.EnableFirewall(uint64(luid), false, p.AllowLAN, all); err != nil {
 			return fmt.Errorf("kill switch: %w", err)
 		}
 		t.net.firewall = true
@@ -155,4 +158,23 @@ func netDown(t *tunnel) {
 		firewall.DisableFirewall()
 		t.net.firewall = false
 	}
+}
+
+// awgBlock blocks all traffic except this process, loopback, DHCP and (optionally) the local network, with
+// no tunnel: the kill switch after the service was restarted following a crash. Returns 0 or -1.
+//
+//export awgBlock
+func awgBlock(allowLAN C.int32_t) C.int32_t {
+	firewall.DisableFirewall()
+	if err := firewall.EnableFirewall(0, false, allowLAN != 0, nil); err != nil {
+		return fail(err)
+	}
+	return 0
+}
+
+// awgUnblock lifts the block of awgBlock (a no-op if there is none).
+//
+//export awgUnblock
+func awgUnblock() {
+	firewall.DisableFirewall()
 }

@@ -18,6 +18,8 @@ pub struct NetPlan {
     pub mtu: u32,
     /// block everything outside the tunnel (WFP; lifted automatically if the helper dies)
     pub kill_switch: bool,
+    /// with the kill switch: still allow the local network
+    pub allow_lan: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -104,5 +106,6 @@ pub fn plan(cfg: &TunnelConfig, opts: &UpOptions, listed: &[String]) -> NetPlan 
         dns: if opts.split.mode == SplitMode::Only { vec![] } else { cfg.dns.iter().map(|d| d.to_string()).collect() },
         mtu: cfg.mtu,
         kill_switch: opts.kill_switch && opts.split.mode == SplitMode::All,
+        allow_lan: opts.allow_lan,
     }
 }

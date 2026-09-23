@@ -15,10 +15,11 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use amz_core::tunnel::{parse_stats, tunnel_config, TunnelConfig};
 use amz_ipc::{read_line, write_line, Request, Response, SplitMode, Status, UpOptions, BUILD, SOCKET};
-use amz_tunnel::awg::Device;
+use amz_tunnel::awg::{block, unblock, Device};
 use amz_tunnel::split::{resolve_entries, system_resolve};
 use amz_tunnel::windows::{plan, NetPlan, IFACE};
 use anyhow::{anyhow, bail, Context, Result};
+use serde::{Deserialize, Serialize};
 use windows_service::service::{
     ServiceAccess, ServiceAction, ServiceActionType, ServiceControl, ServiceControlAccept, ServiceErrorControl,
     ServiceExitCode, ServiceFailureActions, ServiceFailureResetPeriod, ServiceInfo, ServiceStartType, ServiceState,
@@ -32,6 +33,7 @@ use windows_sys::Win32::Security::Authorization::{ConvertStringSecurityDescripto
 use windows_sys::Win32::Security::SECURITY_ATTRIBUTES;
 use windows_sys::Win32::Storage::FileSystem::{FlushFileBuffers, FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_ACCESS_DUPLEX};
 use windows_sys::Win32::System::Console::{SetStdHandle, STD_ERROR_HANDLE};
+use windows_sys::Win32::System::SystemInformation::GetTickCount64;
 use windows_sys::Win32::System::Pipes::{
     ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, PIPE_READMODE_BYTE, PIPE_REJECT_REMOTE_CLIENTS,
     PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_WAIT,
@@ -45,6 +47,11 @@ fn install_dir() -> PathBuf {
 
 fn log_path() -> PathBuf {
     PathBuf::from(std::env::var_os("ProgramData").unwrap_or_else(|| r"C:\ProgramData".into())).join(r"AmnezinuVPN\helper.log")
+}
+
+/// The kill switch was on: if the service dies, it restores the block when Windows restarts it.
+fn state_path() -> PathBuf {
+    log_path().with_file_name("state.json")
 }
 
 fn log(msg: impl AsRef<str>) {
@@ -81,15 +88,53 @@ struct Active {
 #[derive(Default)]
 struct Helper {
     active: Option<Active>,
+    /// kill switch holding traffic blocked after a crash (allow_lan): lifted by the next Up or Down
+    blocked: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Saved {
+    kill_switch: bool,
+    allow_lan: bool,
 }
 
 type Shared = Arc<Mutex<Helper>>;
 
-fn down(h: &mut Helper) {
+fn stop_tunnel(h: &mut Helper) {
     if let Some(a) = h.active.take() {
         log(format!("отключение {}", a.status.name));
         // closing the device removes the adapter with its routes and DNS, and lifts the kill switch
         drop(a.dev);
+    }
+}
+
+fn down(h: &mut Helper) {
+    stop_tunnel(h);
+    if h.blocked.take().is_some() {
+        log("снимаю блокировку kill switch");
+        unblock();
+    }
+    let _ = fs::remove_file(state_path());
+}
+
+/// Service start: the previous run died with the kill switch on (not a reboot) -> keep the internet blocked.
+fn restore_block(h: &mut Helper) {
+    let path = state_path();
+    let Ok(raw) = fs::read(&path) else { return };
+    // SAFETY: plain call
+    let boot = SystemTime::now() - Duration::from_millis(unsafe { GetTickCount64() });
+    let after_boot = fs::metadata(&path).and_then(|m| m.modified()).is_ok_and(|t| t > boot);
+    match serde_json::from_slice::<Saved>(&raw) {
+        Ok(saved) if saved.kill_switch && after_boot => match block(saved.allow_lan) {
+            Ok(()) => {
+                log("прошлый запуск завершился аварийно: kill switch держит интернет заблокированным до отключения");
+                h.blocked = Some(saved.allow_lan);
+            }
+            Err(e) => log(format!("{e:#}")),
+        },
+        _ => {
+            let _ = fs::remove_file(&path);
+        }
     }
 }
 
@@ -98,7 +143,8 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
         let addrs: Vec<_> = (host, port).to_socket_addrs().ok()?.collect();
         addrs.iter().find(|a| a.is_ipv4()).or(addrs.first()).copied()
     })?;
-    down(h);
+    // a crash block stays until the new tunnel is up: no gap without protection
+    stop_tunnel(h);
     let listed = if opts.split.mode == SplitMode::All {
         vec![]
     } else {
@@ -111,8 +157,17 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
     let dev = Device::up(IFACE, cfg.mtu, &cfg.uapi)?;
     let net = plan(&cfg, opts, &listed);
     dev.set_net(&net)?;
-    if net.kill_switch && opts.allow_lan {
-        log("kill switch на Windows пока блокирует и локальную сеть");
+    // with the kill switch the tunnel's rules have replaced the block; without it, lift the block
+    if h.blocked.take().is_some() && !net.kill_switch {
+        unblock();
+    }
+    if net.kill_switch {
+        let saved = Saved { kill_switch: true, allow_lan: net.allow_lan };
+        if let Err(e) = fs::write(state_path(), serde_json::to_vec(&saved)?) {
+            log(format!("{}: {e}", state_path().display()));
+        }
+    } else {
+        let _ = fs::remove_file(state_path());
     }
     let since = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
     log(format!("подключено {name}: {} → {} (kill switch: {}, раздельное: {:?} {} шт., маршрутов {})", dev.name(),
@@ -126,7 +181,7 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
 fn status(h: &Helper) -> Status {
     let s = match &h.active {
         Some(a) => Status { stats: parse_stats(&a.dev.config()), ..a.status.clone() },
-        None => Status::default(),
+        None => Status { blocked: h.blocked.is_some(), kill_switch: h.blocked.is_some(), ..Default::default() },
     };
     Status { helper_version: BUILD.into(), ..s }
 }
@@ -281,7 +336,9 @@ fn set_state(handle: &ServiceStatusHandle, state: ServiceState) {
 }
 
 fn run_service() -> Result<()> {
-    let shared: Shared = Arc::new(Mutex::new(Helper::default()));
+    let mut helper = Helper::default();
+    restore_block(&mut helper);
+    let shared: Shared = Arc::new(Mutex::new(helper));
     let on_stop = shared.clone();
     let status_handle: Arc<OnceLock<ServiceStatusHandle>> = Arc::new(OnceLock::new());
     let for_handler = status_handle.clone();
@@ -433,7 +490,9 @@ pub fn main() -> Result<()> {
             Ok(())
         }
         "run" => {
-            let shared: Shared = Arc::new(Mutex::new(Helper::default()));
+            let mut helper = Helper::default();
+            restore_block(&mut helper);
+            let shared: Shared = Arc::new(Mutex::new(helper));
             let on_exit = shared.clone();
             ctrlc::set_handler(move || {
                 down(&mut on_exit.lock().unwrap());
