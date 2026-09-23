@@ -17,19 +17,35 @@ use crate::{err, AppState, Res};
 
 pub struct Keychain;
 
+const MANAGE_SERVICE: &str = "com.amnezinu.vpn.manage";
+
+#[cfg(target_os = "macos")]
 impl Secrets for Keychain {
     fn get(&self, key: &str) -> Option<String> {
-        keyring::Entry::new("com.amnezinu.vpn.manage", key).ok()?.get_password().ok()
+        crate::vault::get(MANAGE_SERVICE, key)
     }
     fn set(&self, key: &str, value: &str) -> Result<(), String> {
-        let e = keyring::Entry::new("com.amnezinu.vpn.manage", key).map_err(err)?;
+        crate::vault::set(MANAGE_SERVICE, key, value)
+    }
+    fn delete(&self, key: &str) {
+        crate::vault::delete(MANAGE_SERVICE, key)
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+impl Secrets for Keychain {
+    fn get(&self, key: &str) -> Option<String> {
+        keyring::Entry::new(MANAGE_SERVICE, key).ok()?.get_password().ok()
+    }
+    fn set(&self, key: &str, value: &str) -> Result<(), String> {
+        let e = keyring::Entry::new(MANAGE_SERVICE, key).map_err(err)?;
         if e.get_password().ok().as_deref() == Some(value) {
             return Ok(());
         }
         e.set_password(value).map_err(err)
     }
     fn delete(&self, key: &str) {
-        if let Ok(e) = keyring::Entry::new("com.amnezinu.vpn.manage", key) {
+        if let Ok(e) = keyring::Entry::new(MANAGE_SERVICE, key) {
             let _ = e.delete_credential();
         }
     }

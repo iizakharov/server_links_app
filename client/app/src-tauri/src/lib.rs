@@ -4,6 +4,8 @@ mod manage;
 mod profiles;
 mod qr;
 mod tray;
+#[cfg(target_os = "macos")]
+mod vault;
 
 use std::sync::Mutex;
 

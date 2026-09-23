@@ -28,30 +28,54 @@ pub struct Profile {
 
 const KEYCHAIN_SERVICE: &str = "com.amnezinu.vpn";
 
+#[cfg(not(target_os = "macos"))]
 fn secret(id: &str) -> Result<keyring::Entry> {
     Ok(keyring::Entry::new(KEYCHAIN_SERVICE, id)?)
 }
 
+/// macOS: all secrets in one keychain item (see vault.rs).
+#[cfg(target_os = "macos")]
+fn load_conf(id: &str) -> Option<String> {
+    crate::vault::get(KEYCHAIN_SERVICE, id)
+}
+
+#[cfg(target_os = "macos")]
+fn save_conf(id: &str, conf: &str) -> Result<()> {
+    crate::vault::set(KEYCHAIN_SERVICE, id, conf).map_err(anyhow::Error::msg)
+}
+
+#[cfg(target_os = "macos")]
+fn forget_conf(id: &str) {
+    crate::vault::delete(KEYCHAIN_SERVICE, id)
+}
+
 /// Windows Credential Manager keeps at most 2560 bytes (1280 characters as a password), an AWG 3 config is
-/// longer: it is stored compressed there. Elsewhere the keychain item is the plain config.
+/// longer: it is stored compressed there.
 #[cfg(windows)]
-fn read_conf(e: &keyring::Entry) -> Option<String> {
-    String::from_utf8(amz_core::vpnkey::quncompress(&e.get_secret().ok()?).ok()?).ok()
+fn load_conf(id: &str) -> Option<String> {
+    String::from_utf8(amz_core::vpnkey::quncompress(&secret(id).ok()?.get_secret().ok()?).ok()?).ok()
 }
 
 #[cfg(windows)]
-fn write_conf(e: &keyring::Entry, conf: &str) -> Result<()> {
-    Ok(e.set_secret(&amz_core::vpnkey::qcompress(conf.as_bytes()))?)
+fn save_conf(id: &str, conf: &str) -> Result<()> {
+    Ok(secret(id)?.set_secret(&amz_core::vpnkey::qcompress(conf.as_bytes()))?)
 }
 
-#[cfg(not(windows))]
-fn read_conf(e: &keyring::Entry) -> Option<String> {
-    e.get_password().ok()
+#[cfg(all(unix, not(target_os = "macos")))]
+fn load_conf(id: &str) -> Option<String> {
+    secret(id).ok()?.get_password().ok()
 }
 
-#[cfg(not(windows))]
-fn write_conf(e: &keyring::Entry, conf: &str) -> Result<()> {
-    Ok(e.set_password(conf)?)
+#[cfg(all(unix, not(target_os = "macos")))]
+fn save_conf(id: &str, conf: &str) -> Result<()> {
+    Ok(secret(id)?.set_password(conf)?)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn forget_conf(id: &str) {
+    if let Ok(e) = secret(id) {
+        let _ = e.delete_credential();
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -152,7 +176,7 @@ impl Store {
                     p.conf = conf.to_string();
                     migrate = true;
                 }
-                None => p.conf = read_conf(&secret(&p.id)?).unwrap_or_default(),
+                None => p.conf = load_conf(&p.id).unwrap_or_default(),
             }
         }
         if migrate {
@@ -163,9 +187,9 @@ impl Store {
 
     pub fn save(&self, data: &Data) -> Result<()> {
         for p in &data.profiles {
-            let entry = secret(&p.id)?;
-            if read_conf(&entry).as_deref() != Some(p.conf.as_str()) {
-                write_conf(&entry, &p.conf)?;
+            // an empty config means it could not be read (keychain access denied): never overwrite with it
+            if !p.conf.is_empty() && load_conf(&p.id).as_deref() != Some(p.conf.as_str()) {
+                save_conf(&p.id, &p.conf)?;
             }
         }
         if let Some(dir) = self.path.parent() {
@@ -182,9 +206,7 @@ impl Store {
     }
 
     pub fn forget(&self, id: &str) {
-        if let Ok(e) = secret(id) {
-            let _ = e.delete_credential();
-        }
+        forget_conf(id);
     }
 }
 
