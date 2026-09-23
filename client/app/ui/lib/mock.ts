@@ -20,8 +20,12 @@ PersistentKeepalive = 25
 
 let view: View = {
   profiles: [
-    { id: "p1", name: "Прага (каскад)", endpoint: "198.51.100.1:60006", address: "10.9.3.2/32", awg_version: "3.x" },
-    { id: "p2", name: "Рига", endpoint: "203.0.113.20:48303", address: "10.8.1.5/32", awg_version: "2.0" },
+    { id: "p1", name: "phone", endpoint: "198.51.100.1:60006", address: "10.9.3.2/32", awg_version: "3.x",
+      group: "g1", exit: "Прага", title: "phone · Прага" },
+    { id: "p3", name: "phone", endpoint: "198.51.100.1:60007", address: "10.9.4.2/32", awg_version: "3.x",
+      group: "g1", exit: "Германия", title: "phone · Германия" },
+    { id: "p2", name: "Рига", endpoint: "203.0.113.20:48303", address: "10.8.1.5/32", awg_version: "2.0",
+      group: null, exit: null, title: "Рига" },
   ],
   selected: "p1",
   settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } },
@@ -64,7 +68,9 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
       const text = String(a.text).trim();
       if (!text.startsWith("vpn://") && !text.includes("[Interface]")) throw "Это не ключ vpn:// и не конфиг AmneziaWG";
       const id = Math.random().toString(16).slice(2, 10);
-      view.profiles.push({ id, name: a.name || `Сервер ${view.profiles.length + 1}`, endpoint: "192.0.2.7:51820", address: "10.8.1.9/32", awg_version: "2.0" });
+      const name = a.name || `Сервер ${view.profiles.length + 1}`;
+      view.profiles.push({ id, name, endpoint: "192.0.2.7:51820", address: "10.8.1.9/32", awg_version: "2.0",
+                           group: null, exit: null, title: name });
       view.selected = id;
       return clone(view);
     }

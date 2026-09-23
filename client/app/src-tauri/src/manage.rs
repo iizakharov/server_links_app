@@ -12,7 +12,7 @@ use amz_remote::{SshRemote, SshTarget};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::profiles::new_profile;
+use crate::profiles::{new_group, new_profile};
 use crate::{err, AppState, Res};
 
 pub struct Keychain;
@@ -256,8 +256,14 @@ pub async fn manage_traffic(app: AppHandle) -> Res<OpLog> {
 #[tauri::command]
 pub fn manage_client_share(st: tauri::State<AppState>, id: String) -> Res<crate::Share> {
     let s = st.manage.snapshot.lock().unwrap().clone();
-    let r = ops::render(&s, &id).map_err(err)?;
-    crate::share_of(&client_title(&s, &id)?, &r.conf, Some(r.vpn_key))
+    let (r, exits) = ops::render_all(&s, &id).map_err(err)?;
+    // a key with several exits is named after the person; a single-route one shows the route
+    let title = if exits.is_empty() { client_title(&s, &id)? } else { client_name(&s, &id)? };
+    crate::share_of(&title, &r.conf, Some(r.vpn_key))
+}
+
+fn client_name(s: &State, id: &str) -> Res<String> {
+    Ok(s.clients.iter().find(|c| c.id == id).ok_or("Нет такого клиента")?.name.clone())
 }
 
 /// "phone (Proxy → Praga)"
@@ -272,12 +278,14 @@ fn client_title(s: &State, id: &str) -> Res<String> {
 #[tauri::command]
 pub fn manage_client_to_device(st: tauri::State<AppState>, id: String) -> Res<crate::View> {
     let s = st.manage.snapshot.lock().unwrap().clone();
-    let r = ops::render(&s, &id).map_err(err)?;
-    let name = client_title(&s, &id)?;
+    let (r, exits) = ops::render_all(&s, &id).map_err(err)?;
+    let profiles = if exits.is_empty() {
+        vec![new_profile(client_title(&s, &id)?, r.conf)]
+    } else {
+        new_group(&client_name(&s, &id)?, exits)
+    };
     crate::change(&st, |d| {
-        let p = new_profile(name, r.conf);
-        d.selected = Some(p.id.clone());
-        d.profiles.push(p);
+        crate::add_profiles(d, profiles);
         Ok(())
     })
 }

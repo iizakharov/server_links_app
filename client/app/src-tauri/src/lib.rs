@@ -7,9 +7,9 @@ mod tray;
 
 use std::sync::Mutex;
 
-use amz_core::vpnkey::conf_to_vpn_key;
+use amz_core::vpnkey::{conf_to_vpn_key, with_exits, KeyExit};
 use amz_ipc::{Request, Status};
-use profiles::{new_profile, parse_import, Data, ProfileView, Settings, Store};
+use profiles::{new_group, new_profile, parse_import, Data, ProfileView, Settings, Store};
 use serde::Serialize;
 use tauri::{Emitter, Manager, State};
 
@@ -54,12 +54,17 @@ fn get_view(st: State<AppState>) -> View {
 fn import_text(st: State<AppState>, text: String, name: Option<String>) -> Res<View> {
     change(&st, |d| {
         let fallback = format!("Сервер {}", d.profiles.len() + 1);
-        let (key_name, conf) = parse_import(&text, &fallback).map_err(err)?;
-        let p = new_profile(name.filter(|n| !n.trim().is_empty()).unwrap_or(key_name), conf);
-        d.selected = Some(p.id.clone());
-        d.profiles.push(p);
+        let (key_name, conf, exits) = parse_import(&text, &fallback).map_err(err)?;
+        let name = name.filter(|n| !n.trim().is_empty()).unwrap_or(key_name);
+        add_profiles(d, if exits.is_empty() { vec![new_profile(name, conf)] } else { new_group(&name, exits) });
         Ok(())
     })
+}
+
+/// Adds profiles and selects the first (the key's default exit).
+pub(crate) fn add_profiles(d: &mut Data, profiles: Vec<profiles::Profile>) {
+    d.selected = profiles.first().map(|p| p.id.clone());
+    d.profiles.extend(profiles);
 }
 
 #[tauri::command]
@@ -124,7 +129,13 @@ pub(crate) fn share_of(name: &str, conf: &str, vpn_key: Option<String>) -> Res<S
 fn share(st: State<AppState>, id: String) -> Res<Share> {
     let d = st.data.lock().unwrap();
     let p = d.profiles.iter().find(|p| p.id == id).ok_or("Нет такого сервера")?;
-    share_of(&p.name, &p.conf, None)
+    let Some(group) = &p.group else { return share_of(&p.name, &p.conf, None) };
+    // the whole group in one key, this exit as the default
+    let mut exits = vec![p];
+    exits.extend(d.profiles.iter().filter(|x| x.group.as_ref() == Some(group) && x.id != p.id));
+    let exits: Vec<KeyExit> = exits.iter().map(|x| KeyExit { name: x.exit.clone().unwrap_or_default(), conf: x.conf.clone() }).collect();
+    let key = with_exits(&conf_to_vpn_key(&p.name, &p.conf).map_err(err)?, &exits).map_err(err)?;
+    share_of(&p.name, &p.conf, Some(key))
 }
 
 #[tauri::command]
@@ -144,7 +155,7 @@ async fn connect(st: State<'_, AppState>, id: String) -> Res<Status> {
 
 pub(crate) fn up_request(d: &Data, id: &str) -> Res<Request> {
     let p = d.profiles.iter().find(|p| p.id == id).ok_or("Нет такого сервера")?;
-    Ok(Request::Up { conf: p.conf.clone(), name: p.name.clone(), options: d.settings.up_options() })
+    Ok(Request::Up { conf: p.conf.clone(), name: p.title(), options: d.settings.up_options() })
 }
 
 #[tauri::command]

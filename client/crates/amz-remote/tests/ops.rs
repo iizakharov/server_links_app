@@ -249,6 +249,13 @@ async fn managed_cascade_avoids_existing_ports() {
     assert_eq!(doc["hostName"], PROXY_IP);
     assert_eq!(doc["containers"][0]["awg"]["port"], "60001");
 
+    // one key with both exits: the chosen one is the default, the other is in our extension
+    let (_, exits) = ops::render_all(&env.s, &made[1]).unwrap();
+    assert_eq!(exits.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["praga", "nl"]);
+    let imported = amz_core::import_vpn_key(&ops::render_all(&env.s, &made[1]).unwrap().0.vpn_key).unwrap();
+    assert_eq!((imported.name.as_str(), imported.exits.len()), ("phone", 2));
+    assert!(imported.conf.contains(":60002") && imported.exits[1].conf.contains(":60001"));
+
     let r = ops::delete_cascade(&env.conn, &env.store, &mut env.s, &cids[0]).await;
     assert!(r.ok, "{:?}", r.log);
     let script = env.file(PROXY_IP, proxy::SCRIPT_PATH);

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import Icon from "../lib/Icon.svelte";
   import { bytes } from "../lib/api";
-  import { app, installUpdate, selectedProfile, toggleConnection } from "../lib/store.svelte";
+  import { app, installUpdate, selectedProfile, switchExit, toggleConnection } from "../lib/store.svelte";
 
   let now = $state(Math.floor(Date.now() / 1000));
   onMount(() => {
@@ -11,6 +11,7 @@
   });
 
   const profile = $derived(selectedProfile());
+  const exits = $derived(profile?.group ? app.view.profiles.filter((p) => p.group === profile.group) : []);
   const connected = $derived(!!app.status?.connected);
   const phase = $derived(app.busy ? "busy" : connected ? "on" : "off");
   const label = $derived(
@@ -103,7 +104,7 @@
       <span class="badge"><Icon name="shield" size={20} /></span>
       <span class="grow">
         <span class="name ellipsis">{profile.name}</span>
-        <span class="small muted ellipsis">AmneziaWG {profile.awg_version} · {profile.endpoint}</span>
+        <span class="small muted ellipsis">{profile.exit ? `Выход: ${profile.exit} · ` : ""}AmneziaWG {profile.awg_version}</span>
       </span>
     {:else}
       <span class="badge"><Icon name="plus" size={20} /></span>
@@ -114,10 +115,22 @@
     {/if}
     <Icon name="chevron" size={18} />
   </button>
+
+  {#if exits.length > 1}
+    <div class="exits">
+      <p class="small muted">Выход в интернет</p>
+      <div class="segmented">
+        {#each exits as x (x.id)}
+          <button class:on={x.id === profile?.id} disabled={!!app.busy} onclick={() => x.id !== profile?.id && switchExit(x.id)}>{x.exit}</button>
+        {/each}
+      </div>
+    </div>
+  {/if}
 </section>
 
 <style>
   .home { gap: 20px; }
+  .exits { display: flex; flex-direction: column; gap: 6px; margin-top: -8px; }
   .banner { border-color: var(--accent); }
   .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px 0; }
   .power {

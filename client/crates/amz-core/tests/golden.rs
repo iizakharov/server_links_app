@@ -46,6 +46,23 @@ fn client_conf_and_vpn_key_match_python() {
 }
 
 #[test]
+fn key_with_several_exits() {
+    let f = fixture("configs");
+    let cases = f.as_array().unwrap();
+    let a = &cases[0];
+    let b = cases.iter().find(|c| c["conf"] != a["conf"]).unwrap();
+    let key = vpnkey::conf_to_vpn_key("phone", s(a, "conf")).unwrap();
+    let exits = vec![vpnkey::KeyExit { name: "Praga".into(), conf: s(a, "conf").into() },
+                     vpnkey::KeyExit { name: "Yrec".into(), conf: s(b, "conf").into() }];
+    let multi = vpnkey::with_exits(&key, &exits).unwrap();
+    // still an ordinary AmneziaVPN key for the first exit
+    let imported = vpnkey::import_vpn_key(&multi).unwrap();
+    assert_eq!((imported.name.as_str(), imported.conf.as_str()), ("phone", s(a, "conf")));
+    assert_eq!(imported.exits, exits);
+    assert!(vpnkey::import_vpn_key(&key).unwrap().exits.is_empty());
+}
+
+#[test]
 fn import_rejects_garbage_and_fills_amnezia_dns_placeholders() {
     assert!(vpnkey::import_vpn_key("vpn://AAAA").is_err());
     assert!(vpnkey::import_vpn_key("hello").is_err());

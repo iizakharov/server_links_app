@@ -5,6 +5,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use amz_core::tunnel::tunnel_config;
+use amz_core::vpnkey::KeyExit;
 use amz_core::{awg, import_vpn_key, parse_conf};
 use anyhow::{bail, Result};
 use rand::Rng;
@@ -18,6 +19,11 @@ pub struct Profile {
     #[serde(default, skip_serializing)]
     pub conf: String,
     pub created: String,
+    /// profiles imported from one multi-exit key share a group; `exit` names this one's exit server
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit: Option<String>,
 }
 
 const KEYCHAIN_SERVICE: &str = "com.amnezinu.vpn";
@@ -89,6 +95,10 @@ pub struct ProfileView {
     pub endpoint: String,
     pub address: String,
     pub awg_version: String,
+    pub group: Option<String>,
+    pub exit: Option<String>,
+    /// "name · exit" (what the status and the menu bar show)
+    pub title: String,
 }
 
 impl Profile {
@@ -102,6 +112,16 @@ impl Profile {
             endpoint: peers.first().map(|p| get(p, "Endpoint")).unwrap_or_default(),
             address: get(&iface, "Address"),
             awg_version: awg::awg_version(&amz_core::obfuscation_params(&iface)).into(),
+            group: self.group.clone(),
+            exit: self.exit.clone(),
+            title: self.title(),
+        }
+    }
+
+    pub fn title(&self) -> String {
+        match &self.exit {
+            Some(exit) => format!("{} · {exit}", self.name),
+            None => self.name.clone(),
         }
     }
 }
@@ -168,21 +188,34 @@ impl Store {
     }
 }
 
-/// A `vpn://` key or `.conf` text -> (name, conf). The config must be one the tunnel can use.
-pub fn parse_import(text: &str, fallback_name: &str) -> Result<(String, String)> {
+/// A `vpn://` key or `.conf` text -> (name, conf, all exits if the key has several). Every config must be
+/// one the tunnel can use.
+pub fn parse_import(text: &str, fallback_name: &str) -> Result<(String, String, Vec<KeyExit>)> {
     let text = text.trim();
-    let (name, conf) = if text.starts_with("vpn://") {
+    let (name, conf, exits) = if text.starts_with("vpn://") {
         let k = import_vpn_key(text)?;
-        (k.name, k.conf)
+        (k.name, k.conf, if k.exits.len() > 1 { k.exits } else { vec![] })
     } else if text.contains("[Interface]") {
-        (String::new(), format!("{text}\n"))
+        (String::new(), format!("{text}\n"), vec![])
     } else {
         bail!("Это не ключ vpn:// и не конфиг AmneziaWG");
     };
     // endpoint may be a DNS name: it is resolved on connect, here only the format matters
-    tunnel_config(&conf, |_, port| Some(([192, 0, 2, 1], port).into()))?;
+    for c in std::iter::once(&conf).chain(exits.iter().map(|e| &e.conf)) {
+        tunnel_config(c, |_, port| Some(([192, 0, 2, 1], port).into()))?;
+    }
     let name = if name.trim().is_empty() { fallback_name.to_string() } else { name.trim().to_string() };
-    Ok((name, conf))
+    Ok((name, conf, exits))
+}
+
+/// Profiles for a multi-exit key: one per exit, in one group.
+pub fn new_group(name: &str, exits: Vec<KeyExit>) -> Vec<Profile> {
+    let group = format!("{:08x}", rand::thread_rng().gen::<u32>());
+    exits.into_iter().map(|e| Profile {
+        group: Some(group.clone()),
+        exit: Some(e.name),
+        ..new_profile(name.to_string(), e.conf)
+    }).collect()
 }
 
 pub fn new_profile(name: String, conf: String) -> Profile {
@@ -191,5 +224,7 @@ pub fn new_profile(name: String, conf: String) -> Profile {
         name,
         conf,
         created: chrono::Local::now().format("%Y-%m-%d %H:%M").to_string(),
+        group: None,
+        exit: None,
     }
 }

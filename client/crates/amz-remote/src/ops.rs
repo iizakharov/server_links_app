@@ -9,6 +9,7 @@ use std::sync::Mutex;
 use amz_core::awg::{awg_version, instance as awg_instance, is_legacy};
 use amz_core::model::{AwgInfo, Cascade, Client, Server, State, Traffic};
 use amz_core::storage::Storage;
+use amz_core::vpnkey::{with_exits, KeyExit};
 use amz_core::{client_conf, vpn_key};
 use anyhow::{anyhow, bail, Result};
 use rand::Rng;
@@ -498,4 +499,36 @@ pub fn render(s: &State, cid: &str) -> Result<Rendered> {
         conf: client_conf(&c.keys(), awg, &p.host, cas.port, d1, d2),
         vpn_key: vpn_key(&format!("{} ({} → {})", c.name, p.name, e.name), &c.keys(), awg, &p.host, cas.port, d1, d2),
     })
+}
+
+/// Where a client's traffic leaves: the exit server's name ("proxy → exit" if the name alone is ambiguous).
+fn exit_label(s: &State, c: &Client, ambiguous: bool) -> String {
+    let Ok(cas) = cascade(s, &c.cascade_id) else { return String::new() };
+    let name = |id: &str| server(s, id).map(|x| x.name.clone()).unwrap_or_default();
+    if ambiguous { format!("{} → {}", name(&cas.proxy_id), name(&cas.exit_id)) } else { name(&cas.exit_id) }
+}
+
+/// One key for a person with several exits: the clients with the same name, `cid` first (the default exit,
+/// what AmneziaVPN connects to). Also returns the exits; empty if the client has only one.
+pub fn render_all(s: &State, cid: &str) -> Result<(Rendered, Vec<KeyExit>)> {
+    let mut r = render(s, cid)?;
+    let c = find(&s.clients, cid, "Клиент", |x| &x.id)?;
+    let mut group: Vec<&Client> = vec![c];
+    group.extend(s.clients.iter().filter(|x| x.name == c.name && x.id != c.id));
+    if group.len() < 2 {
+        return Ok((r, vec![]));
+    }
+    let exit_of = |x: &Client| cascade(s, &x.cascade_id).map(|k| k.exit_id.clone()).unwrap_or_default();
+    let exits: Vec<KeyExit> = group.iter().filter_map(|x| {
+        let ambiguous = group.iter().filter(|y| exit_of(y) == exit_of(x)).count() > 1;
+        // an exit that cannot be rendered (not scanned) is left out
+        Some(KeyExit { name: exit_label(s, x, ambiguous), conf: render(s, &x.id).ok()?.conf })
+    }).collect();
+    // the key is named after the person, not one route
+    let cas = cascade(s, &c.cascade_id)?;
+    let (p, e) = (server(s, &cas.proxy_id)?, server(s, &cas.exit_id)?);
+    let awg = exit_awg(e, cas).ok_or_else(|| anyhow!("{} не сканирован", e.name))?;
+    let first = vpn_key(&c.name, &c.keys(), awg, &p.host, cas.port, &s.settings.dns1, &s.settings.dns2);
+    r.vpn_key = with_exits(&first, &exits)?;
+    Ok((r, exits))
 }

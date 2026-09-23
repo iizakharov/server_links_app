@@ -22,7 +22,7 @@
     <label class="col">
       <h2>Сервер</h2>
       <select value={id} onchange={(e) => (app.shareId = (e.target as HTMLSelectElement).value)}>
-        {#each app.view.profiles as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
+        {#each app.view.profiles as p (p.id)}<option value={p.id}>{p.title}</option>{/each}
       </select>
     </label>
     {#if data}<ShareBox {data} />{/if}

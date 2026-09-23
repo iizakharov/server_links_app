@@ -82,6 +82,23 @@ export function selectedProfile() {
   return app.view.profiles.find((p) => p.id === app.view.selected) ?? null;
 }
 
+/** Other exit of the same key; while connected, reconnects through it. */
+export async function switchExit(id: string) {
+  app.error = "";
+  try {
+    app.view = await api.select(id);
+    if (app.status?.connected) {
+      app.busy = "connecting";
+      app.status = await api.connect(id);
+    }
+  } catch (e) {
+    app.error = errorText(e);
+    await refreshStatus();
+  } finally {
+    app.busy = "";
+  }
+}
+
 export async function toggleConnection() {
   app.error = "";
   const p = selectedProfile();

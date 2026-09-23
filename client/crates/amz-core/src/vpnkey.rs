@@ -95,6 +95,17 @@ pub fn vpn_key(name: &str, client: &ClientKeys, server: &AwgInfo, endpoint_host:
     format!("vpn://{}", B64.encode(qcompress(raw.as_bytes())))
 }
 
+/// Our extension of the key: all exits of one client (the default one first). AmneziaVPN ignores the field
+/// and connects to the default container, which is the first exit.
+pub const EXITS_FIELD: &str = "amnezinu_exits";
+
+/// One exit of a multi-exit key.
+#[derive(Debug, Clone, PartialEq)]
+pub struct KeyExit {
+    pub name: String,
+    pub conf: String,
+}
+
 /// A connection imported from a `vpn://` key.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImportedKey {
@@ -102,6 +113,22 @@ pub struct ImportedKey {
     pub name: String,
     /// ready AmneziaWG client config
     pub conf: String,
+    /// every exit if the key carries several (the first is `conf`), otherwise empty
+    pub exits: Vec<KeyExit>,
+}
+
+/// Adds the list of exits to a key made for the first of them.
+pub fn with_exits(key: &str, exits: &[KeyExit]) -> Result<String, KeyError> {
+    let mut doc = decode_vpn_key(key)?;
+    doc[EXITS_FIELD] = Value::Array(exits.iter().map(|e| json!({"name": e.name, "config": e.conf})).collect());
+    Ok(format!("vpn://{}", B64.encode(qcompress(pyjson::dumps(&doc, 4).as_bytes()))))
+}
+
+fn key_exits(doc: &Value) -> Vec<KeyExit> {
+    doc[EXITS_FIELD].as_array().into_iter().flatten().filter_map(|e| Some(KeyExit {
+        name: e["name"].as_str()?.to_string(),
+        conf: e["config"].as_str()?.to_string(),
+    })).collect()
 }
 
 /// Extracts the AmneziaWG client config from a `vpn://` key (ours or AmneziaVPN's own export).
@@ -121,9 +148,9 @@ pub fn import_vpn_key(key: &str) -> Result<ImportedKey, KeyError> {
         let dns1 = doc["dns1"].as_str().unwrap_or("1.1.1.1");
         let dns2 = doc["dns2"].as_str().unwrap_or("1.0.0.1");
         return Ok(ImportedKey { name: doc["description"].as_str().unwrap_or_default().into(),
-                                conf: conf.replace("$PRIMARY_DNS", dns1).replace("$SECONDARY_DNS", dns2) });
+                                conf: conf.replace("$PRIMARY_DNS", dns1).replace("$SECONDARY_DNS", dns2), exits: vec![] });
     }
-    Ok(ImportedKey { name: doc["description"].as_str().unwrap_or_default().into(), conf: conf.into() })
+    Ok(ImportedKey { name: doc["description"].as_str().unwrap_or_default().into(), conf: conf.into(), exits: key_exits(&doc) })
 }
 
 /// Builds a `vpn://` key from a client `.conf` (for configs added as files).

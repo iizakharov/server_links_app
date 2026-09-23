@@ -35,14 +35,14 @@
   <ul>
     {#each app.view.profiles as p (p.id)}
       {@const active = app.view.selected === p.id}
-      {@const connectedHere = app.status?.connected && app.status.name === p.name}
+      {@const connectedHere = app.status?.connected && app.status.name === p.title}
       <li class="card" class:active>
         <div class="row">
           <button class="radio" class:on={active} onclick={() => select(p.id)} aria-label="Выбрать {p.name}">
             {#if active}<Icon name="check" size={14} />{/if}
           </button>
           <button class="grow info" onclick={() => select(p.id)}>
-            <span class="name ellipsis">{p.name}</span>
+            <span class="name ellipsis">{p.name}{#if p.exit}<span class="muted"> · {p.exit}</span>{/if}</span>
             <span class="small muted ellipsis">{p.endpoint} · {p.address}</span>
           </button>
           <span class="tag">AWG {p.awg_version}</span>

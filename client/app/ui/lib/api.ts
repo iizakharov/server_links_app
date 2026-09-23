@@ -4,7 +4,11 @@ export const isWindows = navigator.userAgent.includes("Windows");
 /** where the app keeps keys and passwords, for texts in the UI */
 export const secretStore = isWindows ? "диспетчере учётных данных Windows" : "связке ключей macOS";
 
-export type ProfileView = { id: string; name: string; endpoint: string; address: string; awg_version: string };
+export type ProfileView = {
+  id: string; name: string; endpoint: string; address: string; awg_version: string;
+  /** profiles of one multi-exit key share a group; exit = where the traffic leaves */
+  group: string | null; exit: string | null; title: string;
+};
 export type SplitMode = "all" | "only" | "except";
 export type Settings = {
   theme: string;
