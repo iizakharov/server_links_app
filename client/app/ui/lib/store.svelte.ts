@@ -1,16 +1,17 @@
 // App-wide state shared by the screens.
-import { api, errorText, type HelperState, type Status, type View } from "./api";
+import { api, errorText, type HelperState, type Settings, type Status, type View } from "./api";
 
-export type Tab = "home" | "servers" | "share" | "settings" | "add";
+export type Tab = "home" | "servers" | "share" | "settings" | "add" | "split";
 
 export const app = $state({
   tab: "home" as Tab,
-  view: { profiles: [], selected: null, settings: { theme: "system" } } as View,
+  view: { profiles: [], selected: null,
+          settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } } } as View,
   status: null as Status | null,
   /** connecting | disconnecting while a request is in flight */
   busy: "" as "" | "connecting" | "disconnecting",
   error: "",
-  helper: { installed: false, running: false } as HelperState,
+  helper: { installed: false, running: false, outdated: false } as HelperState,
   shareId: null as string | null,
 });
 
@@ -21,6 +22,12 @@ export function applyTheme(theme: string) {
 
 export async function refreshView() {
   app.view = await api.view();
+  applyTheme(app.view.settings.theme);
+}
+
+/** Saves settings; a change that affects the tunnel applies on the next connect. */
+export async function saveSettings(patch: Partial<Settings>) {
+  app.view = await api.setSettings({ ...app.view.settings, ...patch });
   applyTheme(app.view.settings.theme);
 }
 
@@ -42,7 +49,7 @@ export async function toggleConnection() {
   app.error = "";
   const p = selectedProfile();
   try {
-    if (app.status?.connected) {
+    if (app.status?.connected || app.status?.blocked) {
       app.busy = "disconnecting";
       app.status = await api.disconnect();
     } else if (p) {

@@ -27,9 +27,9 @@ mod macos {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     use amz_core::tunnel::{parse_stats, tunnel_config};
-    use amz_ipc::{read_line, write_line, Request, Response, Status, SOCKET};
+    use amz_ipc::{read_line, write_line, Request, Response, Status, UpOptions, BUILD, SOCKET};
     use amz_tunnel::awg::Device;
-    use amz_tunnel::macos::{configure, restore, NetState};
+    use amz_tunnel::macos::{configure, follow_gateway, restore, restore_keep_block, NetState};
     use anyhow::{anyhow, bail, Result};
 
     /// What was changed in the system, kept on disk to undo it after a crash.
@@ -41,7 +41,14 @@ mod macos {
         status: Status,
     }
 
-    type Shared = Arc<Mutex<Option<Active>>>;
+    #[derive(Default)]
+    struct Helper {
+        active: Option<Active>,
+        /// kill switch left blocking after a crash: undone by the next Down or Up
+        blocked: Option<NetState>,
+    }
+
+    type Shared = Arc<Mutex<Helper>>;
 
     fn log(msg: impl AsRef<str>) {
         eprintln!("amz-helper: {}", msg.as_ref());
@@ -63,41 +70,66 @@ mod macos {
         let _ = fs::remove_file(STATE_FILE);
     }
 
-    fn down(active: &mut Option<Active>) {
-        if let Some(a) = active.take() {
+    fn down(h: &mut Helper) {
+        if let Some(a) = h.active.take() {
             log(format!("отключение {} ({})", a.status.name, a.status.iface));
             drop(a.dev);
             undo(&a.net);
         }
+        if let Some(net) = h.blocked.take() {
+            log("снимаю блокировку kill switch");
+            undo(&net);
+        }
     }
 
-    fn up(active: &mut Option<Active>, conf: &str, name: &str) -> Result<()> {
+    fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
         let cfg = tunnel_config(conf, |host, port| {
             let addrs: Vec<_> = (host, port).to_socket_addrs().ok()?.collect();
             addrs.iter().find(|a| a.is_ipv4()).or(addrs.first()).copied()
         })?;
-        down(active);
+        down(h);
         let dev = Device::up("utun", cfg.mtu, &cfg.uapi)?;
         let mut net = NetState::default();
-        if let Err(e) = configure(dev.name(), &cfg, &mut net) {
+        if let Err(e) = configure(dev.name(), &cfg, opts, &mut net) {
             drop(dev);
             undo(&net);
             return Err(e);
         }
         fs::write(STATE_FILE, serde_json::to_vec(&net)?)?;
         let since = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
-        log(format!("подключено {name}: {} → {}", dev.name(), cfg.endpoint));
+        log(format!("подключено {name}: {} → {} (kill switch: {}, раздельное: {:?} {} шт.)", dev.name(), cfg.endpoint,
+                    net.kill_switch, opts.split.mode, opts.split.entries.len()));
         let status = Status { connected: true, name: name.into(), iface: dev.name().into(),
-                              endpoint: cfg.endpoint.to_string(), since, stats: Default::default() };
-        *active = Some(Active { dev, net, status });
+                              endpoint: cfg.endpoint.to_string(), since, kill_switch: net.kill_switch,
+                              ..Default::default() };
+        h.active = Some(Active { dev, net, status });
         Ok(())
     }
 
-    fn status(active: &Option<Active>) -> Status {
-        match active {
+    fn status(h: &Helper) -> Status {
+        let s = match &h.active {
             Some(a) => Status { stats: parse_stats(&a.dev.config()), ..a.status.clone() },
-            None => Status::default(),
-        }
+            None => Status { blocked: h.blocked.is_some(), kill_switch: h.blocked.is_some(), ..Default::default() },
+        };
+        Status { helper_version: BUILD.into(), ..s }
+    }
+
+    /// Laptops change networks: keep the route to the server on the current physical gateway.
+    fn watch_network(shared: Shared) {
+        std::thread::spawn(move || loop {
+            std::thread::sleep(std::time::Duration::from_secs(5));
+            let mut h = shared.lock().unwrap();
+            if let Some(a) = h.active.as_mut() {
+                match follow_gateway(&mut a.net) {
+                    Ok(true) => {
+                        log(format!("сеть сменилась, маршрут до сервера через {:?}", a.net.endpoint_route.as_ref().map(|r| &r.1)));
+                        let _ = fs::write(STATE_FILE, serde_json::to_vec(&a.net).unwrap_or_default());
+                    }
+                    Ok(false) => {}
+                    Err(e) => log(format!("смена сети: {e:#}")),
+                }
+            }
+        });
     }
 
     fn handle(stream: UnixStream, shared: &Shared, allowed: &[u32]) -> Result<()> {
@@ -113,17 +145,17 @@ mod macos {
             return Ok(());
         }
         let req: Request = read_line(&mut reader)?;
-        let mut active = shared.lock().unwrap();
+        let mut h = shared.lock().unwrap();
         let res = match &req {
-            Request::Up { conf, name } => up(&mut active, conf, name),
+            Request::Up { conf, name, options } => up(&mut h, conf, name, options),
             Request::Down => {
-                down(&mut active);
+                down(&mut h);
                 Ok(())
             }
             Request::Status => Ok(()),
         };
         let resp = match res {
-            Ok(()) => Response::Ok { status: status(&active) },
+            Ok(()) => Response::Ok { status: status(&h) },
             Err(e) => {
                 log(format!("ошибка: {e:#}"));
                 Response::Error { message: format!("{e:#}") }
@@ -144,14 +176,25 @@ mod macos {
         if unsafe { libc::geteuid() } != 0 {
             bail!("нужны права root: sudo amz-helper --allow-uid $(id -u)");
         }
-        // a previous run died with the tunnel up: undo its routes and DNS
+        // a previous run died with the tunnel up: undo its routes and DNS;
+        // with the kill switch on, traffic stays blocked until the user connects or disconnects
+        let mut helper = Helper::default();
         if let Ok(raw) = fs::read(STATE_FILE) {
             if let Ok(net) = serde_json::from_slice::<NetState>(&raw) {
-                log("восстанавливаю сеть после прошлого аварийного завершения");
-                undo(&net);
+                if net.kill_switch {
+                    log("прошлый запуск завершился аварийно: kill switch держит интернет заблокированным до отключения");
+                    for e in restore_keep_block(&net) {
+                        log(format!("восстановление сети: {e}"));
+                    }
+                    helper.blocked = Some(NetState { endpoint_route: None, dns_backup: vec![], bypass: vec![], ..net });
+                } else {
+                    log("восстанавливаю сеть после прошлого аварийного завершения");
+                    undo(&net);
+                }
             }
         }
-        let shared: Shared = Arc::new(Mutex::new(None));
+        let shared: Shared = Arc::new(Mutex::new(helper));
+        watch_network(shared.clone());
         let on_exit = shared.clone();
         ctrlc::set_handler(move || {
             down(&mut on_exit.lock().unwrap());

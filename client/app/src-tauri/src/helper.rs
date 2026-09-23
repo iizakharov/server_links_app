@@ -15,12 +15,16 @@ pub const LOG: &str = "/var/log/amnezinu-vpn-helper.log";
 pub struct HelperState {
     pub installed: bool,
     pub running: bool,
+    /// the running service is an older build than the one inside the app
+    pub outdated: bool,
 }
 
 pub fn state() -> HelperState {
+    let status = amz_ipc::call(&amz_ipc::Request::Status);
     HelperState {
         installed: Path::new(PLIST).exists(),
-        running: std::os::unix::net::UnixStream::connect(amz_ipc::SOCKET).is_ok(),
+        running: status.is_ok(),
+        outdated: status.is_ok_and(|s| s.helper_version != amz_ipc::BUILD),
     }
 }
 

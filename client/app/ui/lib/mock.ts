@@ -24,10 +24,11 @@ let view: View = {
     { id: "p2", name: "Рига", endpoint: "203.0.113.20:48303", address: "10.8.1.5/32", awg_version: "2.0" },
   ],
   selected: "p1",
-  settings: { theme: "system" },
+  settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } },
 };
-let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 } };
-let helper: HelperState = { installed: true, running: true };
+let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 },
+                      blocked: false, kill_switch: false, helper_version: "0.1.0+mock" };
+let helper: HelperState = { installed: true, running: true, outdated: false };
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const now = () => Math.floor(Date.now() / 1000);
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -51,7 +52,7 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
       if (view.selected === a.id) view.selected = view.profiles[0]?.id ?? null;
       return clone(view);
     case "select_profile": view.selected = a.id; return clone(view);
-    case "set_theme": view.settings.theme = a.theme; return clone(view);
+    case "set_settings": view.settings = a.settings; return clone(view);
     case "share": {
       const cells = Array.from({ length: 29 * 29 }, (_, i) => ((i * 7919) % 13 < 6 ? 1 : 0));
       const rects = cells.map((c, i) => c ? `<rect x="${i % 29}" y="${Math.floor(i / 29)}" width="1" height="1"/>` : "").join("");
@@ -62,7 +63,8 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
     case "connect":
       if (!helper.running) throw "служба АМнеЗинуVPN не запущена";
       await wait(900);
-      status = { connected: true, name: p?.name ?? "", iface: "utun9", endpoint: p?.endpoint ?? "", since: now(), stats: { rx: 0, tx: 0, handshake: now() } };
+      status = { ...status, connected: true, name: p?.name ?? "", iface: "utun9", endpoint: p?.endpoint ?? "", since: now(),
+                 stats: { rx: 0, tx: 0, handshake: now() }, kill_switch: view.settings.kill_switch };
       return clone(status);
     case "disconnect":
       await wait(300);
@@ -73,8 +75,8 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
       if (status.connected) { status.stats.rx += 180_000 + Math.random() * 90_000; status.stats.tx += 22_000; }
       return clone(status);
     case "helper_state": return clone(helper);
-    case "install_helper": await wait(800); helper = { installed: true, running: true }; return clone(helper);
-    case "uninstall_helper": helper = { installed: false, running: false }; return clone(helper);
+    case "install_helper": await wait(800); helper = { installed: true, running: true, outdated: false }; return clone(helper);
+    case "uninstall_helper": helper = { installed: false, running: false, outdated: false }; return clone(helper);
   }
   throw `mock: ${cmd}`;
 }

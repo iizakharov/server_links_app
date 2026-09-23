@@ -31,3 +31,35 @@ fn full_tunnel_routes_are_split_in_halves() {
     assert_eq!(r, [(false, "0.0.0.0/1".into()), (false, "128.0.0.0/1".into()), (true, "::/1".into()),
                    (true, "8000::/1".into()), (false, "10.0.0.0/8".into())]);
 }
+
+#[test]
+fn split_entries_accept_domains_addresses_and_networks() {
+    use amz_tunnel::macos::resolve_entries;
+    let entries: Vec<String> = ["youtube.com", "https://kinopoisk.ru/film/1", "1.2.3.4", "10.0.0.0/8", "", "# comment", "nx.invalid", "2001:db8::1"]
+        .map(String::from).to_vec();
+    let (nets, failed) = resolve_entries(&entries, |host| match host {
+        "youtube.com" => vec!["142.250.1.1".parse().unwrap(), "2a00::1".parse().unwrap()],
+        "kinopoisk.ru" => vec!["93.158.134.1".parse().unwrap(), "142.250.1.1".parse().unwrap()],
+        _ => vec![],
+    });
+    assert_eq!(nets, ["1.2.3.4", "10.0.0.0/8", "142.250.1.1", "2001:db8::1", "93.158.134.1"]);
+    assert_eq!(failed, ["nx.invalid"]);
+}
+
+#[test]
+fn kill_switch_lets_out_only_tunnel_server_dhcp_and_lan() {
+    use amz_tunnel::macos::kill_switch_rules;
+    let r = kill_switch_rules("utun9", "198.51.100.1:60006".parse().unwrap(), true);
+    assert!(r.contains("pass out quick on utun9 all"));
+    assert!(r.contains("to 198.51.100.1 port 60006"));
+    assert!(r.contains("192.168.0.0/16"));
+    assert!(r.trim_end().ends_with("block drop out all"));
+    assert!(!kill_switch_rules("utun9", "198.51.100.1:60006".parse().unwrap(), false).contains("192.168"));
+    // pf itself accepts the rules (parse only)
+    let path = std::env::temp_dir().join("amz-ks-test.pf");
+    std::fs::write(&path, &r).unwrap();
+    let out = std::process::Command::new("pfctl").args(["-n", "-f"]).arg(&path).output().unwrap();
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success() || err.contains("Permission denied") || err.contains("Operation not permitted"), "{err}");
+    let _ = std::fs::remove_file(path);
+}

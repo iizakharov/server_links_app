@@ -8,6 +8,7 @@
   import Add from "./screens/Add.svelte";
   import Share from "./screens/Share.svelte";
   import Settings from "./screens/Settings.svelte";
+  import Split from "./screens/Split.svelte";
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "home", label: "Главная", icon: "home" },
@@ -31,11 +32,12 @@
     {:else if app.tab === "servers"}<Servers />
     {:else if app.tab === "add"}<Add />
     {:else if app.tab === "share"}<Share />
+    {:else if app.tab === "split"}<Split />
     {:else}<Settings />{/if}
   </main>
   <nav>
     {#each tabs as t}
-      <button class:on={app.tab === t.id || (t.id === "servers" && app.tab === "add")} onclick={() => (app.tab = t.id)}>
+      <button class:on={app.tab === t.id || (t.id === "servers" && app.tab === "add") || (t.id === "settings" && app.tab === "split")} onclick={() => (app.tab = t.id)}>
         <Icon name={t.icon} />
         <span>{t.label}</span>
       </button>

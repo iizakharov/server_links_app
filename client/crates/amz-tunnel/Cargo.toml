@@ -8,6 +8,7 @@ build = "build.rs"
 
 [dependencies]
 amz-core = { path = "../amz-core" }
+amz-ipc = { path = "../amz-ipc" }
 anyhow = "1"
 serde.workspace = true
 serde_json.workspace = true

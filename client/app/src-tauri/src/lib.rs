@@ -1,6 +1,7 @@
 //! АМнеЗинуVPN desktop app: Tauri commands over the device's profiles and the helper.
 mod helper;
 mod profiles;
+mod tray;
 
 use std::sync::Mutex;
 
@@ -10,9 +11,9 @@ use profiles::{new_profile, parse_import, Data, ProfileView, Settings, Store};
 use serde::Serialize;
 use tauri::{Manager, State};
 
-struct AppState {
-    store: Store,
-    data: Mutex<Data>,
+pub(crate) struct AppState {
+    pub(crate) store: Store,
+    pub(crate) data: Mutex<Data>,
 }
 
 type Res<T> = Result<T, String>;
@@ -69,13 +70,15 @@ fn rename_profile(st: State<AppState>, id: String, name: String) -> Res<View> {
 
 #[tauri::command]
 fn remove_profile(st: State<AppState>, id: String) -> Res<View> {
-    change(&st, |d| {
+    let view = change(&st, |d| {
         d.profiles.retain(|p| p.id != id);
         if d.selected.as_deref() == Some(id.as_str()) {
             d.selected = d.profiles.first().map(|p| p.id.clone());
         }
         Ok(())
-    })
+    })?;
+    st.store.forget(&id);
+    Ok(view)
 }
 
 #[tauri::command]
@@ -87,9 +90,9 @@ fn select_profile(st: State<AppState>, id: String) -> Res<View> {
 }
 
 #[tauri::command]
-fn set_theme(st: State<AppState>, theme: String) -> Res<View> {
+fn set_settings(st: State<AppState>, settings: Settings) -> Res<View> {
     change(&st, |d| {
-        d.settings.theme = theme;
+        d.settings = settings;
         Ok(())
     })
 }
@@ -124,12 +127,13 @@ async fn helper_call(req: Request) -> Res<Status> {
 
 #[tauri::command]
 async fn connect(st: State<'_, AppState>, id: String) -> Res<Status> {
-    let (conf, name) = {
-        let d = st.data.lock().unwrap();
-        let p = d.profiles.iter().find(|p| p.id == id).ok_or("Нет такого сервера")?;
-        (p.conf.clone(), p.name.clone())
-    };
-    helper_call(Request::Up { conf, name }).await
+    let req = up_request(&st.data.lock().unwrap(), &id)?;
+    helper_call(req).await
+}
+
+pub(crate) fn up_request(d: &Data, id: &str) -> Res<Request> {
+    let p = d.profiles.iter().find(|p| p.id == id).ok_or("Нет такого сервера")?;
+    Ok(Request::Up { conf: p.conf.clone(), name: p.name.clone(), options: d.settings.up_options() })
 }
 
 #[tauri::command]
@@ -165,14 +169,39 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
         .setup(|app| {
             let store = Store::new(&app.path().app_data_dir()?);
             let data = store.load()?;
+            let autoconnect = data.settings.autoconnect.then(|| data.selected.clone()).flatten();
+            let req = autoconnect.and_then(|id| up_request(&data, &id).ok());
             app.manage(AppState { store, data: Mutex::new(data) });
+            tray::setup(app.handle())?;
+            // started at login: stay in the menu bar
+            if std::env::args().any(|a| a == "--hidden") {
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.hide();
+                }
+            }
+            if let Some(req) = req {
+                std::thread::spawn(move || {
+                    // do not replace a tunnel that is already up
+                    if amz_ipc::call(&Request::Status).is_ok_and(|s| !s.connected) {
+                        let _ = amz_ipc::call(&req);
+                    }
+                });
+            }
             Ok(())
         })
+        .on_window_event(|window, event| {
+            // closing the window keeps the app (and the VPN control) in the menu bar
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .invoke_handler(tauri::generate_handler![
-            get_view, import_text, rename_profile, remove_profile, select_profile, set_theme,
+            get_view, import_text, rename_profile, remove_profile, select_profile, set_settings,
             share, save_text, connect, disconnect, status, helper_state, install_helper, uninstall_helper
         ])
         .run(tauri::generate_context!())

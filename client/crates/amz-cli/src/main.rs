@@ -72,6 +72,18 @@ enum Cmd {
         id: Option<String>,
         #[arg(long)]
         conf: Option<PathBuf>,
+        /// block traffic outside the tunnel
+        #[arg(long)]
+        kill_switch: bool,
+        /// with --kill-switch: allow the local network
+        #[arg(long)]
+        allow_lan: bool,
+        /// only these sites/networks through the VPN (comma separated)
+        #[arg(long, value_delimiter = ',', conflicts_with = "except")]
+        only: Vec<String>,
+        /// everything except these sites/networks through the VPN (comma separated)
+        #[arg(long, value_delimiter = ',')]
+        except: Vec<String>,
     },
     /// Check client configs with the built-in amneziawg-go (all clients if no id)
     Validate { id: Option<String> },
@@ -175,7 +187,7 @@ async fn main() -> Result<()> {
         Cmd::Traffic => print_log(ops::refresh_traffic(&conn, &store, &mut s).await)?,
         Cmd::Conf { id } => print!("{}", ops::render(&s, &id)?.conf),
         Cmd::Key { id } => println!("{}", ops::render(&s, &id)?.vpn_key),
-        Cmd::Up { id, conf } => {
+        Cmd::Up { id, conf, kill_switch, allow_lan, only, except } => {
             let (conf, name) = match (id, conf) {
                 (Some(id), None) => {
                     let r = ops::render(&s, &id)?;
@@ -185,7 +197,13 @@ async fn main() -> Result<()> {
                                        path.file_stem().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()),
                 _ => return Err(anyhow!("укажите id клиента или --conf файл")),
             };
-            print_status(&amz_ipc::call(&amz_ipc::Request::Up { conf, name })?);
+            let split = match (only.is_empty(), except.is_empty()) {
+                (false, _) => amz_ipc::Split { mode: amz_ipc::SplitMode::Only, entries: only },
+                (_, false) => amz_ipc::Split { mode: amz_ipc::SplitMode::Except, entries: except },
+                _ => Default::default(),
+            };
+            let options = amz_ipc::UpOptions { kill_switch, allow_lan, split };
+            print_status(&amz_ipc::call(&amz_ipc::Request::Up { conf, name, options })?);
         }
         Cmd::Validate { id } => {
             let ids: Vec<String> = match id {

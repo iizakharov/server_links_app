@@ -32,6 +32,24 @@
     <h1 class="grow">АМнеЗинуVPN</h1>
   </header>
 
+  {#if app.status?.blocked}
+    <div class="card banner row">
+      <div class="grow">
+        <p><b>Интернет заблокирован</b></p>
+        <p class="small muted">Подключение оборвалось, kill switch не выпускает трафик мимо VPN.</p>
+      </div>
+      <button class="btn" onclick={toggleConnection}>Снять</button>
+    </div>
+  {:else if app.helper.running && app.helper.outdated}
+    <div class="card banner row">
+      <div class="grow">
+        <p><b>Доступно обновление службы</b></p>
+        <p class="small muted">Новые функции заработают после обновления.</p>
+      </div>
+      <button class="btn primary" onclick={() => (app.tab = "settings")}>Обновить</button>
+    </div>
+  {/if}
+
   {#if !app.helper.running}
     <div class="card banner row">
       <div class="grow">
@@ -52,6 +70,13 @@
     <p class="state" class:ok={connected}>{label}</p>
     {#if connected}
       <p class="muted mono">{duration(app.status!.since)}</p>
+      {#if app.status!.kill_switch || app.view.settings.split.mode !== "all"}
+        <p class="row modes">
+          {#if app.status!.kill_switch}<span class="tag">Kill switch</span>{/if}
+          {#if app.view.settings.split.mode === "only"}<span class="tag">Только выбранные сайты</span>{/if}
+          {#if app.view.settings.split.mode === "except"}<span class="tag">Кроме выбранных сайтов</span>{/if}
+        </p>
+      {/if}
       <div class="traffic row">
         <span class="row"><Icon name="down" size={16} /> {bytes(app.status!.stats.rx)}</span>
         <span class="row"><Icon name="up" size={16} /> {bytes(app.status!.stats.tx)}</span>
@@ -101,6 +126,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .state { font-size: 20px; font-weight: 650; margin-top: 14px; }
   .state.ok { color: var(--accent); }
+  .modes { gap: 6px; }
   .traffic { gap: 20px; color: var(--muted); font-size: 14px; }
   .traffic .row { gap: 4px; }
   .warn { color: var(--accent); text-align: center; max-width: 300px; }

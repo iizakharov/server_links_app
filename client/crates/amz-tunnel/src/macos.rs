@@ -1,9 +1,11 @@
 //! macOS network side of a tunnel: interface address, routes, DNS. Everything that is changed is
 //! recorded in `NetState`, so it can be undone on Down or after a crash.
-use std::net::IpAddr;
-use std::process::Command;
+use std::io::Write;
+use std::net::{IpAddr, ToSocketAddrs};
+use std::process::{Command, Stdio};
 
 use amz_core::tunnel::TunnelConfig;
+use amz_ipc::{SplitMode, UpOptions};
 use anyhow::{anyhow, bail, Result};
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +16,121 @@ pub struct NetState {
     pub endpoint_route: Option<(String, Vec<String>)>,
     /// DNS of network services before we changed them (empty list = were not set)
     pub dns_backup: Vec<(String, Vec<String>)>,
+    /// networks sent around the tunnel via the physical gateway (split tunneling "except")
+    pub bypass: Vec<String>,
+    /// kill switch rules loaded in our pf anchor; token from `pfctl -E`
+    pub kill_switch: bool,
+    pub pf_token: Option<String>,
+}
+
+const PF_ANCHOR: &str = "com.apple/amnezinu";
+
+/// Split-tunnel entries -> networks. Domains are resolved now (IPv4); addresses and networks are taken as is.
+pub fn resolve_entries(entries: &[String], resolve: impl Fn(&str) -> Vec<IpAddr>) -> (Vec<String>, Vec<String>) {
+    let (mut nets, mut failed) = (vec![], vec![]);
+    for e in entries.iter().map(|e| e.trim()).filter(|e| !e.is_empty() && !e.starts_with('#')) {
+        let host = e.trim_start_matches("https://").trim_start_matches("http://").split('/').next().unwrap_or(e);
+        if e.split('/').next().is_some_and(|ip| ip.parse::<IpAddr>().is_ok()) {
+            nets.push(if e.contains('/') { e.to_string() } else { host.to_string() });
+            continue;
+        }
+        let ips: Vec<IpAddr> = resolve(host).into_iter().filter(|ip| ip.is_ipv4()).collect();
+        if ips.is_empty() {
+            failed.push(host.to_string());
+        }
+        nets.extend(ips.iter().map(|ip| ip.to_string()));
+    }
+    nets.sort();
+    nets.dedup();
+    (nets, failed)
+}
+
+pub fn system_resolve(host: &str) -> Vec<IpAddr> {
+    (host, 0).to_socket_addrs().map(|a| a.map(|a| a.ip()).collect()).unwrap_or_default()
+}
+
+/// pf rules: only the tunnel, the server itself, DHCP and (optionally) the local network get out.
+pub fn kill_switch_rules(iface: &str, endpoint: std::net::SocketAddr, allow_lan: bool) -> String {
+    let fam = if endpoint.is_ipv6() { "inet6" } else { "inet" };
+    let mut r = vec![
+        "pass out quick on lo0 all".to_string(),
+        format!("pass out quick on {iface} all"),
+        format!("pass out quick {fam} proto udp from any to {} port {}", endpoint.ip(), endpoint.port()),
+        "pass out quick inet proto udp from any port 68 to any port 67".into(),
+    ];
+    if allow_lan {
+        r.push("pass out quick inet from any to { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 224.0.0.0/4, 255.255.255.255 }".into());
+        r.push("pass out quick inet6 from any to { fe80::/10, ff00::/8 }".into());
+    }
+    r.push("block drop out all".into());
+    r.join("\n") + "\n"
+}
+
+fn pf_load(rules: &str) -> Result<()> {
+    let mut child = Command::new("pfctl").args(["-a", PF_ANCHOR, "-f", "-"])
+        .stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::piped()).spawn()?;
+    child.stdin.take().unwrap().write_all(rules.as_bytes())?;
+    let out = child.wait_with_output()?;
+    if !out.status.success() {
+        bail!("pfctl: {}", String::from_utf8_lossy(&out.stderr).trim());
+    }
+    Ok(())
+}
+
+fn pf_enable() -> Result<String> {
+    let out = Command::new("pfctl").arg("-E").output()?;
+    let text = String::from_utf8_lossy(&out.stderr).to_string() + &String::from_utf8_lossy(&out.stdout);
+    text.lines().find_map(|l| l.strip_prefix("Token : ").map(|t| t.trim().to_string()))
+        .ok_or_else(|| anyhow!("pfctl -E: {}", text.trim()))
+}
+
+/// Blocks everything except the tunnel (kill switch). Records what to undo in `state`.
+pub fn kill_switch_on(iface: &str, endpoint: std::net::SocketAddr, allow_lan: bool, state: &mut NetState) -> Result<()> {
+    pf_load(&kill_switch_rules(iface, endpoint, allow_lan))?;
+    state.kill_switch = true;
+    state.pf_token = Some(pf_enable()?);
+    Ok(())
+}
+
+fn kill_switch_off(state: &NetState) -> Vec<String> {
+    let mut errors = vec![];
+    if state.kill_switch {
+        if let Err(e) = run("pfctl", &["-a", PF_ANCHOR, "-F", "all"]) {
+            errors.push(e.to_string());
+        }
+    }
+    if let Some(token) = &state.pf_token {
+        if let Err(e) = run("pfctl", &["-X", token]) {
+            errors.push(e.to_string());
+        }
+    }
+    errors
+}
+
+/// After a crash with the kill switch on: keep traffic blocked, but drop what pointed to the dead tunnel.
+pub fn restore_keep_block(state: &NetState) -> Vec<String> {
+    let rest = NetState { kill_switch: false, pf_token: None, ..state.clone() };
+    restore(&rest)
+}
+
+/// The physical network changed (other Wi-Fi, cable, wake from sleep): re-point routes that go around
+/// the tunnel to the new gateway. Returns true if something was changed.
+pub fn follow_gateway(state: &mut NetState) -> Result<bool> {
+    let Some((ep, old)) = state.endpoint_route.clone() else { return Ok(false) };
+    let v6 = ep.contains(':');
+    let Ok(gw) = physical_gateway(v6) else { return Ok(false) };
+    if gw == old {
+        return Ok(false);
+    }
+    let fam = if v6 { "-inet6" } else { "-inet" };
+    for net in std::iter::once(&ep).chain(state.bypass.iter()) {
+        let _ = run("route", &["-q", "-n", "delete", fam, net]);
+        let mut args = vec!["-q", "-n", "add", fam, net.as_str()];
+        args.extend(gw.iter().map(String::as_str));
+        run("route", &args)?;
+    }
+    state.endpoint_route = Some((ep, gw));
+    Ok(true)
 }
 
 fn run(cmd: &str, args: &[&str]) -> Result<String> {
@@ -86,7 +203,7 @@ pub fn tunnel_routes(allowed: &[String]) -> Vec<(bool, String)> {
     }).collect()
 }
 
-pub fn configure(iface: &str, cfg: &TunnelConfig, state: &mut NetState) -> Result<()> {
+pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut NetState) -> Result<()> {
     state.iface = iface.into();
     for addr in &cfg.addresses {
         let ip = addr.split('/').next().unwrap_or(addr);
@@ -108,14 +225,37 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, state: &mut NetState) -> Resul
     run("route", &args)?;
     state.endpoint_route = Some((ep_s.clone(), gw.clone()));
 
-    for (v6, net) in tunnel_routes(&cfg.allowed_ips) {
+    let (listed, failed) = resolve_entries(&opts.split.entries, system_resolve);
+    if opts.split.mode != SplitMode::All && !failed.is_empty() {
+        eprintln!("amz-helper: не удалось найти адреса: {}", failed.join(", "));
+    }
+    let routes: Vec<(bool, String)> = match opts.split.mode {
+        // only the listed sites (and our DNS servers, so names resolve the same way) go into the tunnel
+        SplitMode::Only => listed.iter().map(|n| (n.contains(':'), n.clone())).collect(),
+        _ => tunnel_routes(&cfg.allowed_ips),
+    };
+    for (v6, net) in routes {
         if net.split('/').next() == Some(ep_s.as_str()) {
             continue;
         }
         run("route", &["-q", "-n", "add", if v6 { "-inet6" } else { "-inet" }, &net, "-interface", iface])?;
     }
+    if opts.split.mode == SplitMode::Except {
+        for net in listed.iter().filter(|n| !n.contains(':')) {
+            let _ = run("route", &["-q", "-n", "delete", "-inet", net]);
+            let mut args = vec!["-q", "-n", "add", "-inet", net.as_str()];
+            args.extend(gw.iter().map(String::as_str));
+            run("route", &args)?;
+            state.bypass.push(net.clone());
+        }
+    }
 
-    if !cfg.dns.is_empty() {
+    if opts.kill_switch && opts.split.mode == SplitMode::All {
+        kill_switch_on(iface, cfg.endpoint, opts.allow_lan, state)?;
+    }
+
+    // in "only" mode the rest of the traffic is not ours: leave the system DNS alone
+    if !cfg.dns.is_empty() && opts.split.mode != SplitMode::Only {
         let dns: Vec<String> = cfg.dns.iter().map(|d| d.to_string()).collect();
         for svc in hardware_services()? {
             let before = get_dns(&svc)?;
@@ -128,7 +268,10 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, state: &mut NetState) -> Resul
 
 /// Undoes what `configure` did; tunnel routes go away with the interface. Best effort: collects errors.
 pub fn restore(state: &NetState) -> Vec<String> {
-    let mut errors = vec![];
+    let mut errors = kill_switch_off(state);
+    for net in &state.bypass {
+        let _ = run("route", &["-q", "-n", "delete", "-inet", net]);
+    }
     for (svc, servers) in &state.dns_backup {
         if let Err(e) = set_dns(svc, servers) {
             errors.push(e.to_string());

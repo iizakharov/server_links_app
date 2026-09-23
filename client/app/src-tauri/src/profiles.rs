@@ -14,8 +14,16 @@ use serde::{Deserialize, Serialize};
 pub struct Profile {
     pub id: String,
     pub name: String,
+    /// kept in the system keychain; read into memory on load, never written to the JSON file
+    #[serde(default, skip_serializing)]
     pub conf: String,
     pub created: String,
+}
+
+const KEYCHAIN_SERVICE: &str = "com.amnezinu.vpn";
+
+fn secret(id: &str) -> Result<keyring::Entry> {
+    Ok(keyring::Entry::new(KEYCHAIN_SERVICE, id)?)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,11 +31,23 @@ pub struct Profile {
 pub struct Settings {
     /// system | dark | light
     pub theme: String,
+    pub kill_switch: bool,
+    pub allow_lan: bool,
+    /// connect to the selected server when the app starts
+    pub autoconnect: bool,
+    pub split: amz_ipc::Split,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Settings { theme: "system".into() }
+        Settings { theme: "system".into(), kill_switch: false, allow_lan: true, autoconnect: false,
+                   split: Default::default() }
+    }
+}
+
+impl Settings {
+    pub fn up_options(&self) -> amz_ipc::UpOptions {
+        amz_ipc::UpOptions { kill_switch: self.kill_switch, allow_lan: self.allow_lan, split: self.split.clone() }
     }
 }
 
@@ -73,15 +93,39 @@ impl Store {
         Store { path: dir.join("profiles.json") }
     }
 
+    /// Loads profiles and their configs from the keychain. Configs still stored in the file by an older
+    /// version are moved to the keychain.
     pub fn load(&self) -> Result<Data> {
-        match fs::read(&self.path) {
-            Ok(raw) => Ok(serde_json::from_slice(&raw)?),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Data::default()),
-            Err(e) => Err(e.into()),
+        let raw = match fs::read(&self.path) {
+            Ok(raw) => raw,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Data::default()),
+            Err(e) => return Err(e.into()),
+        };
+        let file: serde_json::Value = serde_json::from_slice(&raw)?;
+        let mut data: Data = serde_json::from_value(file.clone())?;
+        let mut migrate = false;
+        for (i, p) in data.profiles.iter_mut().enumerate() {
+            match file["profiles"][i]["conf"].as_str() {
+                Some(conf) => {
+                    p.conf = conf.to_string();
+                    migrate = true;
+                }
+                None => p.conf = secret(&p.id)?.get_password().unwrap_or_default(),
+            }
         }
+        if migrate {
+            self.save(&data)?;
+        }
+        Ok(data)
     }
 
     pub fn save(&self, data: &Data) -> Result<()> {
+        for p in &data.profiles {
+            let entry = secret(&p.id)?;
+            if entry.get_password().ok().as_deref() != Some(p.conf.as_str()) {
+                entry.set_password(&p.conf)?;
+            }
+        }
         if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir)?;
         }
@@ -93,6 +137,12 @@ impl Store {
         opts.open(&tmp)?.write_all(&serde_json::to_vec_pretty(data)?)?;
         fs::rename(tmp, &self.path)?;
         Ok(())
+    }
+
+    pub fn forget(&self, id: &str) {
+        if let Ok(e) = secret(id) {
+            let _ = e.delete_credential();
+        }
     }
 }
 

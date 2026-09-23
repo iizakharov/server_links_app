@@ -1,11 +1,22 @@
 // Calls into the Rust side (Tauri commands). Outside Tauri (plain browser) a mock is used,
 // so the UI can be developed and checked without the app shell.
 export type ProfileView = { id: string; name: string; endpoint: string; address: string; awg_version: string };
-export type View = { profiles: ProfileView[]; selected: string | null; settings: { theme: string } };
+export type SplitMode = "all" | "only" | "except";
+export type Settings = {
+  theme: string;
+  kill_switch: boolean;
+  allow_lan: boolean;
+  autoconnect: boolean;
+  split: { mode: SplitMode; entries: string[] };
+};
+export type View = { profiles: ProfileView[]; selected: string | null; settings: Settings };
 export type Stats = { rx: number; tx: number; handshake: number };
-export type Status = { connected: boolean; name: string; iface: string; endpoint: string; since: number; stats: Stats };
+export type Status = {
+  connected: boolean; name: string; iface: string; endpoint: string; since: number; stats: Stats;
+  blocked: boolean; kill_switch: boolean; helper_version: string;
+};
 export type Share = { name: string; conf: string; vpn_key: string; qr_svg: string };
-export type HelperState = { installed: boolean; running: boolean };
+export type HelperState = { installed: boolean; running: boolean; outdated: boolean };
 
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -24,7 +35,7 @@ export const api = {
   rename: (id: string, name: string) => call<View>("rename_profile", { id, name }),
   remove: (id: string) => call<View>("remove_profile", { id }),
   select: (id: string) => call<View>("select_profile", { id }),
-  setTheme: (theme: string) => call<View>("set_theme", { theme }),
+  setSettings: (settings: Settings) => call<View>("set_settings", { settings }),
   share: (id: string) => call<Share>("share", { id }),
   saveText: (path: string, text: string) => call<void>("save_text", { path, text }),
   connect: (id: string) => call<Status>("connect", { id }),
@@ -76,4 +87,12 @@ export function bytes(n: number): string {
   let v = n, i = 0;
   while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
   return `${i === 0 ? v : v.toFixed(1)} ${units[i]}`;
+}
+
+/** Start the app at login (hidden, in the menu bar). */
+export async function autostart(enable?: boolean): Promise<boolean> {
+  if (!inTauri) return false;
+  const a = await import("@tauri-apps/plugin-autostart");
+  if (enable !== undefined) await (enable ? a.enable() : a.disable());
+  return a.isEnabled();
 }
