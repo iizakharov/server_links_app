@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/amz-core"]
+members = ["crates/amz-core", "crates/amz-remote", "crates/amz-cli"]
 
 [workspace.package]
 version = "0.1.0"

@@ -59,5 +59,18 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 ```bash
 .venv/bin/python -m tests.golden.gen   # обновить фикстуры после изменений в app/
-cd client && cargo test                # ядро amz-core: .conf, vpn://, версии AWG, ключи, state.json
+cd client && cargo test                # ядро и SSH-операции, сверка с Python
 ```
+
+Консольная утилита `amz` работает с тем же форматом `state.json`, что и панель (серверы, каскады, клиенты, трафик):
+
+```bash
+cd client && cargo build -p amz-cli
+./target/debug/amz --data ../data ls
+./target/debug/amz --data ../data scan <server-id>          # только чтение
+./target/debug/amz --data ../data cascade --proxy <id> --exit <id> --instance v3
+./target/debug/amz --data ../data add-client phone <cascade-id>
+./target/debug/amz --data ../data key <client-id>
+```
+
+При первом подключении `amz` запоминает SSH-ключ сервера (`host_key`) и дальше отказывается подключаться, если ключ изменился.

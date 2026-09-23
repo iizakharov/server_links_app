@@ -1,5 +1,5 @@
 //! Checks the Rust port against fixtures produced by the reference Python code (tests/golden/gen.py).
-use amz_core::model::{AwgServer, ClientKeys, Params, State};
+use amz_core::model::{AwgInfo, ClientKeys, Params, State};
 use amz_core::storage::Storage;
 use amz_core::{awg, keys, vpnkey};
 use serde_json::Value;
@@ -16,7 +16,7 @@ fn s<'a>(v: &'a Value, k: &str) -> &'a str {
 #[test]
 fn client_conf_and_vpn_key_match_python() {
     for case in fixture("configs").as_array().unwrap() {
-        let server: AwgServer = serde_json::from_value(case["server"].clone()).unwrap();
+        let server: AwgInfo = serde_json::from_value(case["server"].clone()).unwrap();
         let client: ClientKeys = serde_json::from_value(case["client"].clone()).unwrap();
         let port = case["endpoint_port"].as_u64().unwrap() as u16;
         let args = (s(case, "endpoint_host"), port, s(case, "dns1"), s(case, "dns2"));
@@ -52,7 +52,7 @@ fn parse_and_drop_peer_match_python() {
 #[test]
 fn awg_versions_match_python() {
     for case in fixture("versions").as_array().unwrap() {
-        let server: AwgServer = serde_json::from_value(serde_json::json!({"public_key": "", "params": case["params"]})).unwrap();
+        let server: AwgInfo = serde_json::from_value(serde_json::json!({"public_key": "", "params": case["params"]})).unwrap();
         assert_eq!(awg::is_legacy(&server.params), case["is_legacy"].as_bool().unwrap(), "{}", case["params"]);
         assert_eq!(awg::awg_version(&server.params), s(case, "awg_version"), "{}", case["params"]);
     }
@@ -86,7 +86,7 @@ fn state_round_trip_keeps_unknown_fields() {
     assert_eq!(store.load().unwrap(), State::default());
     let raw = serde_json::json!({
         "servers": [{"id": "a1", "name": "proxy", "host": "1.2.3.4", "ssh_port": 22, "user": "root",
-                     "password": "", "key_path": "", "scan": {"os": "Ubuntu"}, "future": 1}],
+                     "password": "", "key_path": "", "scan": {"os": "Ubuntu", "nat": [], "udp_listen": [], "at": ""}, "future": 1}],
         "cascades": [{"id": "c1", "proxy_id": "a1", "exit_id": "b2", "port": 51820, "mode": "v2"}],
         "clients": [{"id": "k1", "name": "phone", "cascade_id": "c1", "created": "2026-09-22",
                      "private_key": "x", "public_key": "y", "psk": "z", "ip": "10.9.2.2",

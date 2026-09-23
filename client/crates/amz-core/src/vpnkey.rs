@@ -11,7 +11,7 @@ use flate2::Compression;
 use serde_json::{json, Map, Value};
 
 use crate::conf::{client_conf, MTU};
-use crate::model::{AwgServer, ClientKeys};
+use crate::model::{AwgInfo, ClientKeys};
 use crate::pyjson;
 
 const B64: GeneralPurpose = GeneralPurpose::new(
@@ -46,7 +46,7 @@ pub fn quncompress(data: &[u8]) -> Result<Vec<u8>, KeyError> {
 }
 
 /// The JSON document inside a key (pretty-printed the way Python/AmneziaVPN do).
-pub fn vpn_json(name: &str, client: &ClientKeys, server: &AwgServer, endpoint_host: &str, endpoint_port: u16,
+pub fn vpn_json(name: &str, client: &ClientKeys, server: &AwgInfo, endpoint_host: &str, endpoint_port: u16,
                 dns1: &str, dns2: &str) -> String {
     let conf = client_conf(client, server, endpoint_host, endpoint_port, dns1, dns2);
     let params: Map<String, Value> =
@@ -87,7 +87,7 @@ pub fn vpn_json(name: &str, client: &ClientKeys, server: &AwgServer, endpoint_ho
     pyjson::dumps(&doc, 4)
 }
 
-pub fn vpn_key(name: &str, client: &ClientKeys, server: &AwgServer, endpoint_host: &str, endpoint_port: u16,
+pub fn vpn_key(name: &str, client: &ClientKeys, server: &AwgInfo, endpoint_host: &str, endpoint_port: u16,
                dns1: &str, dns2: &str) -> String {
     let raw = vpn_json(name, client, server, endpoint_host, endpoint_port, dns1, dns2);
     format!("vpn://{}", B64.encode(qcompress(raw.as_bytes())))

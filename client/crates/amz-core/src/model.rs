@@ -21,14 +21,87 @@ fn de_params<'de, D: Deserializer<'de>>(d: D) -> Result<Params, D::Error> {
         .collect())
 }
 
-/// AmneziaWG interface on an exit server (result of a scan): what clients need to connect.
+/// AmneziaWG interface on an exit server (result of a scan): where it runs and what clients need to connect.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
-pub struct AwgServer {
+#[serde(default)]
+pub struct AwgInfo {
+    /// "amnezia" (AmneziaVPN container), "native", or one of our instances ("legacy", "v2", "v3")
+    pub mode: String,
+    pub container: Option<String>,
+    pub conf_path: String,
+    /// "awg" or "wg" (old AmneziaVPN containers)
+    pub tool: String,
+    /// shared PSK of an AmneziaVPN container, reused for new clients
+    pub psk: Option<String>,
+    pub iface: String,
+    pub listen_port: u16,
+    pub address: String,
     pub public_key: String,
-    #[serde(deserialize_with = "de_params", default)]
+    #[serde(deserialize_with = "de_params")]
     pub params: Params,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
+}
+
+/// DNAT rule found on a server (`iptables-save -t nat`).
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct NatRule {
+    pub chain: String,
+    /// in our own chain CASCADE_PRE
+    pub ours: bool,
+    pub proto: Option<String>,
+    /// inclusive ranges; None = all ports
+    pub dports: Option<Vec<(u32, u32)>>,
+    pub dst: Option<String>,
+    pub to_ip: Option<String>,
+    pub to_port: Option<u32>,
+    pub comment: Option<String>,
+    pub raw: String,
+}
+
+/// Read-only scan of a server.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct Scan {
+    pub os: String,
+    /// the server's own AmneziaWG (AmneziaVPN container or native install)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub awg: Option<AwgInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub awg_legacy: Option<AwgInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub awg_v2: Option<AwgInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub awg_v3: Option<AwgInfo>,
+    pub nat: Vec<NatRule>,
+    pub udp_listen: Vec<u32>,
+    pub at: String,
+    #[serde(flatten)]
+    pub extra: Map<String, Value>,
+}
+
+impl Scan {
+    /// AmneziaWG instance by cascade instance name: "main" (the server's own) or "legacy"/"v2"/"v3".
+    pub fn awg_for(&self, instance: &str) -> Option<&AwgInfo> {
+        match instance {
+            "main" => self.awg.as_ref(),
+            "legacy" => self.awg_legacy.as_ref(),
+            "v2" => self.awg_v2.as_ref(),
+            "v3" => self.awg_v3.as_ref(),
+            _ => None,
+        }
+    }
+
+    pub fn set_awg(&mut self, instance: &str, info: Option<AwgInfo>) {
+        match instance {
+            "main" => self.awg = info,
+            "legacy" => self.awg_legacy = info,
+            "v2" => self.awg_v2 = info,
+            "v3" => self.awg_v3 = info,
+            _ => {}
+        }
+    }
 }
 
 /// A client's own keys and tunnel address.
@@ -55,7 +128,7 @@ pub struct Server {
     #[serde(default)]
     pub key_path: Option<String>,
     #[serde(default)]
-    pub scan: Option<Value>,
+    pub scan: Option<Scan>,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
 }
@@ -71,10 +144,20 @@ pub struct Cascade {
     pub proxy_id: String,
     pub exit_id: String,
     pub port: u16,
+    /// "managed" (our DNAT rule) or "external" (someone else's forward, adopted as is)
     #[serde(default)]
-    pub mode: Option<String>,
+    pub mode: String,
+    /// AmneziaWG instance on the exit server: "main", "legacy", "v2", "v3" (absent in old states = "main")
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instance: Option<String>,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
+}
+
+impl Cascade {
+    pub fn instance(&self) -> &str {
+        self.instance.as_deref().unwrap_or("main")
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq)]
@@ -95,13 +178,15 @@ pub struct Client {
     pub public_key: String,
     #[serde(default)]
     pub psk: Option<String>,
-    #[serde(default)]
-    pub traffic: Traffic,
-    #[serde(default)]
-    pub raw: Traffic,
-    #[serde(default)]
+    /// accumulated since creation; absent until the first traffic refresh
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub traffic: Option<Traffic>,
+    /// counters seen at the last refresh (to compute deltas)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub raw: Option<Traffic>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub handshake: Option<i64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stats_at: Option<String>,
     #[serde(flatten)]
     pub extra: Map<String, Value>,

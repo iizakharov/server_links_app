@@ -1,0 +1,21 @@
+[package]
+name = "amz-remote"
+description = "АМнеЗинуVPN: server management over SSH (AmneziaWG exit servers, proxy cascades)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+amz-core = { path = "../amz-core" }
+serde.workspace = true
+serde_json.workspace = true
+indexmap.workspace = true
+anyhow = "1"
+russh = "0"
+tokio = { version = "1", features = ["time", "rt", "macros", "net"] }
+shlex = "1"
+rand = "0.8"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["time", "rt", "macros", "test-util"] }

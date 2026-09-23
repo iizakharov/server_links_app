@@ -1,7 +1,7 @@
 //! Parsing server configs and generating client `.conf` files.
 use indexmap::IndexMap;
 
-use crate::model::{AwgServer, ClientKeys};
+use crate::model::{AwgInfo, ClientKeys};
 
 /// One `[Interface]` or `[Peer]` section; keys keep their original case and order.
 pub type Section = IndexMap<String, String>;
@@ -76,7 +76,7 @@ pub fn obfuscation_params(iface: &Section) -> Section {
         .collect()
 }
 
-pub fn client_conf(client: &ClientKeys, server: &AwgServer, endpoint_host: &str, endpoint_port: u16,
+pub fn client_conf(client: &ClientKeys, server: &AwgInfo, endpoint_host: &str, endpoint_port: u16,
                    dns1: &str, dns2: &str) -> String {
     let mut lines = vec![
         "[Interface]".to_string(),

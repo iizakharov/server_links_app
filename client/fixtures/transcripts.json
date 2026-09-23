@@ -1,0 +1,821 @@
+[
+  {
+    "name": "detect_amnezia",
+    "compare_input": true,
+    "result": {
+      "mode": "amnezia",
+      "container": "amnezia-awg",
+      "conf_path": "/opt/amnezia/awg/wg0.conf",
+      "tool": "wg",
+      "psk": "SHAREDPSK",
+      "iface": "wg0",
+      "listen_port": 43210,
+      "address": "10.8.1.0/24",
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "4",
+        "Jmin": "10",
+        "Jmax": "50",
+        "S1": "97",
+        "S2": "34",
+        "H1": "111",
+        "H2": "222",
+        "H3": "333",
+        "H4": "444"
+      }
+    },
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\namnezia-dns\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'ls /opt/amnezia/awg/*.conf'",
+            "check": true,
+            "input": null,
+            "out": "/opt/amnezia/awg/wg0.conf\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'command -v awg >/dev/null && echo awg || echo wg'",
+            "check": true,
+            "input": null,
+            "out": "wg\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wireguard_psk.key 2>/dev/null || true'",
+            "check": true,
+            "input": null,
+            "out": "SHAREDPSK\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "detect_native",
+    "compare_input": true,
+    "result": {
+      "mode": "native",
+      "container": null,
+      "conf_path": "/etc/amnezia/amneziawg/awg0.conf",
+      "tool": "awg",
+      "psk": null,
+      "iface": "awg0",
+      "listen_port": 43210,
+      "address": "10.8.1.0/24",
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "4",
+        "Jmin": "10",
+        "Jmax": "50",
+        "S1": "97",
+        "S2": "34",
+        "H1": "111",
+        "H2": "222",
+        "H3": "333",
+        "H4": "444"
+      }
+    },
+    "remotes": [
+      {
+        "host": "native",
+        "steps": [
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "test -f /etc/amnezia/amneziawg/awg0.conf && echo yes || true",
+            "check": true,
+            "input": null,
+            "out": "yes\n"
+          },
+          {
+            "cmd": "cat /etc/amnezia/amneziawg/awg0.conf",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n[Peer]\nPublicKey = CCC\nAllowedIPs = 10.8.1.2/32\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "detect_instance_v2",
+    "compare_input": true,
+    "result": {
+      "mode": "v2",
+      "container": "cascade-awg-v2",
+      "tool": "awg",
+      "psk": null,
+      "iface": "awgv2",
+      "conf_path": "/opt/cascade/awgv2.conf",
+      "listen_port": 43210,
+      "address": "10.9.2.1/24",
+      "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+      "params": {
+        "Jc": "4",
+        "Jmin": "10",
+        "Jmax": "50",
+        "S1": "97",
+        "S2": "34",
+        "S3": "53",
+        "S4": "16",
+        "H1": "100-200",
+        "H2": "222",
+        "H3": "333",
+        "H4": "444"
+      }
+    },
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\ncascade-awg-v2\n"
+          },
+          {
+            "cmd": "docker exec -i cascade-awg-v2 sh -c 'cat /opt/cascade/awgv2.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.9.2.1/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nS3 = 53\nS4 = 16\nH1 = 100-200\nH2 = 222\nH3 = 333\nH4 = 444\nPostUp = iptables -A FORWARD -i %i -j ACCEPT # comment\n\n# client: phone\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n[Peer]\nPublicKey = CCC\nAllowedIPs = 10.8.1.2/32\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "add_peer",
+    "compare_input": false,
+    "result": [
+      "10.8.1.2",
+      "10.8.1.3"
+    ],
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat >> /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": "\n[Peer]\n# phone\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = SHAREDPSK\nAllowedIPs = 10.8.1.2/32\n",
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'wg-quick strip /opt/amnezia/awg/wg0.conf > /tmp/cascade-strip.conf && wg syncconf wg0 /tmp/cascade-strip.conf; rc=$?; rm -f /tmp/cascade-strip.conf; exit $rc'",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/clientsTable 2>/dev/null || true'",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat > /opt/amnezia/awg/clientsTable'",
+            "check": true,
+            "input": "[\n    {\n        \"clientId\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n        \"userData\": {\n            \"clientName\": \"phone\",\n            \"creationDate\": \"Wed Sep 23 12:00:00 2026\"\n        }\n    }\n]",
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n\n[Peer]\n# phone\nPublicKey = HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\nPresharedKey = SHAREDPSK\nAllowedIPs = 10.8.1.2/32\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat >> /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": "\n[Peer]\n# laptop\nPublicKey = sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\nPresharedKey = SHAREDPSK\nAllowedIPs = 10.8.1.3/32\n",
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'wg-quick strip /opt/amnezia/awg/wg0.conf > /tmp/cascade-strip.conf && wg syncconf wg0 /tmp/cascade-strip.conf; rc=$?; rm -f /tmp/cascade-strip.conf; exit $rc'",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/clientsTable 2>/dev/null || true'",
+            "check": true,
+            "input": null,
+            "out": "[\n    {\n        \"clientId\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n        \"userData\": {\n            \"clientName\": \"phone\",\n            \"creationDate\": \"Wed Sep 23 12:00:00 2026\"\n        }\n    }\n]"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat > /opt/amnezia/awg/clientsTable'",
+            "check": true,
+            "input": "[\n    {\n        \"clientId\": \"HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=\",\n        \"userData\": {\n            \"clientName\": \"phone\",\n            \"creationDate\": \"Wed Sep 23 12:00:00 2026\"\n        }\n    },\n    {\n        \"clientId\": \"sOjfgRdRGctLFrETN228b9xFuy+OUkGlArmg+0j6JnE=\",\n        \"userData\": {\n            \"clientName\": \"laptop\",\n            \"creationDate\": \"Wed Sep 23 12:00:00 2026\"\n        }\n    }\n]",
+            "out": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "remove_peer",
+    "compare_input": true,
+    "result": null,
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat > /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n",
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'wg-quick strip /opt/amnezia/awg/wg0.conf > /tmp/cascade-strip.conf && wg syncconf wg0 /tmp/cascade-strip.conf; rc=$?; rm -f /tmp/cascade-strip.conf; exit $rc'",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/clientsTable 2>/dev/null || true'",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat > /opt/amnezia/awg/clientsTable'",
+            "check": true,
+            "input": "[]",
+            "out": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "peer_stats",
+    "compare_input": true,
+    "result": {
+      "AAA": {
+        "rx": 100,
+        "tx": 200,
+        "handshake": 1790000000
+      },
+      "BBB": {
+        "rx": 5,
+        "tx": 6,
+        "handshake": 0
+      }
+    },
+    "remotes": [
+      {
+        "host": "stats",
+        "steps": [
+          {
+            "cmd": "awg show awg0 transfer",
+            "check": false,
+            "input": null,
+            "out": "AAA\t100\t200\nBBB\t5\t6\nbroken line\nCCC\tx\t1\n"
+          },
+          {
+            "cmd": "awg show awg0 latest-handshakes",
+            "check": false,
+            "input": null,
+            "out": "AAA\t1790000000\nZZZ\t1\nBBB\t0\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "proxy_scan",
+    "compare_input": true,
+    "result": {
+      "os": "",
+      "awg": {
+        "mode": "amnezia",
+        "container": "amnezia-awg",
+        "conf_path": "/opt/amnezia/awg/wg0.conf",
+        "tool": "wg",
+        "psk": "SHAREDPSK",
+        "iface": "wg0",
+        "listen_port": 43210,
+        "address": "10.8.1.0/24",
+        "public_key": "HIgo9xNzJMWLKASShiTqIybxZ0U3wGLiUeJ1PKf8ykw=",
+        "params": {
+          "Jc": "4",
+          "Jmin": "10",
+          "Jmax": "50",
+          "S1": "97",
+          "S2": "34",
+          "H1": "111",
+          "H2": "222",
+          "H3": "333",
+          "H4": "444"
+        }
+      },
+      "awg_legacy": null,
+      "awg_v2": null,
+      "awg_v3": null,
+      "nat": [
+        {
+          "chain": "PREROUTING",
+          "ours": false,
+          "proto": "tcp",
+          "dports": [
+            [
+              2222,
+              2222
+            ]
+          ],
+          "dst": "198.51.100.1",
+          "to_ip": "203.0.113.9",
+          "to_port": 22,
+          "comment": "amnezia-ssh-2222",
+          "raw": "-A PREROUTING -d 198.51.100.1/32 -i eth0 -p tcp -m tcp --dport 2222 -m comment --comment amnezia-ssh-2222 -j DNAT --to-destination 203.0.113.9:22"
+        },
+        {
+          "chain": "PREROUTING",
+          "ours": false,
+          "proto": "udp",
+          "dports": [
+            [
+              48303,
+              48303
+            ]
+          ],
+          "dst": "198.51.100.1",
+          "to_ip": "203.0.113.9",
+          "to_port": 48303,
+          "comment": "amnezia-relay-48303",
+          "raw": "-A PREROUTING -d 198.51.100.1/32 -i eth0 -p udp -m udp --dport 48303 -m comment --comment amnezia-relay-48303 -j DNAT --to-destination 203.0.113.9:48303"
+        },
+        {
+          "chain": "PREROUTING",
+          "ours": false,
+          "proto": "tcp",
+          "dports": [
+            [
+              443,
+              443
+            ],
+            [
+              8443,
+              8443
+            ],
+            [
+              10000,
+              60000
+            ]
+          ],
+          "dst": null,
+          "to_ip": "203.0.113.9",
+          "to_port": null,
+          "comment": null,
+          "raw": "-A PREROUTING -p tcp -m multiport --dports 443,8443,10000:60000 -j DNAT --to-destination 203.0.113.9"
+        },
+        {
+          "chain": "PREROUTING",
+          "ours": false,
+          "proto": "udp",
+          "dports": [
+            [
+              443,
+              443
+            ],
+            [
+              8443,
+              8443
+            ],
+            [
+              10000,
+              60000
+            ]
+          ],
+          "dst": null,
+          "to_ip": "203.0.113.9",
+          "to_port": null,
+          "comment": null,
+          "raw": "-A PREROUTING -p udp -m multiport --dports 443,8443,10000:60000 -j DNAT --to-destination 203.0.113.9"
+        }
+      ],
+      "udp_listen": [
+        53,
+        51820
+      ]
+    },
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": ". /etc/os-release 2>/dev/null; echo $PRETTY_NAME",
+            "check": false,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\namnezia-dns\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'ls /opt/amnezia/awg/*.conf'",
+            "check": true,
+            "input": null,
+            "out": "/opt/amnezia/awg/wg0.conf\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'command -v awg >/dev/null && echo awg || echo wg'",
+            "check": true,
+            "input": null,
+            "out": "wg\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wireguard_psk.key 2>/dev/null || true'",
+            "check": true,
+            "input": null,
+            "out": "SHAREDPSK\n"
+          },
+          {
+            "cmd": "docker exec -i amnezia-awg sh -c 'cat /opt/amnezia/awg/wg0.conf'",
+            "check": true,
+            "input": null,
+            "out": "[Interface]\nPrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=\nAddress = 10.8.1.0/24\nListenPort = 43210\nJc = 4\nJmin = 10\nJmax = 50\nS1 = 97\nS2 = 34\nH1 = 111\nH2 = 222\nH3 = 333\nH4 = 444\n\n[Peer]\nPublicKey = AAA\nPresharedKey = BBB\nAllowedIPs = 10.8.1.1/32\n"
+          },
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\namnezia-dns\n"
+          },
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\namnezia-dns\n"
+          },
+          {
+            "cmd": "command -v docker >/dev/null && docker ps --format '{{.Names}}' || true",
+            "check": true,
+            "input": null,
+            "out": "amnezia-awg\namnezia-dns\n"
+          },
+          {
+            "cmd": "iptables-save -t nat 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "# Generated by iptables-save\n*nat\n:PREROUTING ACCEPT [0:0]\n:DOCKER - [0:0]\n-A PREROUTING -d 198.51.100.1/32 -i eth0 -p tcp -m tcp --dport 2222 -m comment --comment amnezia-ssh-2222 -j DNAT --to-destination 203.0.113.9:22\n-A PREROUTING -d 198.51.100.1/32 -i eth0 -p udp -m udp --dport 48303 -m comment --comment amnezia-relay-48303 -j DNAT --to-destination 203.0.113.9:48303\n-A PREROUTING -p tcp -m multiport --dports 443,8443,10000:60000 -j DNAT --to-destination 203.0.113.9\n-A PREROUTING -p udp -m multiport --dports 443,8443,10000:60000 -j DNAT --to-destination 203.0.113.9\n-A DOCKER -p udp -m udp --dport 5555 -j DNAT --to-destination 172.17.0.2:5555\n-A POSTROUTING -d 203.0.113.9/32 -p udp -j SNAT --to-source 198.51.100.1\nCOMMIT\n"
+          },
+          {
+            "cmd": "ss -Huln 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "UNCONN 0 0 0.0.0.0:51820 0.0.0.0:*\nUNCONN 0 0 [::]:53 [::]:*\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "run_install_reconnects",
+    "compare_input": true,
+    "result": null,
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "systemctl is-active --quiet cascade-awg-install && echo yes || true",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "cat > /root/cascade-awg-install.sh && chmod 700 /root/cascade-awg-install.sh",
+            "check": true,
+            "input": "\nset -e\nexec >/var/log/cascade-awg-install.log 2>&1\nexport DEBIAN_FRONTEND=noninteractive\napt-get() { command apt-get -o DPkg::Lock::Timeout=900 \"$@\"; }  # wait for a running dpkg instead of failing\n. /etc/os-release\ndpkg --configure -a || true\napt-get update -q\napt-get install -y -q curl gnupg iptables \"linux-headers-$(uname -r)\" || apt-get install -y -q curl gnupg iptables\nif [ \"$ID\" = ubuntu ]; then\n  apt-get install -y -q software-properties-common\n  add-apt-repository -y ppa:amnezia/ppa\nelse\n  FP=$(curl -fsSL https://api.launchpad.net/1.0/~amnezia/+archive/ubuntu/ppa | grep -o '\"signing_key_fingerprint\": *\"[0-9A-F]*\"' | grep -o '[0-9A-F]\\{40\\}')\n  curl -fsSL \"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$FP\" | gpg --dearmor --yes -o /usr/share/keyrings/amnezia.gpg\n  echo \"deb [signed-by=/usr/share/keyrings/amnezia.gpg] https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main\" > /etc/apt/sources.list.d/amnezia.list\nfi\napt-get update -q\napt-get install -y -q amneziawg\nmkdir -p /etc/amnezia/amneziawg\necho 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-amneziawg.conf\nsysctl -q -p /etc/sysctl.d/99-amneziawg.conf\ntouch /var/log/cascade-awg-install.ok\n",
+            "out": ""
+          },
+          {
+            "cmd": "rm -f /var/log/cascade-awg-install.ok; systemctl reset-failed cascade-awg-install 2>/dev/null; systemd-run --unit=cascade-awg-install --quiet bash /root/cascade-awg-install.sh",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "error": "connection dropped"
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "out": "active\n"
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "out": "ok\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "run_install_fails",
+    "compare_input": true,
+    "result": "[fake] установка AmneziaWG (apt, может занять 5–15 минут): ошибка, лог /var/log/cascade-awg-install.log:\nE: something broke",
+    "remotes": [
+      {
+        "host": "fake",
+        "steps": [
+          {
+            "cmd": "systemctl is-active --quiet cascade-awg-install && echo yes || true",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "cat > /root/cascade-awg-install.sh && chmod 700 /root/cascade-awg-install.sh",
+            "check": true,
+            "input": "\nset -e\nexec >/var/log/cascade-awg-install.log 2>&1\nexport DEBIAN_FRONTEND=noninteractive\napt-get() { command apt-get -o DPkg::Lock::Timeout=900 \"$@\"; }  # wait for a running dpkg instead of failing\n. /etc/os-release\ndpkg --configure -a || true\napt-get update -q\napt-get install -y -q curl gnupg iptables \"linux-headers-$(uname -r)\" || apt-get install -y -q curl gnupg iptables\nif [ \"$ID\" = ubuntu ]; then\n  apt-get install -y -q software-properties-common\n  add-apt-repository -y ppa:amnezia/ppa\nelse\n  FP=$(curl -fsSL https://api.launchpad.net/1.0/~amnezia/+archive/ubuntu/ppa | grep -o '\"signing_key_fingerprint\": *\"[0-9A-F]*\"' | grep -o '[0-9A-F]\\{40\\}')\n  curl -fsSL \"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$FP\" | gpg --dearmor --yes -o /usr/share/keyrings/amnezia.gpg\n  echo \"deb [signed-by=/usr/share/keyrings/amnezia.gpg] https://ppa.launchpadcontent.net/amnezia/ppa/ubuntu focal main\" > /etc/apt/sources.list.d/amnezia.list\nfi\napt-get update -q\napt-get install -y -q amneziawg\nmkdir -p /etc/amnezia/amneziawg\necho 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-amneziawg.conf\nsysctl -q -p /etc/sysctl.d/99-amneziawg.conf\ntouch /var/log/cascade-awg-install.ok\n",
+            "out": ""
+          },
+          {
+            "cmd": "rm -f /var/log/cascade-awg-install.ok; systemctl reset-failed cascade-awg-install 2>/dev/null; systemd-run --unit=cascade-awg-install --quiet bash /root/cascade-awg-install.sh",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "error": "connection dropped"
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "out": "active\n"
+          },
+          {
+            "cmd": "test -f /var/log/cascade-awg-install.ok && echo ok || systemctl is-active cascade-awg-install || true",
+            "check": true,
+            "input": null,
+            "out": "failed\n"
+          },
+          {
+            "cmd": "tail -15 /var/log/cascade-awg-install.log",
+            "check": false,
+            "input": null,
+            "out": "E: something broke"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "proxy_setup",
+    "compare_input": true,
+    "result": null,
+    "remotes": [
+      {
+        "host": "proxy",
+        "steps": [
+          {
+            "cmd": "command -v iptables >/dev/null || (apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables)",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-cascade.conf",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "cat > /usr/local/sbin/cascade-rules.sh && chmod 700 /usr/local/sbin/cascade-rules.sh",
+            "check": true,
+            "input": "#!/bin/sh\n# generated by vpn_service — do not edit, manage cascades in the app instead\nsysctl -q -w net.ipv4.ip_forward=1\niptables -t nat -N CASCADE_PRE 2>/dev/null; iptables -t nat -F CASCADE_PRE\niptables -t nat -N CASCADE_POST 2>/dev/null; iptables -t nat -F CASCADE_POST\niptables -N CASCADE_FWD 2>/dev/null; iptables -F CASCADE_FWD\niptables -t nat -C PREROUTING -j CASCADE_PRE 2>/dev/null || iptables -t nat -I PREROUTING -j CASCADE_PRE\niptables -t nat -C POSTROUTING -j CASCADE_POST 2>/dev/null || iptables -t nat -I POSTROUTING -j CASCADE_POST\niptables -C FORWARD -j CASCADE_FWD 2>/dev/null || iptables -I FORWARD -j CASCADE_FWD\niptables -A CASCADE_FWD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT\niptables -t nat -A CASCADE_PRE -p udp --dport 51820 -j DNAT --to-destination 1.2.3.4:43210\niptables -t nat -A CASCADE_POST -p udp -d 1.2.3.4 --dport 43210 -j MASQUERADE\niptables -A CASCADE_FWD -p udp -d 1.2.3.4 --dport 43210 -j ACCEPT\niptables -t nat -A CASCADE_PRE -p udp --dport 51821 -j DNAT --to-destination 5.6.7.8:40000\niptables -t nat -A CASCADE_POST -p udp -d 5.6.7.8 --dport 40000 -j MASQUERADE\niptables -A CASCADE_FWD -p udp -d 5.6.7.8 --dport 40000 -j ACCEPT\n",
+            "out": ""
+          },
+          {
+            "cmd": "cat > /etc/systemd/system/cascade-rules.service && chmod 644 /etc/systemd/system/cascade-rules.service",
+            "check": true,
+            "input": "[Unit]\nDescription=AmneziaWG cascade UDP forwarding rules\nAfter=network-online.target docker.service netfilter-persistent.service ufw.service\nWants=network-online.target\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/local/sbin/cascade-rules.sh\n\n[Install]\nWantedBy=multi-user.target\n",
+            "out": ""
+          },
+          {
+            "cmd": "systemctl daemon-reload && systemctl enable cascade-rules.service >/dev/null 2>&1 && systemctl restart cascade-rules.service",
+            "check": true,
+            "input": null,
+            "out": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "check_link_ok",
+    "compare_input": true,
+    "result": null,
+    "remotes": [
+      {
+        "host": "198.51.100.1",
+        "steps": [
+          {
+            "cmd": "for i in $(seq 5); do echo cascade-probe > /dev/udp/203.0.113.9/48303 2>/dev/null || true; done",
+            "check": false,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -N CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE; iptables -t raw -A CASCADE_PROBE -p udp -s 203.0.113.9 --dport 60001 -j RETURN; iptables -t raw -C PREROUTING -j CASCADE_PROBE 2>/dev/null || iptables -t raw -I PREROUTING 1 -j CASCADE_PROBE",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -L CASCADE_PROBE -n -v -x 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "Chain CASCADE_PROBE (1 references)\n pkts bytes target\n 5 100 RETURN udp\n"
+          },
+          {
+            "cmd": "iptables -t raw -D PREROUTING -j CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE 2>/dev/null; iptables -t raw -X CASCADE_PROBE 2>/dev/null; true",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      },
+      {
+        "host": "203.0.113.9",
+        "steps": [
+          {
+            "cmd": "iptables -t raw -N CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE; iptables -t raw -A CASCADE_PROBE -p udp -s 198.51.100.1 --dport 48303 -j RETURN; iptables -t raw -C PREROUTING -j CASCADE_PROBE 2>/dev/null || iptables -t raw -I PREROUTING 1 -j CASCADE_PROBE",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -L CASCADE_PROBE -n -v -x 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "Chain CASCADE_PROBE (1 references)\n pkts bytes target\n 5 100 RETURN udp\n"
+          },
+          {
+            "cmd": "iptables -t raw -D PREROUTING -j CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE 2>/dev/null; iptables -t raw -X CASCADE_PROBE 2>/dev/null; true",
+            "check": false,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "for i in $(seq 5); do echo cascade-probe > /dev/udp/198.51.100.1/60001 2>/dev/null || true; done",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "check_link_blocked",
+    "compare_input": true,
+    "result": "UDP с прокси 198.51.100.1 не доходит до 203.0.113.9:48303 (0 из 5). Трафик блокируется между этими сетями — каскад работать не будет. Нужен другой адрес сервера выхода или другой прокси",
+    "remotes": [
+      {
+        "host": "198.51.100.1",
+        "steps": [
+          {
+            "cmd": "for i in $(seq 5); do echo cascade-probe > /dev/udp/203.0.113.9/48303 2>/dev/null || true; done",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      },
+      {
+        "host": "203.0.113.9",
+        "steps": [
+          {
+            "cmd": "iptables -t raw -N CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE; iptables -t raw -A CASCADE_PROBE -p udp -s 198.51.100.1 --dport 48303 -j RETURN; iptables -t raw -C PREROUTING -j CASCADE_PROBE 2>/dev/null || iptables -t raw -I PREROUTING 1 -j CASCADE_PROBE",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -L CASCADE_PROBE -n -v -x 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "Chain CASCADE_PROBE (1 references)\n pkts bytes target\n 0 100 RETURN udp\n"
+          },
+          {
+            "cmd": "iptables -t raw -D PREROUTING -j CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE 2>/dev/null; iptables -t raw -X CASCADE_PROBE 2>/dev/null; true",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "check_link_no_reply",
+    "compare_input": true,
+    "result": "UDP от 203.0.113.9 не доходит до прокси 198.51.100.1 (0 из 5). Ответы сервера выхода не вернутся к клиентам — проверьте firewall хостера прокси",
+    "remotes": [
+      {
+        "host": "198.51.100.1",
+        "steps": [
+          {
+            "cmd": "for i in $(seq 5); do echo cascade-probe > /dev/udp/203.0.113.9/48303 2>/dev/null || true; done",
+            "check": false,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -N CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE; iptables -t raw -A CASCADE_PROBE -p udp -s 203.0.113.9 --dport 60001 -j RETURN; iptables -t raw -C PREROUTING -j CASCADE_PROBE 2>/dev/null || iptables -t raw -I PREROUTING 1 -j CASCADE_PROBE",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -L CASCADE_PROBE -n -v -x 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "Chain CASCADE_PROBE (1 references)\n pkts bytes target\n 0 100 RETURN udp\n"
+          },
+          {
+            "cmd": "iptables -t raw -D PREROUTING -j CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE 2>/dev/null; iptables -t raw -X CASCADE_PROBE 2>/dev/null; true",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      },
+      {
+        "host": "203.0.113.9",
+        "steps": [
+          {
+            "cmd": "iptables -t raw -N CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE; iptables -t raw -A CASCADE_PROBE -p udp -s 198.51.100.1 --dport 48303 -j RETURN; iptables -t raw -C PREROUTING -j CASCADE_PROBE 2>/dev/null || iptables -t raw -I PREROUTING 1 -j CASCADE_PROBE",
+            "check": true,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "iptables -t raw -L CASCADE_PROBE -n -v -x 2>/dev/null || true",
+            "check": false,
+            "input": null,
+            "out": "Chain CASCADE_PROBE (1 references)\n pkts bytes target\n 5 100 RETURN udp\n"
+          },
+          {
+            "cmd": "iptables -t raw -D PREROUTING -j CASCADE_PROBE 2>/dev/null; iptables -t raw -F CASCADE_PROBE 2>/dev/null; iptables -t raw -X CASCADE_PROBE 2>/dev/null; true",
+            "check": false,
+            "input": null,
+            "out": ""
+          },
+          {
+            "cmd": "for i in $(seq 5); do echo cascade-probe > /dev/udp/198.51.100.1/60001 2>/dev/null || true; done",
+            "check": false,
+            "input": null,
+            "out": ""
+          }
+        ]
+      }
+    ]
+  }
+]

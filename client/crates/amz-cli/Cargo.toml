@@ -1,0 +1,18 @@
+[package]
+name = "amz-cli"
+description = "АМнеЗинуVPN debug CLI: servers, cascades, clients over SSH"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "amz"
+path = "src/main.rs"
+
+[dependencies]
+amz-core = { path = "../amz-core" }
+amz-remote = { path = "../amz-remote" }
+serde_json.workspace = true
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
