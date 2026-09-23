@@ -17,7 +17,7 @@ fn main() {
 #[cfg(target_os = "macos")]
 mod macos {
     use std::fs;
-    use std::io::BufReader;
+    use std::io::{BufRead, BufReader};
     use std::net::ToSocketAddrs;
     use std::os::unix::fs::PermissionsExt;
     use std::os::unix::io::AsRawFd;
@@ -107,7 +107,12 @@ mod macos {
             write_line(&mut w, Response::Error { message: format!("пользователю uid={uid} управление VPN не разрешено") })?;
             bail!("отказано uid={uid}");
         }
-        let req: Request = read_line(&mut BufReader::new(stream))?;
+        let mut reader = BufReader::new(stream);
+        // the app probes the socket by connecting and closing: nothing to answer or log
+        if reader.fill_buf()?.is_empty() {
+            return Ok(());
+        }
+        let req: Request = read_line(&mut reader)?;
         let mut active = shared.lock().unwrap();
         let res = match &req {
             Request::Up { conf, name } => up(&mut active, conf, name),
