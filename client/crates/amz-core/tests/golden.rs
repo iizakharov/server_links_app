@@ -34,7 +34,29 @@ fn client_conf_and_vpn_key_match_python() {
         let key = amz_core::vpn_key(s(case, "name"), &client, &server, args.0, args.1, args.2, args.3);
         assert!(key.starts_with("vpn://") && !key.contains('='));
         assert_eq!(vpnkey::decode_vpn_key(&key).unwrap(), case["vpn_doc"], "{ctx}");
+
+        // import gives back the same config and the key's name
+        let imported = vpnkey::import_vpn_key(s(case, "vpn_key")).unwrap();
+        assert_eq!((imported.name.as_str(), imported.conf.as_str()), (s(case, "name"), s(case, "conf")), "{ctx}");
+
+        // a config added as a file can be shared as a key: same document as the panel's key
+        let from_conf = vpnkey::conf_to_vpn_key(s(case, "name"), s(case, "conf")).unwrap();
+        assert_eq!(vpnkey::decode_vpn_key(&from_conf).unwrap(), case["vpn_doc"], "{ctx}");
     }
+}
+
+#[test]
+fn import_rejects_garbage_and_fills_amnezia_dns_placeholders() {
+    assert!(vpnkey::import_vpn_key("vpn://AAAA").is_err());
+    assert!(vpnkey::import_vpn_key("hello").is_err());
+    let conf = "[Interface]\nDNS = $PRIMARY_DNS, $SECONDARY_DNS\n";
+    let last = serde_json::json!({"config": conf}).to_string();
+    let doc = serde_json::json!({"containers": [{"container": "amnezia-awg", "awg": {"last_config": last}}],
+                                 "defaultContainer": "amnezia-awg", "description": "home", "dns1": "9.9.9.9", "dns2": "8.8.8.8"});
+    let key = format!("vpn://{}", base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD,
+                                                         vpnkey::qcompress(doc.to_string().as_bytes())));
+    let imported = vpnkey::import_vpn_key(&key).unwrap();
+    assert_eq!((imported.name.as_str(), imported.conf.as_str()), ("home", "[Interface]\nDNS = 9.9.9.9, 8.8.8.8\n"));
 }
 
 #[test]

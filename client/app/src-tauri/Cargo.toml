@@ -1,0 +1,27 @@
+[package]
+name = "amnezinu-vpn"
+description = "АМнеЗинуVPN desktop app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "amnezinu_vpn_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+amz-core = { path = "../../crates/amz-core" }
+amz-ipc = { path = "../../crates/amz-ipc" }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-clipboard-manager = "2"
+serde.workspace = true
+serde_json.workspace = true
+anyhow = "1"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+rand = "0.8"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+libc = "0.2"

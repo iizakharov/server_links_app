@@ -12,4 +12,4 @@ pub mod tunnel;
 pub mod vpnkey;
 
 pub use conf::{client_conf, drop_peer, obfuscation_params, parse_conf, Section};
-pub use vpnkey::{decode_vpn_key, vpn_key};
+pub use vpnkey::{decode_vpn_key, import_vpn_key, vpn_key};

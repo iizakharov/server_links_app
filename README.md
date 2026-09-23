@@ -84,4 +84,12 @@ sudo ./target/release/amz-helper --allow-uid $(id -u)     # в отдельно�
 ./target/release/amz down
 ```
 
+Приложение с окном (Tauri 2 + Svelte 5, нужен Node.js):
+
+```bash
+cd client && cargo build --release -p amz-helper          # служба кладётся внутрь .app
+cd app && npm install && npx tauri build --bundles app    # target/release/bundle/macos/АМнеЗинуVPN.app
+npm run dev                                               # интерфейс в браузере на имитации бэкенда (порт 1420)
+```
+
 При первом подключении `amz` запоминает SSH-ключ сервера (`host_key`) и дальше отказывается подключаться, если ключ изменился.

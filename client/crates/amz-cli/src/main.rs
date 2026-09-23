@@ -194,7 +194,7 @@ async fn main() -> Result<()> {
             };
             let mut bad = 0;
             for id in &ids {
-                let res = ops::render(&s, id).map_err(anyhow::Error::from).and_then(|r| {
+                let res = ops::render(&s, id).and_then(|r| {
                     let cfg = amz_core::tunnel::tunnel_config(&r.conf, |_, port| Some(([192, 0, 2, 1], port).into()))?;
                     amz_tunnel::awg::validate(&cfg.uapi)
                 });

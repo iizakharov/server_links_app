@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/amz-core", "crates/amz-remote", "crates/amz-cli", "crates/amz-tunnel", "crates/amz-ipc", "crates/amz-helper"]
+members = ["crates/amz-core", "crates/amz-remote", "crates/amz-cli", "crates/amz-tunnel", "crates/amz-ipc", "crates/amz-helper", "app/src-tauri"]
 
 [workspace.package]
 version = "0.1.0"

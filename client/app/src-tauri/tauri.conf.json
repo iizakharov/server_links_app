@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "АМнеЗинуVPN",
+  "mainBinaryName": "amnezinu-vpn",
+  "version": "0.1.0",
+  "identifier": "com.amnezinu.vpn",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "АМнеЗинуVPN",
+        "width": 400,
+        "height": 720,
+        "minWidth": 360,
+        "minHeight": 600,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "Utility",
+    "shortDescription": "VPN на AmneziaWG с каскадами",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "resources": { "../../target/release/amz-helper": "amz-helper" },
+    "macOS": { "minimumSystemVersion": "12.0" }
+  }
+}

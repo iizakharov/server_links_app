@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F1D24"/>
+      <stop offset="1" stop-color="#0E0D12"/>
+    </linearGradient>
+    <linearGradient id="acc" gradientUnits="userSpaceOnUse" x1="254" y1="188" x2="770" y2="844">
+      <stop offset="0" stop-color="#FFC857"/>
+      <stop offset="1" stop-color="#FF7B3A"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#bg)"/>
+  <!-- shield -->
+  <path d="M512 188 L770 284 V500 C770 660 660 780 512 844 C364 780 254 660 254 500 V284 Z"
+        fill="none" stroke="url(#acc)" stroke-width="56" stroke-linejoin="round"/>
+  <!-- A with a tunnel crossbar -->
+  <path d="M392 690 L512 380 L632 690" fill="none" stroke="url(#acc)" stroke-width="60"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M438 590 H586" stroke="url(#acc)" stroke-width="52" stroke-linecap="round"/>
+</svg>
