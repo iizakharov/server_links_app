@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import Icon from "./lib/Icon.svelte";
   import { api } from "./lib/api";
-  import { app, refreshStatus, refreshView, type Tab } from "./lib/store.svelte";
+  import { app, checkUpdate, refreshStatus, refreshView, type Tab } from "./lib/store.svelte";
   import Home from "./screens/Home.svelte";
   import Servers from "./screens/Servers.svelte";
   import Add from "./screens/Add.svelte";
@@ -24,7 +24,9 @@
     api.helperState().then((h) => (app.helper = h));
     refreshStatus();
     const t = setInterval(refreshStatus, 1000);
-    return () => clearInterval(t);
+    checkUpdate();
+    const u = setInterval(checkUpdate, 6 * 3600 * 1000);
+    return () => { clearInterval(t); clearInterval(u); };
   });
 </script>
 

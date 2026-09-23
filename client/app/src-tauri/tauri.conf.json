@@ -29,6 +29,24 @@
     "active": true,
     "category": "Utility",
     "shortDescription": "VPN на AmneziaWG с каскадами",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCRTRDOTU5QjdDQTdDMDYKUldRR2ZNcTNXY25raTkyU0VpYW93eG1NVThVbGNpVU9abitSeEFUbDZQYmNuYVZYUmdmT1daRWMK",
+      "endpoints": [
+        "https://github.com/iizakharov/server_links_app/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

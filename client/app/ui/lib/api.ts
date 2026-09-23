@@ -21,6 +21,7 @@ export type Status = {
 };
 export type Share = { name: string; conf: string; vpn_key: string; qr_svg: string };
 export type HelperState = { installed: boolean; running: boolean; outdated: boolean };
+export type UpdateInfo = { current: string; version: string | null; notes: string | null };
 
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -98,7 +99,16 @@ export const api = {
   helperState: () => call<HelperState>("helper_state"),
   installHelper: () => call<HelperState>("install_helper"),
   uninstallHelper: () => call<HelperState>("uninstall_helper"),
+  checkUpdate: () => call<UpdateInfo>("check_update"),
+  installUpdate: () => call<void>("install_update"),
 };
+
+/** Download progress of an update: (bytes so far, total if known). */
+export async function onUpdateProgress(cb: (got: number, total: number | null) => void): Promise<() => void> {
+  if (!inTauri) return () => {};
+  const { listen } = await import("@tauri-apps/api/event");
+  return listen<[number, number | null]>("update-progress", (e) => cb(e.payload[0], e.payload[1]));
+}
 
 export async function readClipboard(): Promise<string> {
   if (inTauri) {

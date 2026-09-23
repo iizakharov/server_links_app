@@ -1,6 +1,11 @@
 #!/bin/sh
 # Universal (Apple Silicon + Intel) build of АМнеЗинуVPN: helper for both archs, then the app and .dmg.
 set -e
+# updates are signed with this key (the app checks it against the public key in tauri.conf.json)
+KEY="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.tauri/amnezinu-vpn.key}"
+if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ] && [ -f "$KEY" ]; then
+  export TAURI_SIGNING_PRIVATE_KEY="$(cat "$KEY")" TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}"
+fi
 cd "$(dirname "$0")/../.."
 for t in aarch64-apple-darwin x86_64-apple-darwin; do
   rustup target add "$t" >/dev/null

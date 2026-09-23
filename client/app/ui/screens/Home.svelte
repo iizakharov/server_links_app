@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import Icon from "../lib/Icon.svelte";
   import { bytes } from "../lib/api";
-  import { app, selectedProfile, toggleConnection } from "../lib/store.svelte";
+  import { app, installUpdate, selectedProfile, toggleConnection } from "../lib/store.svelte";
 
   let now = $state(Math.floor(Date.now() / 1000));
   onMount(() => {
@@ -47,6 +47,16 @@
         <p class="small muted">Новые функции заработают после обновления.</p>
       </div>
       <button class="btn primary" onclick={() => (app.tab = "settings")}>Обновить</button>
+    </div>
+  {/if}
+
+  {#if app.update?.version}
+    <div class="card banner row">
+      <div class="grow">
+        <p><b>Доступна версия {app.update.version}</b></p>
+        <p class="small muted">{app.updating === "installing" ? `Загрузка… ${app.updateProgress}` : app.updateError || "Приложение перезапустится, VPN не прервётся."}</p>
+      </div>
+      <button class="btn primary" disabled={!!app.updating} onclick={installUpdate}>Обновить</button>
     </div>
   {/if}
 

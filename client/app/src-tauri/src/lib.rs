@@ -10,7 +10,7 @@ use amz_core::vpnkey::conf_to_vpn_key;
 use amz_ipc::{Request, Status};
 use profiles::{new_profile, parse_import, Data, ProfileView, Settings, Store};
 use serde::Serialize;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 
 pub(crate) struct AppState {
     pub(crate) store: Store,
@@ -174,11 +174,42 @@ async fn uninstall_helper() -> Res<helper::HelperState> {
     Ok(helper::state())
 }
 
+#[derive(Serialize)]
+struct UpdateInfo {
+    current: String,
+    /// newer version published on GitHub, if any
+    version: Option<String>,
+    notes: Option<String>,
+}
+
+#[tauri::command]
+async fn check_update(app: tauri::AppHandle) -> Res<UpdateInfo> {
+    use tauri_plugin_updater::UpdaterExt;
+    let current = app.package_info().version.to_string();
+    let update = app.updater().map_err(err)?.check().await.map_err(err)?;
+    Ok(UpdateInfo { current, version: update.as_ref().map(|u| u.version.clone()), notes: update.and_then(|u| u.body) })
+}
+
+/// Downloads the new version (signature checked against the key in tauri.conf.json), installs it and restarts.
+/// The VPN service keeps the tunnel meanwhile; if its version changed, the app offers to update it.
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle) -> Res<()> {
+    use tauri_plugin_updater::UpdaterExt;
+    let update = app.updater().map_err(err)?.check().await.map_err(err)?.ok_or("Обновлений нет")?;
+    let (progress, mut got) = (app.clone(), 0u64);
+    update.download_and_install(move |chunk, total| {
+        got += chunk as u64;
+        let _ = progress.emit("update-progress", (got, total));
+    }, || {}).await.map_err(err)?;
+    app.restart()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
@@ -215,6 +246,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_view, import_text, rename_profile, remove_profile, select_profile, set_settings,
             share, save_text, connect, disconnect, status, helper_state, install_helper, uninstall_helper,
+            check_update, install_update,
             manage::manage_view, manage::manage_server_save, manage::manage_server_delete, manage::manage_server_scan,
             manage::manage_cascade_create, manage::manage_cascade_adopt, manage::manage_cascade_delete,
             manage::manage_cascade_check, manage::manage_client_create, manage::manage_client_delete,

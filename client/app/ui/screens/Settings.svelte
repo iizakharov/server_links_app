@@ -3,7 +3,7 @@
   import Icon from "../lib/Icon.svelte";
   import Toggle from "../lib/Toggle.svelte";
   import { api, autostart, errorText, inTauri, isWindows, secretStore } from "../lib/api";
-  import { app, saveSettings } from "../lib/store.svelte";
+  import { app, checkUpdate, installUpdate, saveSettings } from "../lib/store.svelte";
 
   let busy = $state(false);
   let error = $state("");
@@ -72,6 +72,26 @@
   </div>
 
   <div class="card col">
+    <h2>Обновления</h2>
+    <p class="grow">
+      {#if app.update?.version}Доступна версия {app.update.version} (сейчас {app.update.current})
+      {:else if app.update}Установлена последняя версия {app.update.current}
+      {:else}Новые версии проверяются при запуске и раз в 6 часов{/if}
+    </p>
+    {#if app.update?.notes}<p class="small muted notes">{app.update.notes}</p>{/if}
+    {#if app.update?.version}
+      <button class="btn primary" disabled={!!app.updating} onclick={installUpdate}>
+        {app.updating === "installing" ? `Загрузка… ${app.updateProgress}` : "Обновить и перезапустить"}
+      </button>
+    {:else}
+      <button class="btn" disabled={!!app.updating || !inTauri} onclick={() => checkUpdate(true)}>
+        {app.updating === "checking" ? "Проверяю…" : "Проверить обновления"}
+      </button>
+    {/if}
+    {#if app.updateError}<p class="error">{app.updateError}</p>{/if}
+  </div>
+
+  <div class="card col">
     <h2>Оформление</h2>
     <div class="segmented">
       {#each [["system", "Авто"], ["dark", "Тёмное"], ["light", "Светлое"]] as [id, label]}
@@ -82,12 +102,13 @@
 
   <div class="card col small">
     <h2>О приложении</h2>
-    <p>АМнеЗинуVPN 0.1.1{inTauri ? "" : " (просмотр в браузере)"}</p>
+    <p>АМнеЗинуVPN {app.update?.current ?? "0.1.1"}{inTauri ? "" : " (просмотр в браузере)"}</p>
     <p class="muted">Совместимо с серверами AmneziaWG 1.0, 2.0 и 3.x и ключами vpn:// из AmneziaVPN. Туннель — amneziawg-go 3.1.20260828 (MIT). Ключи хранятся в {secretStore}.</p>
   </div>
 </section>
 
 <style>
+  .notes { white-space: pre-line; max-height: 8em; overflow: auto; }
   .col { display: flex; flex-direction: column; gap: 14px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); flex: none; }
   .dot.ok { background: var(--ok); }
