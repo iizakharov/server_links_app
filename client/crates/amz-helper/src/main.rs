@@ -1,9 +1,20 @@
-//! Privileged helper (runs as root): brings the AmneziaWG tunnel up/down on request of allowed users.
-//! Usage (development): sudo amz-helper --allow-uid $(id -u)
-#[cfg(not(target_os = "macos"))]
+//! Privileged helper (runs as root / LocalSystem): brings the AmneziaWG tunnel up/down on request of allowed users.
+//! Usage (development): sudo amz-helper --allow-uid $(id -u); Windows: see windows.rs
+#[cfg(not(any(target_os = "macos", windows)))]
 fn main() {
-    eprintln!("amz-helper: пока поддерживается только macOS");
+    eprintln!("amz-helper: пока поддерживаются только macOS и Windows");
     std::process::exit(1);
+}
+
+#[cfg(windows)]
+mod windows;
+
+#[cfg(windows)]
+fn main() {
+    if let Err(e) = windows::main() {
+        eprintln!("amz-helper: {e:#}");
+        std::process::exit(1);
+    }
 }
 
 #[cfg(target_os = "macos")]

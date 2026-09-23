@@ -1,0 +1,12 @@
+{
+  "bundle": {
+    "targets": ["nsis"],
+    "resources": {
+      "../../target/x86_64-pc-windows-gnu/release/amz-helper.exe": "amz-helper.exe",
+      "../../target/wintun/bin/amd64/wintun.dll": "wintun.dll"
+    },
+    "windows": {
+      "nsis": { "languages": ["Russian"], "installMode": "currentUser" }
+    }
+  }
+}

@@ -26,6 +26,28 @@ fn secret(id: &str) -> Result<keyring::Entry> {
     Ok(keyring::Entry::new(KEYCHAIN_SERVICE, id)?)
 }
 
+/// Windows Credential Manager keeps at most 2560 bytes (1280 characters as a password), an AWG 3 config is
+/// longer: it is stored compressed there. Elsewhere the keychain item is the plain config.
+#[cfg(windows)]
+fn read_conf(e: &keyring::Entry) -> Option<String> {
+    String::from_utf8(amz_core::vpnkey::quncompress(&e.get_secret().ok()?).ok()?).ok()
+}
+
+#[cfg(windows)]
+fn write_conf(e: &keyring::Entry, conf: &str) -> Result<()> {
+    Ok(e.set_secret(&amz_core::vpnkey::qcompress(conf.as_bytes()))?)
+}
+
+#[cfg(not(windows))]
+fn read_conf(e: &keyring::Entry) -> Option<String> {
+    e.get_password().ok()
+}
+
+#[cfg(not(windows))]
+fn write_conf(e: &keyring::Entry, conf: &str) -> Result<()> {
+    Ok(e.set_password(conf)?)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -110,7 +132,7 @@ impl Store {
                     p.conf = conf.to_string();
                     migrate = true;
                 }
-                None => p.conf = secret(&p.id)?.get_password().unwrap_or_default(),
+                None => p.conf = read_conf(&secret(&p.id)?).unwrap_or_default(),
             }
         }
         if migrate {
@@ -122,8 +144,8 @@ impl Store {
     pub fn save(&self, data: &Data) -> Result<()> {
         for p in &data.profiles {
             let entry = secret(&p.id)?;
-            if entry.get_password().ok().as_deref() != Some(p.conf.as_str()) {
-                entry.set_password(&p.conf)?;
+            if read_conf(&entry).as_deref() != Some(p.conf.as_str()) {
+                write_conf(&entry, &p.conf)?;
             }
         }
         if let Some(dir) = self.path.parent() {

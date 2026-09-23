@@ -27,5 +27,7 @@ anyhow = "1"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 rand = "0.8"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-libc = "0.2"
 keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

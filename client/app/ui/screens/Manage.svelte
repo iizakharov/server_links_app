@@ -3,7 +3,7 @@
   import Icon from "../lib/Icon.svelte";
   import Sheet from "../lib/Sheet.svelte";
   import ShareBox from "../lib/ShareBox.svelte";
-  import { bytes, errorText, manage, onManageLog, pickFile, type ManageView, type MServer, type OpLog, type ServerIn, type Share } from "../lib/api";
+  import { bytes, errorText, manage, onManageLog, pickFile, secretStore, type ManageView, type MServer, type OpLog, type ServerIn, type Share } from "../lib/api";
   import { app, refreshView } from "../lib/store.svelte";
 
   let v = $state<ManageView>({ servers: [], cascades: [], external: [], clients: [], busy: false });
@@ -239,7 +239,7 @@
     <input type="password" bind:value={serverForm.password}
            placeholder={serverForm.id ? "Пароль SSH (оставьте пустым, чтобы не менять)" : "Пароль SSH"} />
     <input bind:value={serverForm.key_path} placeholder="…или путь к ключу, например ~/.ssh/id_ed25519" />
-    <p class="small muted">Нужен root или пользователь с sudo без пароля. Пароль хранится в связке ключей macOS. Добавление сервера ничего на нём не меняет — только читает.</p>
+    <p class="small muted">Нужен root или пользователь с sudo без пароля. Пароль хранится в {secretStore}. Добавление сервера ничего на нём не меняет — только читает.</p>
     <button class="btn primary wide" disabled={!serverForm.host.trim()} onclick={saveServer}>Сохранить</button>
   </Sheet>
 {/if}

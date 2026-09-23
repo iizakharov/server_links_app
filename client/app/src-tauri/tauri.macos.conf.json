@@ -1,0 +1,7 @@
+{
+  "bundle": {
+    "targets": ["app", "dmg"],
+    "resources": { "../../target/release/amz-helper": "amz-helper" },
+    "macOS": { "minimumSystemVersion": "12.0" }
+  }
+}

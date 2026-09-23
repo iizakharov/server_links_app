@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import Icon from "../lib/Icon.svelte";
   import Toggle from "../lib/Toggle.svelte";
-  import { api, autostart, errorText, inTauri } from "../lib/api";
+  import { api, autostart, errorText, inTauri, isWindows, secretStore } from "../lib/api";
   import { app, saveSettings } from "../lib/store.svelte";
 
   let busy = $state(false);
@@ -37,13 +37,14 @@
     <Toggle checked={s.kill_switch} label="Kill switch" disabled={s.split.mode !== "all"}
             hint={s.split.mode !== "all" ? "Недоступно при раздельном туннелировании" : "Блокировать интернет, если VPN отключится сам"}
             onchange={(v) => saveSettings({ kill_switch: v })} />
-    {#if s.kill_switch && s.split.mode === "all"}
+    <!-- Windows: the kill switch (WFP) has no exception for the local network yet -->
+    {#if s.kill_switch && s.split.mode === "all" && !isWindows}
       <Toggle checked={s.allow_lan} label="Разрешить локальную сеть" hint="Принтеры, роутер, NAS доступны при kill switch"
               onchange={(v) => saveSettings({ allow_lan: v })} />
     {/if}
     <Toggle checked={s.autoconnect} label="Подключаться при запуске" hint="К выбранному серверу"
             onchange={(v) => saveSettings({ autoconnect: v })} />
-    <Toggle checked={atLogin} label="Запускать при входе в систему" hint="Приложение стартует в строке меню"
+    <Toggle checked={atLogin} label="Запускать при входе в систему" hint={isWindows ? "Приложение стартует в области уведомлений" : "Приложение стартует в строке меню"}
             disabled={!inTauri} onchange={setAtLogin} />
     <button class="link row" onclick={() => (app.tab = "split")}>
       <span class="grow"><span class="label">Раздельное туннелирование</span><span class="small muted">{splitLabel}</span></span>
@@ -58,7 +59,7 @@
       <span class="dot" class:ok={app.helper.running && !app.helper.outdated} class:warn={app.helper.outdated}></span>
       <p class="grow">{helperText}</p>
     </div>
-    <p class="small muted">Служба создаёт сетевой интерфейс, маршруты и DNS — для этого нужны права администратора. Пароль спросит macOS.</p>
+    <p class="small muted">Служба создаёт сетевой интерфейс, маршруты и DNS — для этого нужны права администратора. {isWindows ? "Windows попросит подтверждение." : "Пароль спросит macOS."}</p>
     <div class="row">
       <button class="btn primary grow" disabled={busy || connected} onclick={() => helper("install")}>
         {busy ? "Подождите…" : !app.helper.installed ? "Установить службу" : app.helper.outdated ? "Обновить службу" : "Переустановить"}
@@ -83,7 +84,7 @@
   <div class="card col small">
     <h2>О приложении</h2>
     <p>АМнеЗинуVPN 0.1.0{inTauri ? "" : " (просмотр в браузере)"}</p>
-    <p class="muted">Совместимо с серверами AmneziaWG 1.0, 2.0 и 3.x и ключами vpn:// из AmneziaVPN. Туннель — amneziawg-go 3.1.20260828 (MIT). Ключи хранятся в связке ключей macOS.</p>
+    <p class="muted">Совместимо с серверами AmneziaWG 1.0, 2.0 и 3.x и ключами vpn:// из AmneziaVPN. Туннель — amneziawg-go 3.1.20260828 (MIT). Ключи хранятся в {secretStore}.</p>
   </div>
 </section>
 

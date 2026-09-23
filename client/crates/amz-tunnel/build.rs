@@ -1,4 +1,5 @@
 //! Builds go/libawg (amneziawg-go) as a static C archive and links it.
+//! Windows (x86_64-pc-windows-gnu) is cross-built with mingw-w64 (`brew install mingw-w64`).
 use std::env;
 use std::path::PathBuf;
 use std::process::Command;
@@ -14,10 +15,14 @@ fn main() {
     };
     let goos = if os == "macos" { "darwin" } else { os.as_str() };
 
-    for f in ["libawg.go", "go.mod", "go.sum"] {
+    for f in ["libawg.go", "libawg_other.go", "libawg_windows.go", "go.mod", "go.sum"] {
         println!("cargo:rerun-if-changed={}", go_dir.join(f).display());
     }
-    let status = Command::new(env::var("GO").unwrap_or_else(|_| "go".into()))
+    let mut go = Command::new(env::var("GO").unwrap_or_else(|_| "go".into()));
+    if os == "windows" && !cfg!(windows) {
+        go.env("CC", env::var("AMZ_WINDOWS_CC").unwrap_or_else(|_| format!("{}-w64-mingw32-gcc", env::var("CARGO_CFG_TARGET_ARCH").unwrap())));
+    }
+    let status = go
         .current_dir(&go_dir)
         .env("CGO_ENABLED", "1")
         .env("GOOS", goos)

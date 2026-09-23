@@ -2,6 +2,7 @@
 // A tunnel is identified by a handle; configuration is the standard UAPI text (keys in hex).
 package main
 
+// #include <stdint.h>
 // #include <stdlib.h>
 import "C"
 
@@ -17,7 +18,9 @@ import (
 
 type tunnel struct {
 	dev  *device.Device
+	tun  tun.Device
 	name string
+	net  netState
 }
 
 var (
@@ -34,7 +37,8 @@ func fail(err error) C.int32_t {
 	return -1
 }
 
-// awgTurnOn creates a TUN interface (on macOS: "utun" = next free utunN) with the given MTU,
+// awgTurnOn creates a TUN interface (macOS: "utun" = next free utunN; Windows: a Wintun adapter
+// with this name, wintun.dll next to the executable) with the given MTU,
 // applies the UAPI settings and brings the device up. Returns a handle >= 0, or -1 (see awgLastError).
 //
 //export awgTurnOn
@@ -62,7 +66,7 @@ func awgTurnOn(ifname *C.char, mtu C.int32_t, settings *C.char) C.int32_t {
 	defer mu.Unlock()
 	id := nextID
 	nextID++
-	tunnels[id] = &tunnel{dev: dev, name: name}
+	tunnels[id] = &tunnel{dev: dev, tun: t, name: name}
 	return C.int32_t(id)
 }
 
@@ -92,6 +96,7 @@ func awgTurnOff(handle C.int32_t) {
 	delete(tunnels, int32(handle))
 	mu.Unlock()
 	if t != nil {
+		netDown(t)
 		t.dev.Close()
 	}
 }

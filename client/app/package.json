@@ -8,7 +8,8 @@
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "tauri": "tauri",
-    "build:mac": "sh scripts/build-mac.sh"
+    "build:mac": "sh scripts/build-mac.sh",
+    "build:windows": "sh scripts/build-windows.sh"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.0",

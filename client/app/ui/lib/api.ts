@@ -1,5 +1,9 @@
 // Calls into the Rust side (Tauri commands). Outside Tauri (plain browser) a mock is used,
 // so the UI can be developed and checked without the app shell.
+export const isWindows = navigator.userAgent.includes("Windows");
+/** where the app keeps keys and passwords, for texts in the UI */
+export const secretStore = isWindows ? "диспетчере учётных данных Windows" : "связке ключей macOS";
+
 export type ProfileView = { id: string; name: string; endpoint: string; address: string; awg_version: string };
 export type SplitMode = "all" | "only" | "except";
 export type Settings = {

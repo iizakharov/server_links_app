@@ -13,6 +13,11 @@ extern "C" {
     fn awgFree(p: *mut c_char);
 }
 
+#[cfg(windows)]
+extern "C" {
+    fn awgNetSet(handle: i32, plan: *const c_char) -> i32;
+}
+
 /// Takes ownership of a string returned by libawg.
 fn take(p: *mut c_char) -> Option<String> {
     if p.is_null() {
@@ -35,7 +40,7 @@ pub struct Device {
 }
 
 impl Device {
-    /// `ifname` is "utun" on macOS (the system picks the number).
+    /// `ifname` is "utun" on macOS (the system picks the number), the adapter name on Windows.
     pub fn up(ifname: &str, mtu: u32, uapi: &str) -> Result<Device> {
         let (ifname, settings) = (cstr(ifname)?, cstr(&format!("{uapi}\n"))?);
         // SAFETY: both pointers are valid NUL-terminated strings for the duration of the call
@@ -54,6 +59,17 @@ impl Device {
     /// UAPI `get` output.
     pub fn config(&self) -> String {
         take(unsafe { awgGetConfig(self.handle) }).unwrap_or_default()
+    }
+
+    /// Windows: addresses, routes, DNS and kill switch of the adapter (may be called again to change routes).
+    #[cfg(windows)]
+    pub fn set_net(&self, plan: &crate::windows::NetPlan) -> Result<()> {
+        let plan = cstr(&serde_json::to_string(plan)?)?;
+        // SAFETY: valid handle of this device and a NUL-terminated string for the duration of the call
+        if unsafe { awgNetSet(self.handle, plan.as_ptr()) } < 0 {
+            return Err(anyhow!("сеть туннеля: {}", take(unsafe { awgLastError() }).unwrap_or_default()));
+        }
+        Ok(())
     }
 }
 
