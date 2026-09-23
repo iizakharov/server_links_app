@@ -250,9 +250,17 @@ pub async fn manage_traffic(app: AppHandle) -> Res<OpLog> {
 
 #[tauri::command]
 pub fn manage_client_share(st: tauri::State<AppState>, id: String) -> Res<crate::Share> {
-    let r = ops::render(&st.manage.snapshot.lock().unwrap(), &id).map_err(err)?;
-    let name = r.filename.trim_end_matches(".conf").to_string();
-    crate::share_of(&name, &r.conf, Some(r.vpn_key))
+    let s = st.manage.snapshot.lock().unwrap().clone();
+    let r = ops::render(&s, &id).map_err(err)?;
+    crate::share_of(&client_title(&s, &id)?, &r.conf, Some(r.vpn_key))
+}
+
+/// "phone (Proxy → Praga)"
+fn client_title(s: &State, id: &str) -> Res<String> {
+    let c = s.clients.iter().find(|c| c.id == id).ok_or("Нет такого клиента")?;
+    let cas = s.cascades.iter().find(|x| x.id == c.cascade_id).ok_or("Нет такого каскада")?;
+    let name_of = |sid: &str| s.servers.iter().find(|x| x.id == sid).map(|x| x.name.clone()).unwrap_or_default();
+    Ok(format!("{} ({} → {})", c.name, name_of(&cas.proxy_id), name_of(&cas.exit_id)))
 }
 
 /// Puts a managed client onto this device as a connection ("server" on the home screen).
@@ -260,10 +268,7 @@ pub fn manage_client_share(st: tauri::State<AppState>, id: String) -> Res<crate:
 pub fn manage_client_to_device(st: tauri::State<AppState>, id: String) -> Res<crate::View> {
     let s = st.manage.snapshot.lock().unwrap().clone();
     let r = ops::render(&s, &id).map_err(err)?;
-    let c = s.clients.iter().find(|c| c.id == id).ok_or("Нет такого клиента")?;
-    let cas = s.cascades.iter().find(|x| x.id == c.cascade_id).ok_or("Нет такого каскада")?;
-    let name_of = |sid: &str| s.servers.iter().find(|x| x.id == sid).map(|x| x.name.clone()).unwrap_or_default();
-    let name = format!("{} ({} → {})", c.name, name_of(&cas.proxy_id), name_of(&cas.exit_id));
+    let name = client_title(&s, &id)?;
     crate::change(&st, |d| {
         let p = new_profile(name, r.conf);
         d.selected = Some(p.id.clone());

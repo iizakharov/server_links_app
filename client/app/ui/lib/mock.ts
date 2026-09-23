@@ -29,6 +29,25 @@ let view: View = {
 let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 },
                       blocked: false, kill_switch: false, helper_version: "0.1.0+mock" };
 let helper: HelperState = { installed: true, running: true, outdated: false };
+const manageView = {
+  servers: [
+    { id: "s1", name: "Прокси", host: "198.51.100.1", ssh_port: 22, user: "root", key_path: "", has_password: true,
+      os: "Debian GNU/Linux 12", scanned_at: "2026-09-23 12:00", awg: [], forwards: ["udp 48303 → 203.0.113.9:48303"] },
+    { id: "s2", name: "Прага", host: "203.0.113.9", ssh_port: 22, user: "root", key_path: "", has_password: true,
+      os: "Ubuntu 24.04", scanned_at: "2026-09-23 12:00",
+      awg: [{ instance: "main", version: "2.0", port: 48303 }, { instance: "v3", version: "3.x", port: 56508 }], forwards: [] },
+  ],
+  cascades: [
+    { id: "c1", proxy_id: "s1", exit_id: "s2", port: 48303, mode: "external", status: "external", awg_version: "2.0" },
+    { id: "c2", proxy_id: "s1", exit_id: "s2", port: 60006, mode: "managed", instance: "v3", status: "applied", awg_version: "3.x" },
+  ],
+  external: [],
+  clients: [
+    { id: "k1", name: "phone", cascade_id: "c2", ip: "10.9.3.2", created: "2026-09-22 20:58",
+      traffic: { rx: 42_000_000, tx: 1_500_000_000 }, handshake: Math.floor(Date.now() / 1000) - 60, stats_at: "2026-09-23 12:00" },
+  ],
+  busy: false,
+};
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const now = () => Math.floor(Date.now() / 1000);
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
@@ -78,6 +97,10 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
     case "install_helper": await wait(800); helper = { installed: true, running: true, outdated: false }; return clone(helper);
     case "uninstall_helper": helper = { installed: false, running: false, outdated: false }; return clone(helper);
   }
-  if (cmd === "manage_view") return { servers: [], cascades: [], external: [], clients: [], busy: false };
+  if (cmd === "manage_view") return clone(manageView);
+  if (["manage_server_scan", "manage_traffic", "manage_cascade_check"].includes(cmd)) {
+    await wait(700);
+    return { ok: true, log: ["проверка связи: прокси → 203.0.113.9:48303 — дошло 5 из 5", "связь в обе стороны работает"] };
+  }
   throw `В браузере управление серверами недоступно (${cmd})`;
 }
