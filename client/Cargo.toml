@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/amz-core", "crates/amz-remote", "crates/amz-cli", "crates/amz-tunnel", "crates/amz-ipc", "crates/amz-helper", "app/src-tauri"]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT"
 
