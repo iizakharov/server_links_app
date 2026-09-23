@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "amnezinu-vpn"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "amz-ipc",
@@ -94,7 +94,7 @@ dependencies = [
 
 [[package]]
 name = "amz-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "amz-ipc",
@@ -108,7 +108,7 @@ dependencies = [
 
 [[package]]
 name = "amz-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "base64 0.22.1",
  "flate2",
@@ -122,7 +122,7 @@ dependencies = [
 
 [[package]]
 name = "amz-helper"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "amz-ipc",
@@ -138,7 +138,7 @@ dependencies = [
 
 [[package]]
 name = "amz-ipc"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "anyhow",
@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "amz-remote"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "anyhow",
@@ -164,7 +164,7 @@ dependencies = [
 
 [[package]]
 name = "amz-tunnel"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "amz-core",
  "amz-ipc",

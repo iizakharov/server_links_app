@@ -27,7 +27,7 @@ let view: View = {
   settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } },
 };
 let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 },
-                      blocked: false, kill_switch: false, helper_version: "0.1.0+mock" };
+                      blocked: false, kill_switch: false, helper_version: "0.1.1+mock" };
 let helper: HelperState = { installed: true, running: true, outdated: false };
 const manageView = {
   servers: [

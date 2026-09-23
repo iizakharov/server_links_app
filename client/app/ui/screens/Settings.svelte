@@ -82,7 +82,7 @@
 
   <div class="card col small">
     <h2>О приложении</h2>
-    <p>АМнеЗинуVPN 0.1.0{inTauri ? "" : " (просмотр в браузере)"}</p>
+    <p>АМнеЗинуVPN 0.1.1{inTauri ? "" : " (просмотр в браузере)"}</p>
     <p class="muted">Совместимо с серверами AmneziaWG 1.0, 2.0 и 3.x и ключами vpn:// из AmneziaVPN. Туннель — amneziawg-go 3.1.20260828 (MIT). Ключи хранятся в {secretStore}.</p>
   </div>
 </section>
