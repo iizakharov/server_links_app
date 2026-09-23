@@ -1,4 +1,4 @@
-// Package main is a C API over amneziawg-go, linked into the АМнеЗинуVPN helper (c-archive / c-shared).
+// Package main is a C API over amneziawg-go, linked into the AMneZinu helper (c-archive / c-shared).
 // A tunnel is identified by a handle; configuration is the standard UAPI text (keys in hex).
 package main
 

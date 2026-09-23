@@ -53,7 +53,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pytest -q
 ```
 
-## Приложение АМнеЗинуVPN (`client/`, в разработке)
+## Приложение AMneZinu (`client/`, в разработке)
 
 Кроссплатформенное приложение (macOS, Windows, Linux, Android) в стиле AmneziaVPN со своим туннелем и управлением каскадами. Ядро переписывается на Rust; эта панель остаётся эталоном: `tests/golden/gen.py` запускает Python-код и пишет эталонные ответы в `client/fixtures/`, а Rust-тесты сверяются с ними.
 
@@ -88,7 +88,7 @@ sudo ./target/release/amz-helper --allow-uid $(id -u)     # в отдельно�
 
 ```bash
 cd client && cargo build --release -p amz-helper          # служба кладётся внутрь .app
-cd app && npm install && npx tauri build --bundles app    # target/release/bundle/macos/АМнеЗинуVPN.app
+cd app && npm install && npx tauri build --bundles app    # target/release/bundle/macos/AMneZinu.app
 npm run build:mac                                         # универсальная сборка (Apple Silicon + Intel) и .dmg
 npm run dev                                               # интерфейс в браузере на имитации бэкенда (порт 1420)
 ```

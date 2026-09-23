@@ -9,7 +9,7 @@ use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "amz", about = "АМнеЗинуVPN: серверы, каскады и клиенты AmneziaWG")]
+#[command(name = "amz", about = "AMneZinu: серверы, каскады и клиенты AmneziaWG")]
 struct Cli {
     /// Directory with state.json
     #[arg(long, env = "AMZ_DATA", default_value = "data")]

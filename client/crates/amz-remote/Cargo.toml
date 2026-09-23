@@ -1,6 +1,6 @@
 [package]
 name = "amz-remote"
-description = "АМнеЗинуVPN: server management over SSH (AmneziaWG exit servers, proxy cascades)"
+description = "AMneZinu: server management over SSH (AmneziaWG exit servers, proxy cascades)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

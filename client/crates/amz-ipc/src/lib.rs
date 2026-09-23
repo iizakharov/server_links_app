@@ -121,7 +121,7 @@ pub fn read_line<T: for<'de> Deserialize<'de>>(r: &mut impl BufRead) -> Result<T
 #[cfg(unix)]
 pub fn call(req: &Request) -> Result<Status> {
     let stream = UnixStream::connect(SOCKET)
-        .map_err(|e| anyhow!("служба АМнеЗинуVPN не запущена ({SOCKET}: {e})"))?;
+        .map_err(|e| anyhow!("служба AMneZinu не запущена ({SOCKET}: {e})"))?;
     stream.set_read_timeout(Some(Duration::from_secs(60)))?;
     exchange(stream.try_clone()?, stream, req)
 }
@@ -139,7 +139,7 @@ pub fn call(req: &Request) -> Result<Status> {
                 tries += 1;
                 std::thread::sleep(Duration::from_millis(40));
             }
-            Err(e) => bail!("служба АМнеЗинуVPN не запущена ({SOCKET}: {e})"),
+            Err(e) => bail!("служба AMneZinu не запущена ({SOCKET}: {e})"),
         }
     };
     exchange(pipe.try_clone()?, pipe, req)

@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2019-2026 WireGuard LLC. All Rights Reserved.
  *
- * Copied from golang.zx2c4.com/wireguard/windows v1.1.1 (tunnel/firewall) for АМнеЗинуVPN;
+ * Copied from golang.zx2c4.com/wireguard/windows v1.1.1 (tunnel/firewall) for AMneZinu;
  * changed: EnableFirewall takes allowLAN (see lan.go).
  */
 

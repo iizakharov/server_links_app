@@ -1,4 +1,4 @@
-//! АМнеЗинуVPN server management over SSH: a Rust port of the reference panel's
+//! AMneZinu server management over SSH: a Rust port of the reference panel's
 //! `app/ssh.py`, `app/foreign.py`, `app/proxy.py` and the orchestration in `app/main.py`.
 
 pub mod foreign;

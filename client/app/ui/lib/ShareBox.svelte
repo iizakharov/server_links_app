@@ -25,7 +25,7 @@
 </div>
 {#if mode === "key"}
   <div class="qr">{@html data.qr_svg}</div>
-  <p class="small muted center">Отсканируйте в AmneziaVPN или АМнеЗинуVPN на телефоне</p>
+  <p class="small muted center">Отсканируйте в AmneziaVPN или AMneZinu на телефоне</p>
 {:else}
   <pre class="card mono conf">{data.conf}</pre>
 {/if}

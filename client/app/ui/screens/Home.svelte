@@ -30,7 +30,7 @@
 <section class="screen home">
   <header class="row">
     <img src="/logo.svg" alt="" width="28" height="28" />
-    <h1 class="grow">АМнеЗинуVPN</h1>
+    <h1 class="grow">AMneZinu</h1>
   </header>
 
   {#if app.status?.blocked}

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Universal (Apple Silicon + Intel) build of АМнеЗинуVPN: helper for both archs, then the app and .dmg.
+# Universal (Apple Silicon + Intel) build of AMneZinu: helper for both archs, then the app and .dmg.
 set -e
 # updates are signed with this key (the app checks it against the public key in tauri.conf.json)
 KEY="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$HOME/.tauri/amnezinu-vpn.key}"

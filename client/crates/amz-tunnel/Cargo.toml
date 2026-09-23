@@ -1,6 +1,6 @@
 [package]
 name = "amz-tunnel"
-description = "АМнеЗинуVPN: amneziawg-go (go/libawg) linked into Rust, plus OS network setup"
+description = "AMneZinu: amneziawg-go (go/libawg) linked into Rust, plus OS network setup"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

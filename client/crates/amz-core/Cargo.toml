@@ -1,6 +1,6 @@
 [package]
 name = "amz-core"
-description = "АМнеЗинуVPN core: AmneziaWG configs, vpn:// keys, AWG versions, local state"
+description = "AMneZinu core: AmneziaWG configs, vpn:// keys, AWG versions, local state"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

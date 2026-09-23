@@ -89,7 +89,7 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
     }
     case "save_text": return;
     case "connect":
-      if (!helper.running) throw "служба АМнеЗинуVPN не запущена";
+      if (!helper.running) throw "служба AMneZinu не запущена";
       await wait(900);
       status = { ...status, connected: true, name: p?.name ?? "", iface: "utun9", endpoint: p?.endpoint ?? "", since: now(),
                  stats: { rx: 0, tx: 0, handshake: now() }, kill_switch: view.settings.kill_switch };
@@ -99,7 +99,7 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
       status = { ...status, connected: false };
       return clone(status);
     case "status":
-      if (!helper.running) throw "служба АМнеЗинуVPN не запущена";
+      if (!helper.running) throw "служба AMneZinu не запущена";
       if (status.connected) { status.stats.rx += 180_000 + Math.random() * 90_000; status.stats.tx += 22_000; }
       return clone(status);
     case "helper_state": return clone(helper);

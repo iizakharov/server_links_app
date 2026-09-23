@@ -1,6 +1,6 @@
 [package]
 name = "amnezinu-vpn"
-description = "АМнеЗинуVPN desktop app"
+description = "AMneZinu desktop app"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

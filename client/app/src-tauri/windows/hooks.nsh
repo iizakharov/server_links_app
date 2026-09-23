@@ -1,4 +1,4 @@
-; АМнеЗинуVPN: removing the app also removes its VPN service (asks for administrator rights, UAC).
+; AMneZinu: removing the app also removes its VPN service (asks for administrator rights, UAC).
 ; Not on updates: the new version keeps the installed service (the app offers to update it).
 !macro NSIS_HOOK_PREUNINSTALL
   ${If} $UpdateMode <> 1

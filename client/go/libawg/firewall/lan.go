@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  *
- * АМнеЗинуVPN addition to the WireGuard firewall: with the kill switch on, still allow the local network
+ * AMneZinu addition to the WireGuard firewall: with the kill switch on, still allow the local network
  * (printers, router page, NAS, discovery), in and out. Same networks as the macOS pf rules.
  */
 

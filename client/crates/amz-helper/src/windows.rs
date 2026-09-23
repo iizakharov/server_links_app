@@ -417,7 +417,7 @@ fn install(allowed: &[String]) -> Result<()> {
     }
     let info = ServiceInfo {
         name: SERVICE.into(),
-        display_name: "АМнеЗинуVPN".into(),
+        display_name: "AMneZinu".into(),
         service_type: ServiceType::OWN_PROCESS,
         start_type: ServiceStartType::AutoStart,
         error_control: ServiceErrorControl::Normal,
@@ -429,7 +429,7 @@ fn install(allowed: &[String]) -> Result<()> {
     };
     let svc = manager.create_service(&info, ServiceAccess::CHANGE_CONFIG | ServiceAccess::START | ServiceAccess::QUERY_STATUS)
         .context("создание службы")?;
-    let _ = svc.set_description("Управляет VPN-подключением АМнеЗинуVPN");
+    let _ = svc.set_description("Управляет VPN-подключением AMneZinu");
     let restart = ServiceAction { action_type: ServiceActionType::Restart, delay: Duration::from_secs(2) };
     svc.update_failure_actions(ServiceFailureActions {
         reset_period: ServiceFailureResetPeriod::After(Duration::from_secs(86400)),

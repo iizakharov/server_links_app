@@ -1,5 +1,5 @@
 #!/bin/sh
-# Windows x64 build of АМнеЗинуVPN, cross-compiled on macOS: helper + wintun.dll, then the app and the NSIS installer.
+# Windows x64 build of AMneZinu, cross-compiled on macOS: helper + wintun.dll, then the app and the NSIS installer.
 # Needs: brew install mingw-w64 makensis; rustup target add x86_64-pc-windows-gnu
 set -e
 # updates are signed with this key (the app checks it against the public key in tauri.conf.json)

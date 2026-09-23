@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "АМнеЗинуVPN",
+  "productName": "AMneZinu",
   "mainBinaryName": "amnezinu-vpn",
   "version": "0.1.3",
   "identifier": "com.amnezinu.vpn",
@@ -13,7 +13,7 @@
   "app": {
     "windows": [
       {
-        "title": "АМнеЗинуVPN",
+        "title": "AMneZinu",
         "width": 400,
         "height": 720,
         "minWidth": 360,

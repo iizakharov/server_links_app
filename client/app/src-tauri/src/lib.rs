@@ -1,4 +1,4 @@
-//! АМнеЗинуVPN desktop app: Tauri commands over the device's profiles and the helper.
+//! AMneZinu desktop app: Tauri commands over the device's profiles and the helper.
 mod helper;
 mod manage;
 mod profiles;
@@ -269,5 +269,5 @@ pub fn run() {
             manage::manage_import_panel
         ])
         .run(tauri::generate_context!())
-        .expect("error while running АМнеЗинуVPN");
+        .expect("error while running AMneZinu");
 }

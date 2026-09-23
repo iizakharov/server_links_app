@@ -1,6 +1,6 @@
 [package]
 name = "amz-ipc"
-description = "АМнеЗинуVPN: protocol between the app and the privileged helper"
+description = "AMneZinu: protocol between the app and the privileged helper"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

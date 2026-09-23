@@ -108,7 +108,7 @@ pub fn install(helper: &Path) -> Result<()> {
          printf %s {plist} > {PLIST}; chown root:wheel {PLIST}; chmod 644 {PLIST}; \
          launchctl bootstrap system {PLIST}",
         src = sq(&helper.to_string_lossy()), plist = sq(&plist(uid)));
-    run_as_admin(&script, "АМнеЗинуVPN устанавливает службу, которая управляет VPN-подключением.")?;
+    run_as_admin(&script, "AMneZinu устанавливает службу, которая управляет VPN-подключением.")?;
     // the service needs a moment to open its socket
     for _ in 0..30 {
         if state().running {
@@ -122,7 +122,7 @@ pub fn install(helper: &Path) -> Result<()> {
 #[cfg(target_os = "macos")]
 pub fn uninstall() -> Result<()> {
     let script = format!("launchctl bootout system/{LABEL} 2>/dev/null || true; rm -f {PLIST} {INSTALLED}");
-    run_as_admin(&script, "АМнеЗинуVPN удаляет свою службу.")
+    run_as_admin(&script, "AMneZinu удаляет свою службу.")
 }
 
 #[cfg(windows)]

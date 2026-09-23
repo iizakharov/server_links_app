@@ -1,4 +1,4 @@
-//! АМнеЗинуVPN core: a Rust port of the reference Python panel (`app/configs.py`, `app/keys.py`,
+//! AMneZinu core: a Rust port of the reference Python panel (`app/configs.py`, `app/keys.py`,
 //! the pure parts of `app/foreign.py`, `app/storage.py`). Outputs are checked against
 //! golden fixtures generated from the Python code (`tests/golden/gen.py` -> `client/fixtures/`).
 

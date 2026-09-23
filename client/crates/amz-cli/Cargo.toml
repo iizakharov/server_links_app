@@ -1,6 +1,6 @@
 [package]
 name = "amz-cli"
-description = "АМнеЗинуVPN debug CLI: servers, cascades, clients over SSH"
+description = "AMneZinu debug CLI: servers, cascades, clients over SSH"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -43,14 +43,14 @@ fn toggle(app: &AppHandle) {
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let status = MenuItem::with_id(app, "status", "Отключено", false, None::<&str>)?;
     let toggle_item = MenuItem::with_id(app, "toggle", "Подключить", true, None::<&str>)?;
-    let open = MenuItem::with_id(app, "open", "Открыть АМнеЗинуVPN", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Открыть AMneZinu", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Отключить и выйти", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&status, &toggle_item, &PredefinedMenuItem::separator(app)?, &open,
                                        &PredefinedMenuItem::separator(app)?, &quit])?;
     let tray = TrayIconBuilder::with_id("main")
         .icon(Image::from_bytes(ICON_OFF)?)
         .icon_as_template(true)
-        .tooltip("АМнеЗинуVPN")
+        .tooltip("AMneZinu")
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id.as_ref() {
