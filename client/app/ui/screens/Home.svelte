@@ -74,11 +74,13 @@
   <div class="center">
     <button class="power {phase}" onclick={toggleConnection}
             disabled={!!app.busy || !profile || !app.helper.running}
-            aria-label={connected ? "Отключить" : "Подключить"}>
-      <span class="ring"></span>
-      <Icon name="power" size={64} />
+            aria-label={connected ? "Отключить" : "Подключить"}
+            aria-pressed={connected} aria-busy={!!app.busy}>
+      <img class="bust bust-off" src="/vpn-button-off.webp" alt="" draggable="false" />
+      <img class="bust bust-on" src="/vpn-button-on.webp" alt="" draggable="false" />
+      <span class="activity" aria-hidden="true"></span>
     </button>
-    <p class="state" class:ok={connected}>{label}</p>
+    <p class="state" class:ok={connected} role="status">{label}</p>
     {#if connected}
       <p class="muted mono">{duration(app.status!.since)}</p>
       {#if app.status!.kill_switch || app.view.settings.split.mode !== "all"}
@@ -134,19 +136,31 @@
   .banner { border-color: var(--accent); }
   .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px 0; }
   .power {
-    position: relative; width: 184px; height: 184px; border-radius: 50%;
-    display: grid; place-items: center; color: var(--muted);
-    background: var(--surface); border: 1px solid var(--border);
-    transition: color .3s, box-shadow .3s, background .3s;
+    position: relative; width: clamp(144px, 24vh, 192px); aspect-ratio: 4 / 5;
+    flex: none; padding: 0; border-radius: 24px; background: transparent;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .18s ease, filter .25s ease;
   }
-  .power:disabled { opacity: 1; cursor: default; }
-  .power .ring { position: absolute; inset: -10px; border-radius: 50%; border: 3px solid var(--border); }
-  .power.on { color: var(--on-accent); background: var(--accent-grad); box-shadow: var(--shadow-glow); border-color: transparent; }
-  .power.on .ring { border-color: var(--accent); opacity: .5; }
-  .power.busy { color: var(--accent); }
-  .power.busy .ring { border-color: transparent; border-top-color: var(--accent); animation: spin 1s linear infinite; }
-  .power.off:not(:disabled):hover { color: var(--text); }
+  .power:disabled { opacity: .5; cursor: default; }
+  .power.busy:disabled { opacity: 1; }
+  .power:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+  .power:not(:disabled):hover { filter: brightness(1.12); }
+  .power:not(:disabled):active { transform: translateY(3px) scale(.96); }
+  .bust { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; transition: opacity .4s ease; }
+  .bust-on { opacity: 0; }
+  .power.on .bust-off { opacity: 0; }
+  .power.on .bust-on { opacity: 1; }
+  .power.busy .bust-on { animation: pulse 1.2s ease-in-out infinite; }
+  .activity { position: absolute; left: calc(50% - 9px); bottom: -8px; width: 18px; height: 18px; border: 2px solid transparent; border-radius: 50%; opacity: 0; }
+  .power.busy .activity { opacity: 1; border-color: var(--border); border-top-color: var(--accent); animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: .2; } 50% { opacity: .85; } }
+  @media (prefers-reduced-motion: reduce) {
+    .power, .bust { transition: none; }
+    .power.busy .bust-on { animation: none; opacity: .5; }
+    .power.busy .activity { animation: none; }
+    .power:not(:disabled):active { transform: none; }
+  }
   .state { font-size: 20px; font-weight: 650; margin-top: 14px; }
   .state.ok { color: var(--accent); }
   .modes { gap: 6px; }
