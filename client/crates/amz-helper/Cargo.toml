@@ -1,0 +1,15 @@
+[package]
+name = "amz-helper"
+description = "АМнеЗинуVPN privileged helper: owns the tunnel, talks to the app over a local socket"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+amz-core = { path = "../amz-core" }
+amz-ipc = { path = "../amz-ipc" }
+amz-tunnel = { path = "../amz-tunnel" }
+anyhow = "1"
+serde_json.workspace = true
+libc = "0.2"
+ctrlc = { version = "3", features = ["termination"] }

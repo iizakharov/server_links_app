@@ -54,7 +54,7 @@ SERVERS = {
            "params": {"Jc": "5", "Jmin": "8", "Jmax": "80", "S1": "20", "S2": "90", "S3": "30", "S4": "40",
                       "H1": "5-100005", "H2": "600000000-600100000", "H3": "1100000000-1100200000",
                       "H4": "1700000000-1700300000", "HeaderProtectionKey": PSK,
-                      "ContentPaddingAddition": "8-64", "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"}},
+                      "ContentPaddingAddition": "8-64", "I1": "<b 0xf6ab3267fa><t><r 10><rd 4>"}},
 }
 CLIENTS = [
     {"ip": "10.8.1.5", "private_key": CLIENT_PRIV, "public_key": keys.public_key(CLIENT_PRIV), "psk": PSK},

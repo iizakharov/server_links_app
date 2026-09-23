@@ -46,7 +46,7 @@
       "H4": "1700000000-1700300000",
       "HeaderProtectionKey": "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE=",
       "ContentPaddingAddition": "8-64",
-      "I1": "<b 0xf6ab3267fa><c><b 0xf6ab><t><r 10><wt 10>"
+      "I1": "<b 0xf6ab3267fa><t><r 10><rd 4>"
     },
     "is_legacy": false,
     "awg_version": "3.x"

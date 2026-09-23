@@ -12,6 +12,8 @@ path = "src/main.rs"
 [dependencies]
 amz-core = { path = "../amz-core" }
 amz-remote = { path = "../amz-remote" }
+amz-ipc = { path = "../amz-ipc" }
+amz-tunnel = { path = "../amz-tunnel" }
 serde_json.workspace = true
 anyhow = "1"
 clap = { version = "4", features = ["derive", "env"] }

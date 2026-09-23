@@ -73,4 +73,15 @@ cd client && cargo build -p amz-cli
 ./target/debug/amz --data ../data key <client-id>
 ```
 
+Туннель на этом устройстве (пока macOS): сборка требует Go (`amneziawg-go` встраивается как библиотека), управление идёт через привилегированный helper:
+
+```bash
+cd client && cargo build --release -p amz-helper -p amz-cli
+sudo ./target/release/amz-helper --allow-uid $(id -u)     # в отдельном терминале
+./target/release/amz --data ../data validate              # конфиги всех клиентов принимаются amneziawg-go
+./target/release/amz --data ../data up <client-id>        # или: amz up --conf file.conf
+./target/release/amz status
+./target/release/amz down
+```
+
 При первом подключении `amz` запоминает SSH-ключ сервера (`host_key`) и дальше отказывается подключаться, если ключ изменился.

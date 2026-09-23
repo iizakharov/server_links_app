@@ -66,6 +66,33 @@ enum Cmd {
     Conf { id: String },
     /// Print the client's vpn:// key
     Key { id: String },
+    /// Connect this device: a client from state, or a .conf file (needs amz-helper running)
+    Up {
+        /// client id from state
+        id: Option<String>,
+        #[arg(long)]
+        conf: Option<PathBuf>,
+    },
+    /// Check client configs with the built-in amneziawg-go (all clients if no id)
+    Validate { id: Option<String> },
+    /// Disconnect this device
+    Down,
+    /// Tunnel status of this device
+    Status,
+}
+
+fn print_status(st: &amz_ipc::Status) {
+    if !st.connected {
+        println!("не подключено");
+        return;
+    }
+    let hs = match st.stats.handshake {
+        0 => "ещё не было".to_string(),
+        t => format!("{} с назад", (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64).unwrap_or(t) - t).max(0)),
+    };
+    println!("подключено: {} через {} → {}", st.name, st.iface, st.endpoint);
+    println!("handshake: {hs}; получено {}, отправлено {}", human(st.stats.rx), human(st.stats.tx));
 }
 
 fn print_log(r: OpLog) -> Result<()> {
@@ -148,6 +175,41 @@ async fn main() -> Result<()> {
         Cmd::Traffic => print_log(ops::refresh_traffic(&conn, &store, &mut s).await)?,
         Cmd::Conf { id } => print!("{}", ops::render(&s, &id)?.conf),
         Cmd::Key { id } => println!("{}", ops::render(&s, &id)?.vpn_key),
+        Cmd::Up { id, conf } => {
+            let (conf, name) = match (id, conf) {
+                (Some(id), None) => {
+                    let r = ops::render(&s, &id)?;
+                    (r.conf, r.filename.trim_end_matches(".conf").to_string())
+                }
+                (None, Some(path)) => (std::fs::read_to_string(&path)?,
+                                       path.file_stem().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()),
+                _ => return Err(anyhow!("укажите id клиента или --conf файл")),
+            };
+            print_status(&amz_ipc::call(&amz_ipc::Request::Up { conf, name })?);
+        }
+        Cmd::Validate { id } => {
+            let ids: Vec<String> = match id {
+                Some(id) => vec![id],
+                None => s.clients.iter().map(|c| c.id.clone()).collect(),
+            };
+            let mut bad = 0;
+            for id in &ids {
+                let res = ops::render(&s, id).map_err(anyhow::Error::from).and_then(|r| {
+                    let cfg = amz_core::tunnel::tunnel_config(&r.conf, |_, port| Some(([192, 0, 2, 1], port).into()))?;
+                    amz_tunnel::awg::validate(&cfg.uapi)
+                });
+                if let Err(e) = res {
+                    bad += 1;
+                    println!("{id}: {e:#}");
+                }
+            }
+            println!("проверено {}, ошибок {bad}", ids.len());
+            if bad > 0 {
+                return Err(anyhow!("есть конфиги, которые amneziawg не принимает"));
+            }
+        }
+        Cmd::Down => print_status(&amz_ipc::call(&amz_ipc::Request::Down)?),
+        Cmd::Status => print_status(&amz_ipc::call(&amz_ipc::Request::Status)?),
     }
     Ok(())
 }

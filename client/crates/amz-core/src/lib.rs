@@ -8,6 +8,7 @@ pub mod keys;
 pub mod model;
 pub mod pyjson;
 pub mod storage;
+pub mod tunnel;
 pub mod vpnkey;
 
 pub use conf::{client_conf, drop_peer, obfuscation_params, parse_conf, Section};
