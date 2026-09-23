@@ -78,5 +78,6 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
     case "install_helper": await wait(800); helper = { installed: true, running: true, outdated: false }; return clone(helper);
     case "uninstall_helper": helper = { installed: false, running: false, outdated: false }; return clone(helper);
   }
-  throw `mock: ${cmd}`;
+  if (cmd === "manage_view") return { servers: [], cascades: [], external: [], clients: [], busy: false };
+  throw `В браузере управление серверами недоступно (${cmd})`;
 }

@@ -1,7 +1,7 @@
 // App-wide state shared by the screens.
 import { api, errorText, type HelperState, type Settings, type Status, type View } from "./api";
 
-export type Tab = "home" | "servers" | "share" | "settings" | "add" | "split";
+export type Tab = "home" | "servers" | "share" | "settings" | "add" | "split" | "manage";
 
 export const app = $state({
   tab: "home" as Tab,

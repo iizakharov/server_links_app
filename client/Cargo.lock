@@ -75,6 +75,7 @@ version = "0.1.0"
 dependencies = [
  "amz-core",
  "amz-ipc",
+ "amz-remote",
  "anyhow",
  "chrono",
  "keyring",
@@ -88,6 +89,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
+ "tokio",
 ]
 
 [[package]]

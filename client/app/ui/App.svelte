@@ -9,10 +9,12 @@
   import Share from "./screens/Share.svelte";
   import Settings from "./screens/Settings.svelte";
   import Split from "./screens/Split.svelte";
+  import Manage from "./screens/Manage.svelte";
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "home", label: "Главная", icon: "home" },
     { id: "servers", label: "Серверы", icon: "servers" },
+    { id: "manage", label: "Управление", icon: "cascade" },
     { id: "share", label: "Поделиться", icon: "share" },
     { id: "settings", label: "Настройки", icon: "settings" },
   ];
@@ -33,6 +35,7 @@
     {:else if app.tab === "add"}<Add />
     {:else if app.tab === "share"}<Share />
     {:else if app.tab === "split"}<Split />
+    {:else if app.tab === "manage"}<Manage />
     {:else}<Settings />{/if}
   </main>
   <nav>

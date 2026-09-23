@@ -122,3 +122,37 @@ fn state_round_trip_keeps_unknown_fields() {
     assert_eq!(std::fs::read_dir(dir.join("backups")).unwrap().count(), 1);
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+#[test]
+fn secrets_stay_out_of_the_file() {
+    use amz_core::storage::Secrets;
+    use std::collections::HashMap;
+    use std::sync::{Arc, Mutex};
+
+    #[derive(Default)]
+    struct Mem(Mutex<HashMap<String, String>>);
+    impl Secrets for Mem {
+        fn get(&self, key: &str) -> Option<String> { self.0.lock().unwrap().get(key).cloned() }
+        fn set(&self, key: &str, value: &str) -> Result<(), String> {
+            self.0.lock().unwrap().insert(key.into(), value.into());
+            Ok(())
+        }
+    }
+    let dir = std::env::temp_dir().join(format!("amz-core-secrets-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let mem = Arc::new(Mem::default());
+    let store = Storage::with_secrets(&dir, mem.clone());
+    let state: State = serde_json::from_value(serde_json::json!({
+        "servers": [{"id": "a1", "name": "p", "host": "1.2.3.4", "password": "hunter2"}],
+        "clients": [{"id": "k1", "name": "phone", "cascade_id": "c1", "ip": "10.9.2.2",
+                     "private_key": "PRIVKEY", "public_key": "PUB"}],
+    })).unwrap();
+    store.save(&state).unwrap();
+    let file = std::fs::read_to_string(dir.join("state.json")).unwrap();
+    assert!(!file.contains("hunter2") && !file.contains("PRIVKEY") && file.contains("PUB"));
+    assert_eq!(mem.get("server:a1").as_deref(), Some("hunter2"));
+    assert_eq!(store.load().unwrap(), state); // everything comes back on load
+    // a panel file with secrets inside moves them out on the next save
+    assert_eq!(Storage::new(&dir).load().unwrap().servers[0].password, None);
+    std::fs::remove_dir_all(&dir).unwrap();
+}

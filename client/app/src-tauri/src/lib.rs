@@ -1,5 +1,6 @@
 //! АМнеЗинуVPN desktop app: Tauri commands over the device's profiles and the helper.
 mod helper;
+mod manage;
 mod profiles;
 mod tray;
 
@@ -14,16 +15,17 @@ use tauri::{Manager, State};
 pub(crate) struct AppState {
     pub(crate) store: Store,
     pub(crate) data: Mutex<Data>,
+    pub(crate) manage: manage::Manage,
 }
 
-type Res<T> = Result<T, String>;
+pub(crate) type Res<T> = Result<T, String>;
 
-fn err(e: impl std::fmt::Display) -> String {
+pub(crate) fn err(e: impl std::fmt::Display) -> String {
     e.to_string()
 }
 
 #[derive(Serialize)]
-struct View {
+pub(crate) struct View {
     profiles: Vec<ProfileView>,
     selected: Option<String>,
     settings: Settings,
@@ -33,7 +35,7 @@ fn view(d: &Data) -> View {
     View { profiles: d.profiles.iter().map(|p| p.view()).collect(), selected: d.selected.clone(), settings: d.settings.clone() }
 }
 
-fn change(st: &State<AppState>, f: impl FnOnce(&mut Data) -> Res<()>) -> Res<View> {
+pub(crate) fn change(st: &State<AppState>, f: impl FnOnce(&mut Data) -> Res<()>) -> Res<View> {
     let mut d = st.data.lock().unwrap();
     let mut next = d.clone();
     f(&mut next)?;
@@ -98,22 +100,30 @@ fn set_settings(st: State<AppState>, settings: Settings) -> Res<View> {
 }
 
 #[derive(Serialize)]
-struct Share {
+pub(crate) struct Share {
     name: String,
     conf: String,
     vpn_key: String,
     qr_svg: String,
 }
 
+/// Key (given, or built from the config), QR and config for sharing a connection.
+pub(crate) fn share_of(name: &str, conf: &str, vpn_key: Option<String>) -> Res<Share> {
+    let vpn_key = match vpn_key {
+        Some(k) => k,
+        None => conf_to_vpn_key(name, conf).map_err(err)?,
+    };
+    let qr = qrcode::QrCode::with_error_correction_level(vpn_key.as_bytes(), qrcode::EcLevel::L)
+        .map_err(|_| "Ключ слишком длинный для одного QR-кода".to_string())?;
+    let qr_svg = qr.render::<qrcode::render::svg::Color>().quiet_zone(true).min_dimensions(240, 240).build();
+    Ok(Share { name: name.into(), conf: conf.into(), vpn_key, qr_svg })
+}
+
 #[tauri::command]
 fn share(st: State<AppState>, id: String) -> Res<Share> {
     let d = st.data.lock().unwrap();
     let p = d.profiles.iter().find(|p| p.id == id).ok_or("Нет такого сервера")?;
-    let vpn_key = conf_to_vpn_key(&p.name, &p.conf).map_err(err)?;
-    let qr = qrcode::QrCode::with_error_correction_level(vpn_key.as_bytes(), qrcode::EcLevel::L)
-        .map_err(|_| "Ключ слишком длинный для одного QR-кода".to_string())?;
-    let qr_svg = qr.render::<qrcode::render::svg::Color>().quiet_zone(true).min_dimensions(240, 240).build();
-    Ok(Share { name: p.name.clone(), conf: p.conf.clone(), vpn_key, qr_svg })
+    share_of(&p.name, &p.conf, None)
 }
 
 #[tauri::command]
@@ -171,11 +181,13 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--hidden"])))
         .setup(|app| {
-            let store = Store::new(&app.path().app_data_dir()?);
+            let dir = app.path().app_data_dir()?;
+            let store = Store::new(&dir);
             let data = store.load()?;
+            let manage = manage::Manage::open(&dir)?;
             let autoconnect = data.settings.autoconnect.then(|| data.selected.clone()).flatten();
             let req = autoconnect.and_then(|id| up_request(&data, &id).ok());
-            app.manage(AppState { store, data: Mutex::new(data) });
+            app.manage(AppState { store, data: Mutex::new(data), manage });
             tray::setup(app.handle())?;
             // started at login: stay in the menu bar
             if std::env::args().any(|a| a == "--hidden") {
@@ -202,7 +214,12 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_view, import_text, rename_profile, remove_profile, select_profile, set_settings,
-            share, save_text, connect, disconnect, status, helper_state, install_helper, uninstall_helper
+            share, save_text, connect, disconnect, status, helper_state, install_helper, uninstall_helper,
+            manage::manage_view, manage::manage_server_save, manage::manage_server_delete, manage::manage_server_scan,
+            manage::manage_cascade_create, manage::manage_cascade_adopt, manage::manage_cascade_delete,
+            manage::manage_cascade_check, manage::manage_client_create, manage::manage_client_delete,
+            manage::manage_traffic, manage::manage_client_share, manage::manage_client_to_device,
+            manage::manage_import_panel
         ])
         .run(tauri::generate_context!())
         .expect("error while running АМнеЗинуVPN");

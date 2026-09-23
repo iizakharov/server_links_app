@@ -29,6 +29,56 @@ async function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
   return mock(cmd, args ?? {}) as Promise<T>;
 }
 
+export type AwgView = { instance: string; version: string; port: number };
+export type MServer = {
+  id: string; name: string; host: string; ssh_port: number; user: string; key_path: string; has_password: boolean;
+  os: string; scanned_at: string; awg: AwgView[]; forwards: string[];
+};
+export type MCascade = {
+  id: string; proxy_id: string; exit_id: string; port: number; mode: string; instance?: string;
+  status: string; awg_version: string | null;
+};
+export type MExternal = { proxy_id: string; exit_id: string; port: number; rule: string };
+export type MClient = {
+  id: string; name: string; cascade_id: string; ip: string; created: string;
+  traffic: { rx: number; tx: number } | null; handshake: number | null; stats_at: string | null;
+};
+export type ManageView = { servers: MServer[]; cascades: MCascade[]; external: MExternal[]; clients: MClient[]; busy: boolean };
+export type OpLog = { ok: boolean; log: string[] };
+export type ServerIn = { id: string | null; name: string; host: string; ssh_port: number; user: string; password: string; key_path: string };
+
+export const manage = {
+  view: () => call<ManageView>("manage_view"),
+  saveServer: (server: ServerIn) => call<string>("manage_server_save", { server }),
+  deleteServer: (id: string) => call<void>("manage_server_delete", { id }),
+  scan: (id: string) => call<string>("manage_server_scan", { id }),
+  createCascades: (req: { proxy_id: string; exit_ids: string[]; port: number | null; instance: string }) =>
+    call<OpLog>("manage_cascade_create", { req }),
+  adopt: (proxy_id: string, exit_id: string, port: number) => call<void>("manage_cascade_adopt", { proxyId: proxy_id, exitId: exit_id, port }),
+  deleteCascade: (id: string) => call<OpLog>("manage_cascade_delete", { id }),
+  check: (id: string) => call<OpLog>("manage_cascade_check", { id }),
+  createClient: (name: string, cascade_ids: string[]) => call<string[]>("manage_client_create", { name, cascadeIds: cascade_ids }),
+  deleteClient: (id: string) => call<OpLog>("manage_client_delete", { id }),
+  traffic: () => call<OpLog>("manage_traffic"),
+  share: (id: string) => call<Share>("manage_client_share", { id }),
+  toDevice: (id: string) => call<View>("manage_client_to_device", { id }),
+  importPanel: (path: string) => call<number>("manage_import_panel", { path }),
+};
+
+/** Live progress lines of management operations. */
+export async function onManageLog(cb: (line: string) => void): Promise<() => void> {
+  if (!inTauri) return () => {};
+  const { listen } = await import("@tauri-apps/api/event");
+  return listen<string>("manage-log", (e) => cb(e.payload));
+}
+
+export async function pickFile(filters: { name: string; extensions: string[] }[]): Promise<string | null> {
+  if (!inTauri) return null;
+  const { open } = await import("@tauri-apps/plugin-dialog");
+  const r = await open({ multiple: false, filters });
+  return typeof r === "string" ? r : null;
+}
+
 export const api = {
   view: () => call<View>("get_view"),
   importText: (text: string, name?: string) => call<View>("import_text", { text, name: name || null }),

@@ -25,6 +25,8 @@ pub trait Connector: Sync {
     fn connect(&self, server: &Server) -> impl Future<Output = Result<Self::R>> + Send;
     /// IP address of a server (its host may be a DNS name).
     fn ip_of(&self, server: &Server) -> String;
+    /// Each progress line as it happens (the app shows long installs live).
+    fn progress(&self, _line: &str) {}
 }
 
 pub struct Ssh;
@@ -51,19 +53,24 @@ pub struct OpLog {
     pub log: Vec<String>,
 }
 
-struct Logger(Mutex<Vec<String>>);
+/// Collects the operation log and passes each line to the connector as it happens.
+struct Logger<'a, C: Connector>(Mutex<Vec<String>>, &'a C);
 
-impl Logger {
-    fn new() -> Self {
-        Logger(Mutex::new(vec![]))
+impl<'a, C: Connector> Logger<'a, C> {
+    fn new(conn: &'a C) -> Self {
+        Logger(Mutex::new(vec![]), conn)
     }
     fn push(&self, line: impl Into<String>) {
-        self.0.lock().unwrap().push(line.into());
+        let line = line.into();
+        self.1.progress(&line);
+        self.0.lock().unwrap().push(line);
     }
     fn finish(self, res: Result<()>) -> OpLog {
         let mut log = self.0.into_inner().unwrap();
         if let Err(e) = &res {
-            log.push(format!("ОШИБКА: {e:#}"));
+            let line = format!("ОШИБКА: {e:#}");
+            self.1.progress(&line);
+            log.push(line);
         }
         OpLog { ok: res.is_ok(), log }
     }
@@ -121,7 +128,7 @@ fn managed_routes<C: Connector>(conn: &C, s: &State, proxy_id: &str) -> Result<V
     }).collect()
 }
 
-async fn apply_proxy<C: Connector>(conn: &C, s: &mut State, proxy_id: &str, log: &Logger) -> Result<()> {
+async fn apply_proxy<C: Connector>(conn: &C, s: &mut State, proxy_id: &str, log: &Logger<'_, C>) -> Result<()> {
     let routes = managed_routes(conn, s, proxy_id)?;
     let mut r = open(conn, s, proxy_id).await?;
     proxy::setup(&mut r, &routes, &|l| log.push(l)).await?;
@@ -201,13 +208,13 @@ pub struct CascadeRequest {
 }
 
 pub async fn create_cascades<C: Connector>(conn: &C, store: &Storage, s: &mut State, req: &CascadeRequest) -> OpLog {
-    let log = Logger::new();
+    let log = Logger::new(conn);
     let res = create_cascades_inner(conn, store, s, req, &log).await;
     log.finish(res)
 }
 
 async fn create_cascades_inner<C: Connector>(conn: &C, store: &Storage, s: &mut State, req: &CascadeRequest,
-                                             log: &Logger) -> Result<()> {
+                                             log: &Logger<'_, C>) -> Result<()> {
     let want = if req.instance.is_empty() { "auto" } else { req.instance.as_str() };
     let p = server(s, &req.proxy_id)?.clone();
     if req.exit_ids.is_empty() {
@@ -313,7 +320,7 @@ pub fn adopt_cascade<C: Connector>(conn: &C, store: &Storage, s: &mut State, pro
 }
 
 pub async fn delete_cascade<C: Connector>(conn: &C, store: &Storage, s: &mut State, cid: &str) -> OpLog {
-    let log = Logger::new();
+    let log = Logger::new(conn);
     let res = async {
         let c = cascade(s, cid)?.clone();
         s.cascades.retain(|x| x.id != cid);
@@ -337,7 +344,7 @@ pub async fn delete_cascade<C: Connector>(conn: &C, store: &Storage, s: &mut Sta
 
 /// Sends UDP probes proxy <-> exit and reports whether the cascade can work at all.
 pub async fn check_cascade<C: Connector>(conn: &C, s: &mut State, cid: &str) -> OpLog {
-    let log = Logger::new();
+    let log = Logger::new(conn);
     let res = async {
         let c = cascade(s, cid)?.clone();
         let (p, e) = (server(s, &c.proxy_id)?.clone(), server(s, &c.exit_id)?.clone());
@@ -452,7 +459,7 @@ pub async fn refresh_traffic<C: Connector>(conn: &C, store: &Storage, s: &mut St
 
 /// Revokes the client on the exit server and removes it from the list.
 pub async fn delete_client<C: Connector>(conn: &C, store: &Storage, s: &mut State, cid: &str) -> OpLog {
-    let log = Logger::new();
+    let log = Logger::new(conn);
     let res = async {
         let c = find(&s.clients, cid, "Клиент", |x| &x.id)?.clone();
         let cas = cascade(s, &c.cascade_id)?.clone();

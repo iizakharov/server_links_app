@@ -20,6 +20,10 @@
     shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
     paste: "M9 4h6v3H9zM7 5H5v16h14V5h-2",
     file: "M6 3h8l4 4v14H6zM14 3v4h4",
+    cascade: "M5 6a2 2 0 1 0 0-.01M19 6a2 2 0 1 0 0-.01M12 18a2 2 0 1 0 0-.01M7 6h10M6 8l5 8M18 8l-5 8",
+    refresh: "M20 11a8 8 0 0 0-14-5L4 8M4 4v4h4M4 13a8 8 0 0 0 14 5l2-2M20 20v-4h-4",
+    device: "M5 5h14v10H5zM9 19h6M12 15v4",
+    scan: "M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M7 12h10",
   };
 </script>
 
