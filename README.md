@@ -89,6 +89,7 @@ sudo ./target/release/amz-helper --allow-uid $(id -u)     # в отдельно�
 ```bash
 cd client && cargo build --release -p amz-helper          # служба кладётся внутрь .app
 cd app && npm install && npx tauri build --bundles app    # target/release/bundle/macos/АМнеЗинуVPN.app
+npm run build:mac                                         # универсальная сборка (Apple Silicon + Intel) и .dmg
 npm run dev                                               # интерфейс в браузере на имитации бэкенда (порт 1420)
 ```
 

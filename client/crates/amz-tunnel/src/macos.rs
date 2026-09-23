@@ -21,6 +21,12 @@ pub struct NetState {
     /// kill switch rules loaded in our pf anchor; token from `pfctl -E`
     pub kill_switch: bool,
     pub pf_token: Option<String>,
+    /// split tunneling as requested, to re-resolve domains later (their addresses change)
+    #[serde(default)]
+    pub split: amz_ipc::Split,
+    /// networks routed into the tunnel in "only" mode
+    #[serde(default)]
+    pub only_routes: Vec<String>,
 }
 
 const PF_ANCHOR: &str = "com.apple/amnezinu";
@@ -111,6 +117,34 @@ fn kill_switch_off(state: &NetState) -> Vec<String> {
 pub fn restore_keep_block(state: &NetState) -> Vec<String> {
     let rest = NetState { kill_switch: false, pf_token: None, ..state.clone() };
     restore(&rest)
+}
+
+/// Domains of split tunneling resolve to new addresses over time (CDN): route the new ones too.
+/// Old routes stay, a stale address costs nothing. Returns how many routes were added.
+pub fn refresh_split(state: &mut NetState) -> Result<usize> {
+    if state.split.mode == SplitMode::All {
+        return Ok(0);
+    }
+    let (listed, _) = resolve_entries(&state.split.entries, system_resolve);
+    let mut added = 0;
+    for net in listed.iter().filter(|n| !n.contains(':')) {
+        match state.split.mode {
+            SplitMode::Only if !state.only_routes.contains(net) => {
+                run("route", &["-q", "-n", "add", "-inet", net, "-interface", &state.iface])?;
+                state.only_routes.push(net.clone());
+            }
+            SplitMode::Except if !state.bypass.contains(net) => {
+                let Some((_, gw)) = &state.endpoint_route else { continue };
+                let mut args = vec!["-q", "-n", "add", "-inet", net.as_str()];
+                args.extend(gw.iter().map(String::as_str));
+                run("route", &args)?;
+                state.bypass.push(net.clone());
+            }
+            _ => continue,
+        }
+        added += 1;
+    }
+    Ok(added)
 }
 
 /// The physical network changed (other Wi-Fi, cable, wake from sleep): re-point routes that go around
@@ -228,6 +262,10 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
     let (listed, failed) = resolve_entries(&opts.split.entries, system_resolve);
     if opts.split.mode != SplitMode::All && !failed.is_empty() {
         eprintln!("amz-helper: не удалось найти адреса: {}", failed.join(", "));
+    }
+    state.split = opts.split.clone();
+    if opts.split.mode == SplitMode::Only {
+        state.only_routes = listed.clone();
     }
     let routes: Vec<(bool, String)> = match opts.split.mode {
         // only the listed sites (and our DNS servers, so names resolve the same way) go into the tunnel

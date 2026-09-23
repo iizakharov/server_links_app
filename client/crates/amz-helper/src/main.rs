@@ -29,7 +29,7 @@ mod macos {
     use amz_core::tunnel::{parse_stats, tunnel_config};
     use amz_ipc::{read_line, write_line, Request, Response, Status, UpOptions, BUILD, SOCKET};
     use amz_tunnel::awg::Device;
-    use amz_tunnel::macos::{configure, follow_gateway, restore, restore_keep_block, NetState};
+    use amz_tunnel::macos::{configure, follow_gateway, refresh_split, restore, restore_keep_block, NetState};
     use anyhow::{anyhow, bail, Result};
 
     /// What was changed in the system, kept on disk to undo it after a crash.
@@ -116,10 +116,24 @@ mod macos {
 
     /// Laptops change networks: keep the route to the server on the current physical gateway.
     fn watch_network(shared: Shared) {
-        std::thread::spawn(move || loop {
+        std::thread::spawn(move || {
+            let mut tick = 0u64;
+            loop {
+            tick += 1;
             std::thread::sleep(std::time::Duration::from_secs(5));
             let mut h = shared.lock().unwrap();
             if let Some(a) = h.active.as_mut() {
+                // every 10 minutes: new addresses of split-tunnel domains
+                if tick.is_multiple_of(120) {
+                    match refresh_split(&mut a.net) {
+                        Ok(0) => {}
+                        Ok(n) => {
+                            log(format!("раздельное туннелирование: добавлено новых адресов {n}"));
+                            let _ = fs::write(STATE_FILE, serde_json::to_vec(&a.net).unwrap_or_default());
+                        }
+                        Err(e) => log(format!("обновление адресов сайтов: {e:#}")),
+                    }
+                }
                 match follow_gateway(&mut a.net) {
                     Ok(true) => {
                         log(format!("сеть сменилась, маршрут до сервера через {:?}", a.net.endpoint_route.as_ref().map(|r| &r.1)));
@@ -128,6 +142,7 @@ mod macos {
                     Ok(false) => {}
                     Err(e) => log(format!("смена сети: {e:#}")),
                 }
+            }
             }
         });
     }
