@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from "../lib/Icon.svelte";
-  import { api, errorText, readClipboard } from "../lib/api";
+  import { api, errorText, inTauri, pickFile as pickNative, readClipboard } from "../lib/api";
   import { app, refreshView } from "../lib/store.svelte";
 
   let text = $state("");
@@ -11,7 +11,17 @@
 
   async function paste() {
     error = "";
-    try { text = (await readClipboard()).trim(); } catch (e) { error = "Не удалось прочитать буфер обмена: " + errorText(e); }
+    try { text = (await readClipboard()).trim(); } catch { text = ""; }
+    // no text: maybe a screenshot of a QR code
+    if (!text) {
+      try { text = await api.qrFromClipboard(); } catch (e) { error = "В буфере нет ни ключа, ни QR-кода: " + errorText(e); }
+    }
+  }
+  async function qrImage() {
+    error = "";
+    const path = await pickNative([{ name: "Картинка с QR-кодом", extensions: ["png", "jpg", "jpeg", "webp"] }]);
+    if (!path) return;
+    try { text = await api.qrFromFile(path); } catch (e) { error = errorText(e); }
   }
   async function pickFile(e: Event) {
     const f = (e.target as HTMLInputElement).files?.[0];
@@ -42,6 +52,7 @@
     <div class="row">
       <button class="btn grow" onclick={paste}><Icon name="paste" size={18} /> Из буфера</button>
       <button class="btn grow" onclick={() => fileInput.click()}><Icon name="file" size={18} /> Файл .conf</button>
+      <button class="btn grow" onclick={qrImage} disabled={!inTauri}><Icon name="qr" size={18} /> QR-код</button>
       <input type="file" accept=".conf,.txt,text/plain" bind:this={fileInput} onchange={pickFile} hidden />
     </div>
     <input bind:value={name} placeholder="Название (необязательно)" />

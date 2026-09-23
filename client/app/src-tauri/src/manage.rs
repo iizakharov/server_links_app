@@ -28,6 +28,11 @@ impl Secrets for Keychain {
         }
         e.set_password(value).map_err(err)
     }
+    fn delete(&self, key: &str) {
+        if let Ok(e) = keyring::Entry::new("com.amnezinu.vpn.manage", key) {
+            let _ = e.delete_credential();
+        }
+    }
 }
 
 /// SSH to real servers; every log line also goes to the window as a `manage-log` event.

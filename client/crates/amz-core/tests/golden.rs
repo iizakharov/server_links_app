@@ -137,6 +137,7 @@ fn secrets_stay_out_of_the_file() {
             self.0.lock().unwrap().insert(key.into(), value.into());
             Ok(())
         }
+        fn delete(&self, key: &str) { self.0.lock().unwrap().remove(key); }
     }
     let dir = std::env::temp_dir().join(format!("amz-core-secrets-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
@@ -154,5 +155,9 @@ fn secrets_stay_out_of_the_file() {
     assert_eq!(store.load().unwrap(), state); // everything comes back on load
     // a panel file with secrets inside moves them out on the next save
     assert_eq!(Storage::new(&dir).load().unwrap().servers[0].password, None);
+    // a deleted client takes its key along; the server stays
+    store.save(&State { clients: vec![], ..state }).unwrap();
+    assert_eq!(mem.get("client:k1"), None);
+    assert_eq!(mem.get("server:a1").as_deref(), Some("hunter2"));
     std::fs::remove_dir_all(&dir).unwrap();
 }

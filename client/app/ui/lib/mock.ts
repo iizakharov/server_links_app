@@ -57,6 +57,7 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
   const p = view.profiles.find((x) => x.id === a.id);
   switch (cmd) {
     case "get_view": return clone(view);
+    case "qr_from_clipboard": throw "В буфере обмена нет картинки";
     case "check_update": return { current: "0.1.1", version: "0.1.2", notes: "Пример: что нового" };
     case "install_update": throw "В браузере обновление не устанавливается";
     case "import_text": {

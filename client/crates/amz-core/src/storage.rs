@@ -25,6 +25,14 @@ pub enum StorageError {
 pub trait Secrets: Send + Sync {
     fn get(&self, key: &str) -> Option<String>;
     fn set(&self, key: &str, value: &str) -> Result<(), String>;
+    /// A server or client is gone: its secret is no longer needed.
+    fn delete(&self, key: &str);
+}
+
+fn secret_keys(state: &State) -> Vec<String> {
+    state.servers.iter().map(|s| format!("server:{}", s.id))
+        .chain(state.clients.iter().map(|c| format!("client:{}", c.id)))
+        .collect()
 }
 
 pub struct Storage {
@@ -91,12 +99,26 @@ impl Storage {
     pub fn save(&self, state: &State) -> Result<(), StorageError> {
         fs::create_dir_all(&self.dir)?;
         let file = self.state_file();
+        // secrets of servers and clients that this save removes
+        let gone: Vec<String> = match (&self.secrets, fs::read(&file)) {
+            (Some(_), Ok(raw)) => {
+                let keep = secret_keys(state);
+                serde_json::from_slice::<State>(&raw).map(|old| secret_keys(&old)).unwrap_or_default()
+                    .into_iter().filter(|k| !keep.contains(k)).collect()
+            }
+            _ => vec![],
+        };
         let tmp = file.with_extension("tmp");
         write_private(&tmp, &serde_json::to_vec_pretty(&self.strip_secrets(state)?)?)?;
         if file.exists() {
             self.backup(&file)?;
         }
         fs::rename(tmp, file)?;
+        if let Some(sec) = &self.secrets {
+            for k in &gone {
+                sec.delete(k);
+            }
+        }
         Ok(())
     }
 
