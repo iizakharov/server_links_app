@@ -172,38 +172,41 @@ pub struct ServerIn {
 
 #[tauri::command]
 pub async fn manage_server_save(app: AppHandle, server: ServerIn) -> Res<String> {
-    with_state(&app, async |_, store, s| {
-        let host = server.host.trim().to_string();
-        if host.is_empty() {
-            return Err("Укажите адрес сервера".into());
-        }
-        let old = server.id.as_ref().and_then(|id| s.servers.iter().position(|x| &x.id == id));
-        let same_host = old.is_some_and(|i| s.servers[i].host == host);
-        let mut x = match old {
-            Some(i) => s.servers[i].clone(),
-            None => Server { id: ops::new_id(), ..Default::default() },
-        };
-        if !same_host {
-            // another machine: forget what we knew about the old one
-            x.scan = None;
-            x.extra.remove("host_key");
-        }
-        x.name = if server.name.trim().is_empty() { host.clone() } else { server.name.trim().into() };
-        x.host = host;
-        x.ssh_port = if server.ssh_port == 0 { 22 } else { server.ssh_port };
-        x.user = if server.user.trim().is_empty() { "root".into() } else { server.user.trim().into() };
-        if !server.password.is_empty() || !same_host {
-            x.password = Some(server.password).filter(|p| !p.is_empty());
-        }
-        x.key_path = Some(server.key_path.trim().to_string()).filter(|p| !p.is_empty());
-        let id = x.id.clone();
-        match old {
-            Some(i) => s.servers[i] = x,
-            None => s.servers.push(x),
-        }
-        store.save(s).map_err(err)?;
-        Ok(id)
-    }).await
+    with_state(&app, async |_, store, s| save_server(store, s, server)).await
+}
+
+/// Adds a server or changes a saved one; returns its id.
+fn save_server(store: &Storage, s: &mut State, server: ServerIn) -> Res<String> {
+    let host = server.host.trim().to_string();
+    if host.is_empty() {
+        return Err("Укажите адрес сервера".into());
+    }
+    let old = server.id.as_ref().and_then(|id| s.servers.iter().position(|x| &x.id == id));
+    let same_host = old.is_some_and(|i| s.servers[i].host == host);
+    let mut x = match old {
+        Some(i) => s.servers[i].clone(),
+        None => Server { id: ops::new_id(), ..Default::default() },
+    };
+    if !same_host {
+        // another machine: forget what we knew about the old one
+        x.scan = None;
+        x.extra.remove("host_key");
+    }
+    x.name = if server.name.trim().is_empty() { host.clone() } else { server.name.trim().into() };
+    x.host = host;
+    x.ssh_port = if server.ssh_port == 0 { 22 } else { server.ssh_port };
+    x.user = if server.user.trim().is_empty() { "root".into() } else { server.user.trim().into() };
+    if !server.password.is_empty() || !same_host {
+        x.password = Some(server.password).filter(|p| !p.is_empty());
+    }
+    x.key_path = Some(server.key_path.trim().to_string()).filter(|p| !p.is_empty());
+    let id = x.id.clone();
+    match old {
+        Some(i) => s.servers[i] = x,
+        None => s.servers.push(x),
+    }
+    store.save(s).map_err(err)?;
+    Ok(id)
 }
 
 #[tauri::command]
@@ -224,6 +227,50 @@ pub async fn manage_cascade_create(app: AppHandle, req: CascadeRequest) -> Res<O
 #[tauri::command]
 pub async fn manage_cascade_adopt(app: AppHandle, proxy_id: String, exit_id: String, port: u16) -> Res<()> {
     with_state(&app, async |conn, store, s| ops::adopt_cascade(conn, store, s, &proxy_id, &exit_id, port).map_err(err)).await
+}
+
+/// Direct connection to a server (no proxy), installing AmneziaWG of the given version if needed.
+#[tauri::command]
+pub async fn manage_cascade_direct(app: AppHandle, exit_id: String, instance: String) -> Res<OpLog> {
+    with_state(&app, async |conn, store, s| Ok(ops::create_direct(conn, store, s, &exit_id, &instance).await)).await
+}
+
+#[derive(Deserialize)]
+pub struct OwnServer {
+    server: ServerIn,
+    /// AmneziaWG version to install if the server has none: v3 | v2 | legacy | auto
+    instance: String,
+    /// name of this device's key on the server
+    device: String,
+}
+
+/// "Your own server" in one go: add it, install AmneziaWG, issue a key for this device and connect it here.
+#[tauri::command]
+pub async fn manage_setup_own(app: AppHandle, req: OwnServer) -> Res<crate::View> {
+    let OwnServer { mut server, instance, device } = req;
+    let (name, conf) = with_state(&app, async |conn, store, s| {
+        // the same machine again (e.g. after a failed attempt): update it instead of adding a copy
+        server.id = s.servers.iter().find(|x| x.host == server.host.trim()).map(|x| x.id.clone());
+        let sid = save_server(store, s, server)?;
+        conn.progress("Подключение по SSH…");
+        conn.progress(&ops::scan_server(conn, store, s, &sid).await.map_err(|e| format!("{e:#}"))?);
+        let r = ops::create_direct(conn, store, s, &sid, &instance).await;
+        if !r.ok {
+            return Err(r.log.last().cloned().unwrap_or_else(|| "Не удалось установить AmneziaWG".into()));
+        }
+        let inst = if instance == "auto" || instance.is_empty() { "main" } else { instance.as_str() };
+        let cid = ops::direct_of(s, &sid, inst).or_else(|| ops::direct_of(s, &sid, "main"))
+            .ok_or("Прямое подключение не создано")?;
+        conn.progress("Выпуск ключа для этого устройства…");
+        let made = ops::create_clients(conn, store, s, &device, &[cid]).await.map_err(|e| format!("{e:#}"))?;
+        let r = ops::render(s, &made[0]).map_err(err)?;
+        Ok((s.servers.iter().find(|x| x.id == sid).map(|x| x.name.clone()).unwrap_or_default(), r.conf))
+    }).await?;
+    let st = app.state::<AppState>();
+    crate::change(&st, |d| {
+        crate::add_profiles(d, vec![new_profile(name, conf)]);
+        Ok(())
+    })
 }
 
 #[tauri::command]

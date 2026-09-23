@@ -144,7 +144,7 @@ async fn apply_proxy<C: Connector>(conn: &C, s: &mut State, proxy_id: &str, log:
 pub struct CascadeView {
     #[serde(flatten)]
     pub cascade: Cascade,
-    /// applied | missing | conflict | unknown | external
+    /// applied | missing | conflict | unknown | external | direct
     pub status: String,
     pub awg_version: Option<String>,
 }
@@ -152,8 +152,8 @@ pub struct CascadeView {
 pub fn cascade_views<C: Connector>(conn: &C, s: &State) -> Vec<CascadeView> {
     s.cascades.iter().filter_map(|c| {
         let (p, e) = (server(s, &c.proxy_id).ok()?, server(s, &c.exit_id).ok()?);
-        let status = if c.mode == "external" {
-            "external"
+        let status = if c.mode == "external" || c.mode == "direct" {
+            c.mode.as_str()
         } else {
             proxy::managed_status(c.port as u32, p.scan.as_ref(), &conn.ip_of(e))
         };
@@ -214,6 +214,66 @@ pub async fn create_cascades<C: Connector>(conn: &C, store: &Storage, s: &mut St
     log.finish(res)
 }
 
+/// Finds (or installs) AmneziaWG of the wanted version on an exit server. Returns it and its instance name.
+async fn prepare_exit<C: Connector>(conn: &C, s: &mut State, eid: &str, want: &str, log: &Logger<'_, C>)
+                                    -> Result<(AwgInfo, String)> {
+    let e = server(s, eid)?.clone();
+    log.push(format!("[{}] проверка AmneziaWG ({})…", e.host, e.name));
+    let mut r = open(conn, s, eid).await?;
+    let main = foreign::detect(&mut r).await?;
+    let l = |x: String| log.push(x);
+    let (awg, instance) = match (want, &main) {
+        ("legacy", Some(m)) if is_legacy(&m.params) => {
+            log.push(format!("{}: основной AmneziaWG уже версии 1.0 — отдельный контейнер не нужен", e.name));
+            (m.clone(), "main".to_string())
+        }
+        ("auto", _) => (foreign::ensure(&mut r, &l).await?, "main".to_string()),
+        _ => {
+            let found = foreign::detect_instance(&mut r, want).await?;
+            let awg = match found {
+                Some(a) => a,
+                None => foreign::install_instance(&mut r, want, main.as_ref(), &l).await?,
+            };
+            (awg, want.to_string())
+        }
+    };
+    set_awg(s, eid, &instance, Some(awg.clone()))?;
+    if let Some(m) = main {
+        set_awg(s, eid, "main", Some(m))?;
+    }
+    Ok((awg, instance))
+}
+
+/// Direct connection to a server, without a proxy: a "cascade" whose proxy is the exit itself and whose
+/// port is AmneziaWG's own. Clients, keys and traffic then work as for any cascade.
+pub async fn create_direct<C: Connector>(conn: &C, store: &Storage, s: &mut State, exit_id: &str, instance: &str) -> OpLog {
+    let log = Logger::new(conn);
+    let res = async {
+        let want = if instance.is_empty() { "auto" } else { instance };
+        if want != "auto" && awg_instance(want).is_none() {
+            bail!("Неизвестная версия AmneziaWG: {want}");
+        }
+        let (awg, instance) = prepare_exit(conn, s, exit_id, want, &log).await?;
+        store.save(s)?;
+        let name = server(s, exit_id)?.name.clone();
+        if direct_of(s, exit_id, &instance).is_some() {
+            log.push(format!("{name}: прямое подключение уже есть"));
+            return Ok(());
+        }
+        s.cascades.push(Cascade { id: new_id(), proxy_id: exit_id.into(), exit_id: exit_id.into(), port: awg.listen_port,
+                                  mode: "direct".into(), instance: Some(instance), extra: Default::default() });
+        store.save(s)?;
+        log.push(format!("{name}: прямое подключение на UDP {} готово", awg.listen_port));
+        Ok(())
+    }.await;
+    log.finish(res)
+}
+
+/// The direct "cascade" to this server and AmneziaWG instance, if there is one.
+pub fn direct_of(s: &State, exit_id: &str, instance: &str) -> Option<String> {
+    s.cascades.iter().find(|c| c.mode == "direct" && c.exit_id == exit_id && c.instance() == instance).map(|c| c.id.clone())
+}
+
 async fn create_cascades_inner<C: Connector>(conn: &C, store: &Storage, s: &mut State, req: &CascadeRequest,
                                              log: &Logger<'_, C>) -> Result<()> {
     let want = if req.instance.is_empty() { "auto" } else { req.instance.as_str() };
@@ -240,32 +300,7 @@ async fn create_cascades_inner<C: Connector>(conn: &C, store: &Storage, s: &mut 
         (vec![], s.cascades.iter().filter(|c| c.proxy_id == p.id).map(|c| c.port as u32).collect());
     for eid in &req.exit_ids {
         let e = server(s, eid)?.clone();
-        log.push(format!("[{}] проверка AmneziaWG ({})…", e.host, e.name));
-        let (awg, instance) = {
-            let mut r = open(conn, s, eid).await?;
-            let main = foreign::detect(&mut r).await?;
-            let l = |x: String| log.push(x);
-            let (awg, instance) = match (want, &main) {
-                ("legacy", Some(m)) if is_legacy(&m.params) => {
-                    log.push(format!("{}: основной AmneziaWG уже версии 1.0 — отдельный контейнер не нужен", e.name));
-                    (m.clone(), "main".to_string())
-                }
-                ("auto", _) => (foreign::ensure(&mut r, &l).await?, "main".to_string()),
-                _ => {
-                    let found = foreign::detect_instance(&mut r, want).await?;
-                    let awg = match found {
-                        Some(a) => a,
-                        None => foreign::install_instance(&mut r, want, main.as_ref(), &l).await?,
-                    };
-                    (awg, want.to_string())
-                }
-            };
-            set_awg(s, eid, &instance, Some(awg.clone()))?;
-            if let Some(m) = main {
-                set_awg(s, eid, "main", Some(m))?;
-            }
-            (awg, instance)
-        };
+        let (awg, instance) = prepare_exit(conn, s, eid, want, log).await?;
         store.save(s)?;
         if s.cascades.iter().any(|c| c.proxy_id == p.id && c.exit_id == *eid && c.mode == "managed" && c.instance() == instance) {
             log.push(format!("{} → {}: каскад уже есть, пропущен", p.name, e.name));
@@ -328,6 +363,8 @@ pub async fn delete_cascade<C: Connector>(conn: &C, store: &Storage, s: &mut Sta
         s.clients.retain(|x| x.cascade_id != cid);
         if c.mode == "managed" {
             apply_proxy(conn, s, &c.proxy_id, &log).await?;
+        } else if c.mode == "direct" {
+            log.push("Прямое подключение убрано; AmneziaWG на сервере остаётся");
         } else {
             log.push("Существующий каскад убран из приложения; правила на прокси не тронуты");
         }
@@ -348,6 +385,10 @@ pub async fn check_cascade<C: Connector>(conn: &C, s: &mut State, cid: &str) -> 
     let log = Logger::new(conn);
     let res = async {
         let c = cascade(s, cid)?.clone();
+        if c.mode == "direct" {
+            log.push("Прямое подключение: прокси нет, связь между серверами проверять не нужно");
+            return Ok(());
+        }
         let (p, e) = (server(s, &c.proxy_id)?.clone(), server(s, &c.exit_id)?.clone());
         let awg = exit_awg(&e, &c).ok_or_else(|| anyhow!("{} не сканирован", e.name))?.clone();
         let mut rp = open(conn, s, &p.id).await?;

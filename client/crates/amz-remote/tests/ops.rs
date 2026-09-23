@@ -388,3 +388,23 @@ async fn bad_requests_are_refused() {
     let p = env.ids["proxy"].clone();
     assert!(ops::adopt_cascade(&env.conn, &env.store, &mut env.s, &p, &e, 1).is_err());
 }
+
+#[tokio::test]
+async fn direct_connection_without_proxy() {
+    let mut env = setup(true).await;
+    let praga = env.ids["praga"].clone();
+    let r = ops::create_direct(&env.conn, &env.store, &mut env.s, &praga, "auto").await;
+    assert!(r.ok && r.log.last().unwrap().contains("UDP 48303"), "{:?}", r.log);
+    let cid = ops::direct_of(&env.s, &praga, "main").unwrap();
+    assert!(ops::create_direct(&env.conn, &env.store, &mut env.s, &praga, "auto").await.log.last().unwrap().contains("уже есть"));
+    assert_eq!(ops::cascade_views(&env.conn, &env.s)[0].status, "direct");
+    assert!(ops::check_cascade(&env.conn, &mut env.s, &cid).await.ok);
+
+    // the client connects straight to the server's own AmneziaWG
+    let made = ops::create_clients(&env.conn, &env.store, &mut env.s, "laptop", std::slice::from_ref(&cid)).await.unwrap();
+    assert!(ops::render(&env.s, &made[0]).unwrap().conf.contains(&format!("Endpoint = {EXIT_IP}:48303")));
+    assert!(!env.host(PROXY_IP).files.contains_key(proxy::SCRIPT_PATH));
+
+    let r = ops::delete_cascade(&env.conn, &env.store, &mut env.s, &cid).await;
+    assert!(r.ok && env.s.cascades.is_empty() && env.s.clients.is_empty(), "{:?}", r.log);
+}

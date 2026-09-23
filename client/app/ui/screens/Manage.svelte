@@ -19,12 +19,14 @@
   let confirm = $state<{ text: string; action: () => void } | null>(null);
 
   const name = (id: string) => v.servers.find((s) => s.id === id)?.name ?? "?";
+  const route = (c: { proxy_id: string; exit_id: string; mode?: string }) =>
+    c.mode === "direct" ? `${name(c.exit_id)} (напрямую)` : `${name(c.proxy_id)} → ${name(c.exit_id)}`;
   const cascadeLabel = (id: string) => {
     const c = v.cascades.find((c) => c.id === id);
-    return c ? `${name(c.proxy_id)} → ${name(c.exit_id)}` : "каскад удалён";
+    return c ? route(c) : "каскад удалён";
   };
   const statusText: Record<string, string> = {
-    applied: "работает", missing: "нет правила на прокси", conflict: "конфликт порта", unknown: "прокси не сканирован", external: "существующий",
+    applied: "работает", missing: "нет правила на прокси", conflict: "конфликт порта", unknown: "прокси не сканирован", external: "существующий", direct: "напрямую",
   };
   const instanceText: Record<string, string> = { main: "основной", legacy: "1.0", v2: "2.0", v3: "3.x" };
 
@@ -77,6 +79,19 @@
   async function createCascade() {
     const f = cascadeForm!;
     cascadeForm = null;
+    if (!f.proxy_id) {
+      // no proxy: the device connects straight to each exit
+      await run("Прямое подключение", async () => {
+        const logs: string[] = [];
+        for (const id of f.exit_ids) {
+          const r = await manage.direct(id, f.instance);
+          logs.push(...r.log);
+          if (!r.ok) return { ok: false, log: logs };
+        }
+        return { ok: true, log: logs };
+      });
+      return;
+    }
     await run("Создание каскада", () => manage.createCascades({
       proxy_id: f.proxy_id, exit_ids: f.exit_ids, instance: f.instance, port: f.port ? Number(f.port) : null,
     }));
@@ -174,16 +189,16 @@
     <ul>
       {#each v.cascades as c (c.id)}
         <li class="card col">
-          <p class="name">{name(c.proxy_id)} → {name(c.exit_id)}</p>
+          <p class="name">{route(c)}</p>
           <p class="tags">
             <span class="tag st-{c.status}">{statusText[c.status] ?? c.status}</span>
             <span class="tag">UDP {c.port}</span>
             {#if c.awg_version}<span class="tag">AWG {c.awg_version}</span>{/if}
           </p>
           <div class="row">
-            <button class="btn grow" onclick={() => run(`Проверка ${name(c.proxy_id)} → ${name(c.exit_id)}`, () => manage.check(c.id))}>Проверить связь</button>
+            <button class="btn grow" onclick={() => run(`Проверка ${route(c)}`, () => manage.check(c.id))}>Проверить связь</button>
             <button class="btn danger" aria-label="Удалить"
-                    onclick={() => (confirm = { text: `Удалить каскад ${name(c.proxy_id)} → ${name(c.exit_id)}? Его клиенты перестанут работать.`,
+                    onclick={() => (confirm = { text: `Удалить ${route(c)}? Его клиенты перестанут работать.`,
                                                 action: () => run("Удаление каскада", () => manage.deleteCascade(c.id)) })}>
               <Icon name="trash" size={18} /></button>
           </div>
@@ -248,9 +263,10 @@
   <Sheet title="Новый каскад" onclose={() => (cascadeForm = null)}>
     <h2>Прокси (вход)</h2>
     <select bind:value={cascadeForm.proxy_id}>
+      <option value="">Без прокси — напрямую</option>
       {#each v.servers as s}<option value={s.id}>{s.name}</option>{/each}
     </select>
-    <h2>Серверы выхода</h2>
+    <h2>{cascadeForm.proxy_id ? "Серверы выхода" : "Серверы"}</h2>
     <div class="col">
       {#each v.servers.filter((s) => s.id !== cascadeForm!.proxy_id) as s}
         <label class="check row">
@@ -268,7 +284,7 @@
       {/each}
     </div>
     <p class="small muted">«Как есть» — AmneziaWG, который уже стоит на сервере (или установка). 1.0 — для роутеров. Другие версии ставятся в отдельные контейнеры, не затрагивая существующих клиентов.</p>
-    {#if cascadeForm.exit_ids.length === 1}
+    {#if cascadeForm.exit_ids.length === 1 && cascadeForm.proxy_id}
       <input type="number" bind:value={cascadeForm.port} placeholder="Порт на прокси (необязательно, подберётся сам)" />
     {/if}
     <button class="btn primary wide" disabled={!cascadeForm.exit_ids.length} onclick={createCascade}>Создать</button>
@@ -284,7 +300,7 @@
         <label class="check row">
           <input type="checkbox" checked={clientForm.cascade_ids.includes(c.id)}
                  onchange={() => (clientForm!.cascade_ids = toggle(clientForm!.cascade_ids, c.id))} />
-          <span class="grow">{name(c.proxy_id)} → {name(c.exit_id)}</span>
+          <span class="grow">{route(c)}</span>
           <span class="small muted">AWG {c.awg_version ?? "?"}</span>
         </label>
       {/each}

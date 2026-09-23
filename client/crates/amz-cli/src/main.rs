@@ -53,6 +53,8 @@ enum Cmd {
     },
     /// Adopt an existing forward on the proxy as a cascade
     Adopt { proxy: String, exit: String, port: u16 },
+    /// Direct connection to a server, no proxy (installs AmneziaWG of this version if missing)
+    Direct { server: String, #[arg(long, default_value = "auto")] instance: String },
     RmCascade { id: String },
     /// UDP probes proxy <-> exit
     Check { id: String },
@@ -175,6 +177,7 @@ async fn main() -> Result<()> {
             let req = CascadeRequest { proxy_id: proxy, exit_ids: exits, port, instance };
             print_log(ops::create_cascades(&conn, &store, &mut s, &req).await)?
         }
+        Cmd::Direct { server, instance } => print_log(ops::create_direct(&conn, &store, &mut s, &server, &instance).await)?,
         Cmd::Adopt { proxy, exit, port } => ops::adopt_cascade(&conn, &store, &mut s, &proxy, &exit, port)?,
         Cmd::RmCascade { id } => print_log(ops::delete_cascade(&conn, &store, &mut s, &id).await)?,
         Cmd::Check { id } => print_log(ops::check_cascade(&conn, &mut s, &id).await)?,

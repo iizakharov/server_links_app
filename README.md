@@ -103,7 +103,7 @@ cd client/app && npm run build:windows                    # target/x86_64-pc-win
 Релиз (обе системы, подписанные обновления, `latest.json` для автообновления; версия — из `tauri.conf.json`, коммит должен быть отправлен):
 
 ```bash
-cd client/app && sh scripts/release.sh ../../release-notes.md
+cd client/app && sh scripts/release.sh /path/to/notes.md   # notes.md — описание релиза (Markdown)
 ```
 
 Обновления подписываются ключом `~/.tauri/amnezinu-vpn.key` (публичная часть — в `tauri.conf.json`). Без этого ключа установленные приложения не примут новую версию — храните его копию.

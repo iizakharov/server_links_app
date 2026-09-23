@@ -42,7 +42,7 @@
             {#if active}<Icon name="check" size={14} />{/if}
           </button>
           <button class="grow info" onclick={() => select(p.id)}>
-            <span class="name ellipsis">{p.name}{#if p.exit}<span class="muted"> · {p.exit}</span>{/if}</span>
+            <span class="name ellipsis">{p.name}{#if p.exit}<span class="muted">{" · "}{p.exit}</span>{/if}</span>
             <span class="small muted ellipsis">{p.endpoint} · {p.address}</span>
           </button>
           <span class="tag">AWG {p.awg_version}</span>

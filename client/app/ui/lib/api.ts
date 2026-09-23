@@ -65,6 +65,9 @@ export const manage = {
     call<OpLog>("manage_cascade_create", { req }),
   adopt: (proxy_id: string, exit_id: string, port: number) => call<void>("manage_cascade_adopt", { proxyId: proxy_id, exitId: exit_id, port }),
   deleteCascade: (id: string) => call<OpLog>("manage_cascade_delete", { id }),
+  direct: (exit_id: string, instance: string) => call<OpLog>("manage_cascade_direct", { exitId: exit_id, instance }),
+  setupOwn: (server: ServerIn, instance: string, device: string) =>
+    call<View>("manage_setup_own", { req: { server, instance, device } }),
   check: (id: string) => call<OpLog>("manage_cascade_check", { id }),
   createClient: (name: string, cascade_ids: string[]) => call<string[]>("manage_client_create", { name, cascadeIds: cascade_ids }),
   deleteClient: (id: string) => call<OpLog>("manage_client_delete", { id }),
