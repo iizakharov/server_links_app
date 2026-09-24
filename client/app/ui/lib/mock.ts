@@ -31,7 +31,7 @@ let view: View = {
   settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } },
 };
 let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 },
-                      blocked: false, kill_switch: false, helper_version: "0.1.5+mock" };
+                      blocked: false, kill_switch: false, helper_version: "0.1.6+mock" };
 let helper: HelperState = { installed: true, running: true, outdated: false };
 const manageView = {
   servers: [
@@ -62,7 +62,7 @@ export async function mock(cmd: string, a: Record<string, any>): Promise<unknown
   switch (cmd) {
     case "get_view": return clone(view);
     case "qr_from_clipboard": throw "В буфере обмена нет картинки";
-    case "check_update": return { current: "0.1.5", version: "0.1.6", notes: "Пример: что нового" };
+    case "check_update": return { current: "0.1.6", version: "0.1.7", notes: "Пример: что нового" };
     case "install_update": throw "В браузере обновление не устанавливается";
     case "import_text": {
       const text = String(a.text).trim();
