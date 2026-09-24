@@ -81,6 +81,8 @@
       <span class="activity" aria-hidden="true"></span>
     </button>
     <p class="state" class:ok={connected} role="status">{label}</p>
+    <!-- fixed height, so the button doesn't move when these lines appear -->
+    <div class="details">
     {#if connected}
       <p class="muted mono">{duration(app.status!.since)}</p>
       {#if app.status!.kill_switch || app.view.settings.split.mode !== "all"}
@@ -98,6 +100,7 @@
         <p class="small warn">Сервер не отвечает — проверьте, что ключ действующий и сервер доступен.</p>
       {/if}
     {/if}
+    </div>
     {#if app.error}<p class="error">{app.error}</p>{/if}
   </div>
 
@@ -161,6 +164,7 @@
     .power.busy .activity { animation: none; }
     .power:not(:disabled):active { transform: none; }
   }
+  .details { height: 132px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
   .state { font-size: 20px; font-weight: 650; margin-top: 14px; }
   .state.ok { color: var(--accent); }
   .modes { gap: 6px; }
