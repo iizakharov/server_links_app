@@ -22,7 +22,7 @@ fn show_window(app: &AppHandle) {
 
 fn toggle(app: &AppHandle) {
     let req = match amz_ipc::call(&Request::Status) {
-        Ok(s) if s.connected || s.blocked => Some(Request::Down),
+        Ok(s) if s.connected || s.blocked || s.busy => Some(Request::Down),
         Ok(_) => {
             let st = app.state::<AppState>();
             let d = st.data.lock().unwrap();
@@ -69,10 +69,11 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
         let mut last = None;
         loop {
             let s = amz_ipc::call(&Request::Status).ok();
-            let key = s.as_ref().map(|s| (s.connected, s.blocked, s.name.clone()));
+            let key = s.as_ref().map(|s| (s.connected, s.blocked, s.busy, s.name.clone(), s.progress.clone()));
             if key != last {
                 let (text, action, on) = match &s {
                     None => ("Служба VPN не запущена".to_string(), "Открыть настройки", false),
+                    Some(s) if s.busy => (s.progress.clone(), "Отменить", false),
                     Some(s) if s.connected => (format!("Подключено: {}", s.name), "Отключить", true),
                     Some(s) if s.blocked => ("Интернет заблокирован (kill switch)".into(), "Снять блокировку", false),
                     Some(_) => ("Отключено".into(), "Подключить", false),

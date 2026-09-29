@@ -4,4 +4,5 @@ pub mod awg;
 #[cfg(target_os = "macos")]
 pub mod macos;
 pub mod split;
+pub mod preparation;
 pub mod windows;

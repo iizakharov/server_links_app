@@ -99,13 +99,14 @@ pub fn restore_keep_block(state: &NetState) -> Vec<String> {
 
 /// Domains of split tunneling resolve to new addresses over time (CDN): route the new ones too.
 /// Old routes stay, a stale address costs nothing. Returns how many routes were added.
-pub fn refresh_split(state: &mut NetState) -> Result<usize> {
+pub fn refresh_split(state: &mut NetState, progress: &crate::preparation::Preparation) -> Result<usize> {
     if state.split.mode == SplitMode::All {
         return Ok(0);
     }
-    let (listed, _) = resolve_entries(&state.split.entries, system_resolve);
+    let (listed, _) = crate::preparation::resolve(&state.split.entries, progress)?;
     let mut added = 0;
     for net in listed.iter().filter(|n| !n.contains(':')) {
+        progress.check()?;
         match state.split.mode {
             SplitMode::Only if !state.only_routes.contains(net) => {
                 run("route", &["-q", "-n", "add", "-inet", net, "-interface", &state.iface])?;
@@ -215,7 +216,12 @@ pub fn tunnel_routes(allowed: &[String]) -> Vec<(bool, String)> {
     }).collect()
 }
 
-pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut NetState) -> Result<()> {
+pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut NetState, progress: &crate::preparation::Preparation) -> Result<()> {
+    let (listed, failed) = if opts.split.mode == SplitMode::All { (vec![], vec![]) }
+        else { crate::preparation::resolve(&opts.split.entries, progress)? };
+    if !failed.is_empty() { eprintln!("amz-helper: не найдены адреса {} сайтов", failed.len()); }
+    progress.check()?;
+    progress.report("Настройка сети…".into());
     state.iface = iface.into();
     for addr in &cfg.addresses {
         let ip = addr.split('/').next().unwrap_or(addr);
@@ -237,14 +243,6 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
     run("route", &args)?;
     state.endpoint_route = Some((ep_s.clone(), gw.clone()));
 
-    let (listed, failed) = if opts.split.mode == SplitMode::All {
-        (vec![], vec![])
-    } else {
-        resolve_entries(&opts.split.entries, system_resolve)
-    };
-    if opts.split.mode != SplitMode::All && !failed.is_empty() {
-        eprintln!("amz-helper: не удалось найти адреса: {}", failed.join(", "));
-    }
     state.split = opts.split.clone();
     if opts.split.mode == SplitMode::Only {
         state.only_routes = listed.clone();
@@ -255,13 +253,16 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
         _ => tunnel_routes(&cfg.allowed_ips),
     };
     for (v6, net) in routes {
+        progress.check()?;
         if net.split('/').next() == Some(ep_s.as_str()) {
             continue;
         }
         run("route", &["-q", "-n", "add", if v6 { "-inet6" } else { "-inet" }, &net, "-interface", iface])?;
     }
     if opts.split.mode == SplitMode::Except {
-        for net in listed.iter().filter(|n| !n.contains(':')) {
+        for (index, net) in listed.iter().filter(|n| !n.contains(':')).enumerate() {
+            progress.check()?;
+            progress.report(format!("Маршруты: {} из {}", index + 1, listed.len()));
             let _ = run("route", &["-q", "-n", "delete", "-inet", net]);
             let mut args = vec!["-q", "-n", "add", "-inet", net.as_str()];
             args.extend(gw.iter().map(String::as_str));

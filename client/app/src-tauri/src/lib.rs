@@ -244,7 +244,7 @@ pub fn run() {
             if let Some(req) = req {
                 std::thread::spawn(move || {
                     // do not replace a tunnel that is already up
-                    if amz_ipc::call(&Request::Status).is_ok_and(|s| !s.connected) {
+                    if amz_ipc::call(&Request::Status).is_ok_and(|s| !s.connected && !s.busy) {
                         let _ = amz_ipc::call(&req);
                     }
                 });

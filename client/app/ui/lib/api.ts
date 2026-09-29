@@ -20,6 +20,7 @@ export type Settings = {
 export type View = { profiles: ProfileView[]; selected: string | null; settings: Settings };
 export type Stats = { rx: number; tx: number; handshake: number };
 export type Status = {
+  busy?: boolean; progress?: string;
   connected: boolean; name: string; iface: string; endpoint: string; since: number; stats: Stats;
   blocked: boolean; kill_switch: boolean; helper_version: string;
 };

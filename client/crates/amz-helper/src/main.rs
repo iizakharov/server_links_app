@@ -60,6 +60,8 @@ mod macos {
     }
 
     type Shared = Arc<Mutex<Helper>>;
+    static PREPARATION: std::sync::OnceLock<amz_tunnel::preparation::Preparation> = std::sync::OnceLock::new();
+    fn preparation() -> &'static amz_tunnel::preparation::Preparation { PREPARATION.get_or_init(Default::default) }
 
     fn log(msg: impl AsRef<str>) {
         eprintln!("amz-helper: {}", msg.as_ref());
@@ -101,7 +103,7 @@ mod macos {
         down(h);
         let dev = Device::up("utun", cfg.mtu, &cfg.uapi)?;
         let mut net = NetState::default();
-        if let Err(e) = configure(dev.name(), &cfg, opts, &mut net) {
+        if let Err(e) = configure(dev.name(), &cfg, opts, &mut net, preparation()) {
             drop(dev);
             undo(&net);
             return Err(e);
@@ -136,7 +138,8 @@ mod macos {
             if let Some(a) = h.active.as_mut() {
                 // every 10 minutes: new addresses of split-tunnel domains
                 if tick.is_multiple_of(120) {
-                    match refresh_split(&mut a.net) {
+                    preparation().start();
+                    match refresh_split(&mut a.net, preparation()) {
                         Ok(0) => {}
                         Ok(n) => {
                             log(format!("раздельное туннелирование: добавлено новых адресов {n}"));
@@ -171,7 +174,21 @@ mod macos {
             return Ok(());
         }
         let req: Request = read_line(&mut reader)?;
-        let mut h = shared.lock().unwrap();
+        if matches!(req, Request::Status) {
+            let s = match shared.try_lock() {
+                Ok(h) => status(&h),
+                Err(_) => Status { busy: true, progress: preparation().message(), helper_version: BUILD.into(), ..Default::default() },
+            };
+            return write_line(&mut w, Response::Ok { status: s });
+        }
+        if matches!(req, Request::Down) { preparation().cancel(); }
+        let mut h = if matches!(req, Request::Up { .. }) {
+            match shared.try_lock() {
+                Ok(h) => h,
+                Err(_) => return write_line(&mut w, Response::Error { message: "Служба занята: дождитесь завершения или отмените подключение".into() }),
+            }
+        } else { shared.lock().unwrap() };
+        if matches!(req, Request::Up { .. }) { preparation().start(); }
         let res = match &req {
             Request::Up { conf, name, options } => up(&mut h, conf, name, options),
             Request::Down => {
@@ -223,6 +240,7 @@ mod macos {
         watch_network(shared.clone());
         let on_exit = shared.clone();
         ctrlc::set_handler(move || {
+            preparation().cancel();
             down(&mut on_exit.lock().unwrap());
             let _ = fs::remove_file(SOCKET);
             std::process::exit(0);
@@ -236,9 +254,13 @@ mod macos {
         for stream in listener.incoming() {
             match stream {
                 Ok(s) => {
-                    if let Err(e) = handle(s, &shared, &allowed) {
-                        log(format!("{e:#}"));
-                    }
+                    let shared = shared.clone();
+                    let allowed = allowed.clone();
+                    std::thread::spawn(move || {
+                        let _ = s.set_read_timeout(Some(std::time::Duration::from_secs(5)));
+                        let _ = s.set_write_timeout(Some(std::time::Duration::from_secs(5)));
+                        if let Err(e) = handle(s, &shared, &allowed) { log(format!("{e:#}")); }
+                    });
                 }
                 Err(e) => log(format!("accept: {e}")),
             }

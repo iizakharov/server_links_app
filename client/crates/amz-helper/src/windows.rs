@@ -16,7 +16,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use amz_core::tunnel::{parse_stats, tunnel_config, TunnelConfig};
 use amz_ipc::{read_line, write_line, Request, Response, SplitMode, Status, UpOptions, BUILD, SOCKET};
 use amz_tunnel::awg::{block, unblock, Device};
-use amz_tunnel::split::{resolve_entries, system_resolve};
+static PREPARATION: OnceLock<amz_tunnel::preparation::Preparation> = OnceLock::new();
+fn preparation() -> &'static amz_tunnel::preparation::Preparation { PREPARATION.get_or_init(Default::default) }
 use amz_tunnel::windows::{plan, NetPlan, IFACE};
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
@@ -148,12 +149,14 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
     let listed = if opts.split.mode == SplitMode::All {
         vec![]
     } else {
-        let (listed, failed) = resolve_entries(&opts.split.entries, system_resolve);
+        let (listed, failed) = amz_tunnel::preparation::resolve(&opts.split.entries, preparation())?;
         if !failed.is_empty() {
-            log(format!("не удалось найти адреса: {}", failed.join(", ")));
+            log(format!("не удалось найти адреса {} сайтов", failed.len()));
         }
         listed
     };
+    preparation().check()?;
+    preparation().report("Настройка сети…".into());
     let dev = Device::up(IFACE, cfg.mtu, &cfg.uapi)?;
     let net = plan(&cfg, opts, &listed);
     dev.set_net(&net)?;
@@ -195,7 +198,11 @@ fn watch_split(shared: Shared) {
         if a.opts.split.mode == SplitMode::All {
             continue;
         }
-        let (fresh, _) = resolve_entries(&a.opts.split.entries, system_resolve);
+        preparation().start();
+        let (fresh, _) = match amz_tunnel::preparation::resolve(&a.opts.split.entries, preparation()) {
+            Ok(result) => result,
+            Err(e) => { log(format!("обновление адресов: {e}")); continue; }
+        };
         let before = a.listed.len();
         for n in fresh {
             if !a.listed.contains(&n) {
@@ -265,7 +272,21 @@ fn handle(pipe: &File, shared: &Shared) -> Result<()> {
         return Ok(());
     }
     let req: Request = read_line(&mut reader)?;
-    let mut h = shared.lock().unwrap();
+    if matches!(req, Request::Status) {
+        let s = match shared.try_lock() {
+            Ok(h) => status(&h),
+            Err(_) => Status { busy: true, progress: preparation().message(), helper_version: BUILD.into(), ..Default::default() },
+        };
+        return write_line(&mut w, Response::Ok { status: s });
+    }
+    if matches!(req, Request::Down) { preparation().cancel(); }
+    let mut h = if matches!(req, Request::Up { .. }) {
+        match shared.try_lock() {
+            Ok(h) => h,
+            Err(_) => return write_line(&mut w, Response::Error { message: "Служба занята: дождитесь завершения или отмените подключение".into() }),
+        }
+    } else { shared.lock().unwrap() };
+    if matches!(req, Request::Up { .. }) { preparation().start(); }
     let res = match &req {
         Request::Up { conf, name, options } => up(&mut h, conf, name, options),
         Request::Down => {
@@ -301,13 +322,15 @@ fn serve(shared: Shared, allowed: &[String]) -> Result<()> {
         }
         // SAFETY: we own h; the File closes it on drop
         let file = unsafe { File::from_raw_handle(h as _) };
-        if let Err(e) = handle(&file, &shared) {
-            log(format!("{e:#}"));
-        }
-        unsafe {
-            FlushFileBuffers(h);
-            DisconnectNamedPipe(h);
-        }
+        let shared = shared.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = handle(&file, &shared) { log(format!("{e:#}")); }
+            // file owns the handle and keeps it valid until after disconnect.
+            unsafe {
+                FlushFileBuffers(file.as_raw_handle() as HANDLE);
+                DisconnectNamedPipe(file.as_raw_handle() as HANDLE);
+            }
+        });
     }
 }
 

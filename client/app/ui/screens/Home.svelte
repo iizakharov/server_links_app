@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import Icon from "../lib/Icon.svelte";
   import { bytes } from "../lib/api";
-  import { app, installUpdate, selectedProfile, switchExit, toggleConnection } from "../lib/store.svelte";
+  import { app, cancelConnection, installUpdate, selectedProfile, switchExit, toggleConnection } from "../lib/store.svelte";
 
   let now = $state(Math.floor(Date.now() / 1000));
   onMount(() => {
@@ -13,9 +13,9 @@
   const profile = $derived(selectedProfile());
   const exits = $derived(profile?.group ? app.view.profiles.filter((p) => p.group === profile.group) : []);
   const connected = $derived(!!app.status?.connected);
-  const phase = $derived(app.busy ? "busy" : connected ? "on" : "off");
+  const phase = $derived((app.busy || app.status?.busy) ? "busy" : connected ? "on" : "off");
   const label = $derived(
-    app.busy === "connecting" ? "Подключение…" : app.busy === "disconnecting" ? "Отключение…"
+    app.status?.busy ? (app.status.progress || "Подготовка…") : app.busy === "connecting" ? "Подключение…" : app.busy === "disconnecting" ? "Отключение…"
       : connected ? "Подключено" : "Отключено");
 
   function duration(since: number) {
@@ -73,7 +73,7 @@
 
   <div class="center">
     <button class="power {phase}" onclick={toggleConnection}
-            disabled={!!app.busy || !profile || !app.helper.running}
+            disabled={!!app.busy || !!app.status?.busy || !profile || !app.helper.running}
             aria-label={connected ? "Отключить" : "Подключить"}
             aria-pressed={connected} aria-busy={!!app.busy}>
       <img class="bust bust-off" src="/vpn-button-off.webp" alt="" draggable="false" />
@@ -83,6 +83,9 @@
     <p class="state" class:ok={connected} role="status">{label}</p>
     <!-- fixed height, so the button doesn't move when these lines appear -->
     <div class="details">
+      {#if app.busy === "connecting" || app.status?.busy}
+        <button class="btn" onclick={cancelConnection} disabled={app.busy === "disconnecting"}>Отменить</button>
+      {/if}
     {#if connected}
       <p class="muted mono">{duration(app.status!.since)}</p>
       {#if app.status!.kill_switch || app.view.settings.split.mode !== "all"}

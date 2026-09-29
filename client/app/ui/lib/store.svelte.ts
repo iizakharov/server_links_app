@@ -104,6 +104,13 @@ export async function switchExit(id: string) {
   }
 }
 
+export async function cancelConnection() {
+  app.busy = "disconnecting";
+  try { app.status = await api.disconnect(); }
+  catch (e) { app.error = errorText(e); }
+  finally { app.busy = ""; }
+}
+
 export async function toggleConnection() {
   app.error = "";
   const p = selectedProfile();
