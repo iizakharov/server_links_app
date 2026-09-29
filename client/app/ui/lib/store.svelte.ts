@@ -68,13 +68,18 @@ export async function saveSettings(patch: Partial<Settings>) {
   applyTheme(app.view.settings.theme);
 }
 
+let refreshingStatus = false;
 export async function refreshStatus() {
+  if (refreshingStatus) return;
+  refreshingStatus = true;
   try {
     app.status = await api.status();
     app.helper = { ...app.helper, running: true };
   } catch {
     app.status = null;
     app.helper = await api.helperState();
+  } finally {
+    refreshingStatus = false;
   }
 }
 

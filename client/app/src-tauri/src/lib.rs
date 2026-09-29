@@ -172,8 +172,8 @@ async fn status() -> Res<Status> {
 }
 
 #[tauri::command]
-fn helper_state() -> helper::HelperState {
-    helper::state()
+async fn helper_state() -> Res<helper::HelperState> {
+    tauri::async_runtime::spawn_blocking(helper::state).await.map_err(err)
 }
 
 #[tauri::command]

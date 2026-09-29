@@ -99,7 +99,11 @@ impl Default for Settings {
 
 impl Settings {
     pub fn up_options(&self) -> amz_ipc::UpOptions {
-        amz_ipc::UpOptions { kill_switch: self.kill_switch, allow_lan: self.allow_lan, split: self.split.clone() }
+        // Keep the saved list, but do not send inactive entries to older helpers either.
+        let split = if self.split.mode == amz_ipc::SplitMode::All {
+            amz_ipc::Split::default()
+        } else { self.split.clone() };
+        amz_ipc::UpOptions { kill_switch: self.kill_switch, allow_lan: self.allow_lan, split }
     }
 }
 
@@ -248,5 +252,23 @@ pub fn new_profile(name: String, conf: String) -> Profile {
         created: chrono::Local::now().format("%Y-%m-%d %H:%M").to_string(),
         group: None,
         exit: None,
+    }
+}
+
+#[cfg(test)]
+mod split_settings_tests {
+    use super::Settings;
+    use amz_ipc::SplitMode;
+
+    #[test]
+    fn inactive_list_is_preserved_but_not_sent_to_helper() {
+        let mut settings = Settings::default();
+        settings.split.entries = vec!["example.com".into(); 19043];
+        assert!(settings.up_options().split.entries.is_empty());
+        assert_eq!(settings.split.entries.len(), 19043);
+        for mode in [SplitMode::Only, SplitMode::Except] {
+            settings.split.mode = mode;
+            assert_eq!(settings.up_options().split, settings.split);
+        }
     }
 }

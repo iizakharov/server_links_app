@@ -122,7 +122,7 @@ pub fn read_line<T: for<'de> Deserialize<'de>>(r: &mut impl BufRead) -> Result<T
 pub fn call(req: &Request) -> Result<Status> {
     let stream = UnixStream::connect(SOCKET)
         .map_err(|e| anyhow!("служба AMneZinu не запущена ({SOCKET}: {e})"))?;
-    stream.set_read_timeout(Some(Duration::from_secs(60)))?;
+    stream.set_read_timeout(Some(Duration::from_secs(if matches!(req, Request::Status) { 2 } else { 60 })))?;
     exchange(stream.try_clone()?, stream, req)
 }
 

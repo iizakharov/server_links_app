@@ -237,7 +237,11 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
     run("route", &args)?;
     state.endpoint_route = Some((ep_s.clone(), gw.clone()));
 
-    let (listed, failed) = resolve_entries(&opts.split.entries, system_resolve);
+    let (listed, failed) = if opts.split.mode == SplitMode::All {
+        (vec![], vec![])
+    } else {
+        resolve_entries(&opts.split.entries, system_resolve)
+    };
     if opts.split.mode != SplitMode::All && !failed.is_empty() {
         eprintln!("amz-helper: не удалось найти адреса: {}", failed.join(", "));
     }
