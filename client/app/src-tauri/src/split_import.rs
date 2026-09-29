@@ -32,6 +32,23 @@ fn hostname(value: &str) -> bool {
             && label.chars().all(|c| c.is_alphanumeric() || c == '-'))
 }
 
+// Split routes apply to the whole host. Keep bare IPv6 intact; discard only explicit ports.
+fn normalize_hostname(value: &str) -> Option<String> {
+    if hostname(value) { return Some(value.to_lowercase()); }
+    let (host, port) = value.rsplit_once(':')?;
+    if !port.bytes().all(|c| c.is_ascii_digit()) || port.parse::<u16>().ok()? == 0 {
+        return None;
+    }
+    let host = if let Some(bracketed) = host.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
+        bracketed.parse::<std::net::Ipv6Addr>().ok()?;
+        bracketed
+    } else {
+        if host.contains(':') || host.contains('/') { return None; }
+        host
+    };
+    hostname(host).then(|| host.to_lowercase())
+}
+
 fn parse(text: &str) -> Res<Vec<String>> {
     let sites: Vec<Site> = serde_json::from_str(text.trim_start_matches('\u{feff}'))
         .map_err(|e| format!("Не удалось прочитать список JSON Amnezia: {e}"))?;
@@ -41,8 +58,9 @@ fn parse(text: &str) -> Res<Vec<String>> {
         let mut values = Vec::new();
         let host = site.hostname.trim();
         if !host.is_empty() {
-            if !hostname(host) { return Err(format!("Запись {}: неверный домен, IP-адрес или сеть", index + 1)); }
-            values.push(host.to_lowercase());
+            let host = normalize_hostname(host)
+                .ok_or_else(|| format!("Запись {}: неверный домен, IP-адрес или сеть", index + 1))?;
+            values.push(host);
         }
         for ip in std::iter::once(site.ip).chain(site.ips) {
             let ip = ip.trim();
@@ -80,6 +98,34 @@ mod tests {
             {"hostname":"пример.рф", "ips":[]}
         ]"#).unwrap(), ["example.com", "1.2.3.4", "2001:db8::1", "10.0.0.0/8", "2001:db8::/32", "пример.рф"]);
         assert_eq!(parse(r#"[{"ips":["::1", "0.0.0.0/0"]}]"#).unwrap(), ["::1", "0.0.0.0/0"]);
+    }
+
+    #[test]
+    fn imports_hosts_with_ports_without_losing_ipv6_or_networks() {
+        assert_eq!(parse(r#"[
+            {"hostname":"app-123.games.s3.example.net:443", "ip":""},
+            {"hostname":"EXAMPLE.COM:8443", "ip":""},
+            {"hostname":"example.com", "ip":""},
+            {"hostname":"192.0.2.1:80", "ip":""},
+            {"hostname":"[2001:db8::1]:443", "ip":""},
+            {"hostname":"2001:db8::2", "ip":""},
+            {"hostname":"2001:db8::/32", "ip":""}
+        ]"#).unwrap(), ["app-123.games.s3.example.net", "example.com", "192.0.2.1",
+            "2001:db8::1", "2001:db8::2", "2001:db8::/32"]);
+        for host in ["example.com:0", "example.com:65536", "example.com:https",
+            "example.com:", "example.com:443:80", "[invalid]:443"] {
+            assert!(parse(&serde_json::json!([{"hostname":host}]).to_string()).is_err());
+        }
+    }
+
+    #[test]
+    #[ignore = "requires AMZ_SPLIT_IMPORT_TEST_FILE pointing to a local Amnezia list"]
+    fn imports_external_site_list() {
+        let path = std::env::var("AMZ_SPLIT_IMPORT_TEST_FILE").unwrap();
+        let text = std::fs::read_to_string(path).unwrap();
+        let entries = parse(&text).unwrap();
+        println!("Imported {} unique entries", entries.len());
+        assert!(!entries.is_empty());
     }
 
     #[test]
