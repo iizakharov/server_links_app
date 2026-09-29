@@ -3,6 +3,7 @@ mod helper;
 mod manage;
 mod profiles;
 mod qr;
+mod split_import;
 mod tray;
 #[cfg(target_os = "macos")]
 mod vault;
@@ -261,6 +262,7 @@ pub fn run() {
             get_view, import_text, rename_profile, remove_profile, select_profile, set_settings,
             share, save_text, connect, disconnect, status, helper_state, install_helper, uninstall_helper,
             check_update, install_update, qr::qr_from_file, qr::qr_from_clipboard,
+            split_import::split_import_file,
             manage::manage_view, manage::manage_server_save, manage::manage_server_delete, manage::manage_server_scan,
             manage::manage_cascade_create, manage::manage_cascade_adopt, manage::manage_cascade_delete,
             manage::manage_cascade_direct, manage::manage_setup_own,

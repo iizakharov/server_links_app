@@ -107,6 +107,7 @@ export const api = {
   installHelper: () => call<HelperState>("install_helper"),
   uninstallHelper: () => call<HelperState>("uninstall_helper"),
   checkUpdate: () => call<UpdateInfo>("check_update"),
+  splitImportFile: (path: string) => call<string[]>("split_import_file", { path }),
   qrFromFile: (path: string) => call<string>("qr_from_file", { path }),
   qrFromClipboard: () => call<string>("qr_from_clipboard"),
   installUpdate: () => call<void>("install_update"),
