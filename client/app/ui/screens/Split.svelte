@@ -75,7 +75,7 @@
       {#if message}<p class="small muted" role="status">{message}</p>{/if}
       {#if error}<p class="small" role="alert">{error}</p>{/if}
       <textarea bind:value={text} spellcheck="false" placeholder={"youtube.com\nkinopoisk.ru\n10.0.0.0/8"}></textarea>
-      <p class="small muted">По одному в строке: домен, IP-адрес или сеть. Адреса доменов определяются при подключении — сайты, которые часто меняют адреса (CDN), могут иногда идти мимо.</p>
+      <p class="small muted">По одному в строке: домен, IP-адрес или сеть. IP и сети применяются при подключении. Адреса доменов обновляются в фоне: до их получения правила для этих доменов ещё не действуют.</p>
       <button class="btn primary wide" onclick={save} disabled={!dirty || importing}>{saved ? "Сохранено" : "Сохранить"}</button>
     </div>
   {/if}

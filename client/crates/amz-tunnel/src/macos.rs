@@ -99,14 +99,14 @@ pub fn restore_keep_block(state: &NetState) -> Vec<String> {
 
 /// Domains of split tunneling resolve to new addresses over time (CDN): route the new ones too.
 /// Old routes stay, a stale address costs nothing. Returns how many routes were added.
-pub fn refresh_split(state: &mut NetState, progress: &crate::preparation::Preparation) -> Result<usize> {
+pub fn refresh_split(state: &mut NetState, listed: &[String], progress: &crate::preparation::Preparation) -> Result<usize> {
     if state.split.mode == SplitMode::All {
         return Ok(0);
     }
-    let (listed, _) = crate::preparation::resolve(&state.split.entries, progress)?;
     let mut added = 0;
     for net in listed.iter().filter(|n| !n.contains(':')) {
         progress.check()?;
+        if state.endpoint_route.as_ref().is_some_and(|(ep, _)| net.split('/').next() == Some(ep.as_str())) { continue; }
         match state.split.mode {
             SplitMode::Only if !state.only_routes.contains(net) => {
                 run("route", &["-q", "-n", "add", "-inet", net, "-interface", &state.iface])?;
@@ -217,9 +217,8 @@ pub fn tunnel_routes(allowed: &[String]) -> Vec<(bool, String)> {
 }
 
 pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut NetState, progress: &crate::preparation::Preparation) -> Result<()> {
-    let (listed, failed) = if opts.split.mode == SplitMode::All { (vec![], vec![]) }
-        else { crate::preparation::resolve(&opts.split.entries, progress)? };
-    if !failed.is_empty() { eprintln!("amz-helper: не найдены адреса {} сайтов", failed.len()); }
+    let listed = if opts.split.mode == SplitMode::All { vec![] }
+        else { crate::preparation::known_entries(&opts.split.entries) };
     progress.check()?;
     progress.report("Настройка сети…".into());
     state.iface = iface.into();

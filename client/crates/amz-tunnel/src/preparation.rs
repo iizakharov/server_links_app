@@ -1,4 +1,4 @@
-//! Cancellable preparation: bounded asynchronous DNS, before changing any routes.
+//! Bounded, cancellable DNS updates for an already connected tunnel.
 use std::sync::{atomic::{AtomicBool, Ordering}, Mutex};
 use std::time::Duration;
 use anyhow::{bail, Result};
@@ -14,7 +14,7 @@ pub struct Preparation {
 impl Preparation {
     pub fn start(&self) {
         self.cancelled.store(false, Ordering::SeqCst);
-        self.report("Подготовка подключения…".into());
+        self.report("Подключение…".into());
     }
     pub fn cancel(&self) { self.cancelled.store(true, Ordering::SeqCst); }
     pub fn check(&self) -> Result<()> {
@@ -25,7 +25,15 @@ impl Preparation {
     pub fn message(&self) -> String { self.message.lock().unwrap().clone() }
 }
 
+pub fn known_entries(entries: &[String]) -> Vec<String> {
+    crate::split::resolve_entries(entries, |_| vec![]).0
+}
+
 pub fn resolve(entries: &[String], progress: &Preparation) -> Result<(Vec<String>, Vec<String>)> {
+    resolve_with(entries, progress, |_| Ok(()))
+}
+
+pub fn resolve_with(entries: &[String], progress: &Preparation, on_addresses: impl FnMut(&[String]) -> Result<()>) -> Result<(Vec<String>, Vec<String>)> {
     // Reuse the existing domain/IP parsing. The callback collects names without doing DNS.
     let domains = Mutex::new(Vec::new());
     let (mut nets, _) = crate::split::resolve_entries(entries, |host| {
@@ -48,7 +56,7 @@ pub fn resolve(entries: &[String], progress: &Preparation) -> Result<(Vec<String
                     _ => vec![],
                 }
             }
-        }).await
+        }, on_addresses).await
     })?;
     nets.extend(resolved);
     nets.sort();
@@ -57,7 +65,7 @@ pub fn resolve(entries: &[String], progress: &Preparation) -> Result<(Vec<String
     Ok((nets, failed))
 }
 
-async fn resolve_async<F, Fut>(domains: Vec<String>, progress: &Preparation, lookup: F) -> Result<(Vec<String>, Vec<String>)>
+async fn resolve_async<F, Fut>(domains: Vec<String>, progress: &Preparation, lookup: F, mut on_addresses: impl FnMut(&[String]) -> Result<()>) -> Result<(Vec<String>, Vec<String>)>
 where F: Fn(String) -> Fut, Fut: std::future::Future<Output = Vec<String>> + Send + 'static {
     let started = std::time::Instant::now();
     let total = domains.len();
@@ -78,7 +86,7 @@ where F: Fn(String) -> Fut, Fut: std::future::Future<Output = Vec<String>> + Sen
         tokio::select! {
             result = jobs.join_next() => {
                 let (host, ips) = result.unwrap()?;
-                if ips.is_empty() { failed.push(host); } else { nets.extend(ips); }
+                if ips.is_empty() { failed.push(host); } else { on_addresses(&ips)?; nets.extend(ips); }
                 done += 1;
             }
             _ = tokio::time::sleep(Duration::from_millis(50)) => {}
@@ -103,18 +111,50 @@ mod tests {
     }
 
     #[test]
+    fn connection_uses_known_ips_without_resolving_domains() {
+        let mut entries: Vec<String> = (0..19042).map(|i| format!("site{i}.example")).collect();
+        entries.extend(["192.0.2.1".into(), "10.0.0.0/8".into(), "2001:db8::1".into()]);
+        assert_eq!(known_entries(&entries), ["10.0.0.0/8", "192.0.2.1", "2001:db8::1"]);
+    }
+
+    #[test]
+    fn delivers_fast_answer_without_waiting_for_slow_domain() {
+        let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        let progress = Preparation::default();
+        let delivered = AtomicBool::new(false);
+        rt.block_on(async {
+            let work = resolve_async(vec!["fast.example".into(), "slow.example".into()], &progress,
+                |host| async move {
+                    if host == "slow.example" { std::future::pending::<()>().await; }
+                    vec!["192.0.2.1".into()]
+                }, |ips| {
+                    assert_eq!(ips, ["192.0.2.1"]);
+                    delivered.store(true, Ordering::SeqCst);
+                    Ok(())
+                });
+            let cancel = async {
+                while !delivered.load(Ordering::SeqCst) { tokio::time::sleep(Duration::from_millis(5)).await; }
+                progress.cancel();
+            };
+            let (result, _) = tokio::time::timeout(Duration::from_secs(1), async { tokio::join!(work, cancel) }).await.unwrap();
+            assert!(result.is_err());
+            assert!(delivered.load(Ordering::SeqCst));
+        });
+    }
+
+    #[test]
     fn large_list_and_cancel() {
         let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
         let progress = Preparation::default();
         rt.block_on(async {
             let domains = (0..19042).map(|i| format!("site{i}.example")).collect();
-            let (nets, failed) = resolve_async(domains, &progress, |_| async { vec!["192.0.2.1".into()] }).await.unwrap();
+            let (nets, failed) = resolve_async(domains, &progress, |_| async { vec!["192.0.2.1".into()] }, |_| Ok(())).await.unwrap();
             assert_eq!(nets.len(), 19042);
             assert!(failed.is_empty());
             assert!(progress.message().contains("19042 из 19042"));
             let resolve = resolve_async(vec!["slow.example".into(); 100], &progress, |_| async {
                 std::future::pending::<Vec<String>>().await
-            });
+            }, |_| Ok(()));
             let cancel = async { tokio::time::sleep(Duration::from_millis(20)).await; progress.cancel(); };
             let (result, _) = tokio::join!(resolve, cancel);
             assert!(result.unwrap_err().to_string().contains("отменено"));

@@ -50,6 +50,7 @@ mod macos {
         dev: Device,
         net: NetState,
         status: Status,
+        dns: Arc<amz_tunnel::preparation::Preparation>,
     }
 
     #[derive(Default)]
@@ -62,6 +63,9 @@ mod macos {
     type Shared = Arc<Mutex<Helper>>;
     static PREPARATION: std::sync::OnceLock<amz_tunnel::preparation::Preparation> = std::sync::OnceLock::new();
     fn preparation() -> &'static amz_tunnel::preparation::Preparation { PREPARATION.get_or_init(Default::default) }
+
+    static LAST_STATUS: std::sync::OnceLock<Mutex<Status>> = std::sync::OnceLock::new();
+    fn last_status() -> &'static Mutex<Status> { LAST_STATUS.get_or_init(|| Mutex::new(Status { helper_version: BUILD.into(), ..Default::default() })) }
 
     fn log(msg: impl AsRef<str>) {
         eprintln!("amz-helper: {}", msg.as_ref());
@@ -85,6 +89,7 @@ mod macos {
 
     fn down(h: &mut Helper) {
         if let Some(a) = h.active.take() {
+            a.dns.cancel();
             log(format!("отключение {} ({})", a.status.name, a.status.iface));
             drop(a.dev);
             undo(&a.net);
@@ -115,7 +120,7 @@ mod macos {
         let status = Status { connected: true, name: name.into(), iface: dev.name().into(),
                               endpoint: cfg.endpoint.to_string(), since, kill_switch: net.kill_switch,
                               ..Default::default() };
-        h.active = Some(Active { dev, net, status });
+        h.active = Some(Active { dev, net, status, dns: Arc::new(Default::default()) });
         Ok(())
     }
 
@@ -124,30 +129,18 @@ mod macos {
             Some(a) => Status { stats: parse_stats(&a.dev.config()), ..a.status.clone() },
             None => Status { blocked: h.blocked.is_some(), kill_switch: h.blocked.is_some(), ..Default::default() },
         };
-        Status { helper_version: BUILD.into(), ..s }
+        let s = Status { helper_version: BUILD.into(), ..s };
+        *last_status().lock().unwrap() = s.clone();
+        s
     }
 
     /// Laptops change networks: keep the route to the server on the current physical gateway.
     fn watch_network(shared: Shared) {
         std::thread::spawn(move || {
-            let mut tick = 0u64;
             loop {
-            tick += 1;
             std::thread::sleep(std::time::Duration::from_secs(5));
             let mut h = shared.lock().unwrap();
             if let Some(a) = h.active.as_mut() {
-                // every 10 minutes: new addresses of split-tunnel domains
-                if tick.is_multiple_of(120) {
-                    preparation().start();
-                    match refresh_split(&mut a.net, preparation()) {
-                        Ok(0) => {}
-                        Ok(n) => {
-                            log(format!("раздельное туннелирование: добавлено новых адресов {n}"));
-                            let _ = fs::write(STATE_FILE, serde_json::to_vec(&a.net).unwrap_or_default());
-                        }
-                        Err(e) => log(format!("обновление адресов сайтов: {e:#}")),
-                    }
-                }
                 match follow_gateway(&mut a.net) {
                     Ok(true) => {
                         log(format!("сеть сменилась, маршрут до сервера через {:?}", a.net.endpoint_route.as_ref().map(|r| &r.1)));
@@ -157,6 +150,47 @@ mod macos {
                     Err(e) => log(format!("смена сети: {e:#}")),
                 }
             }
+            }
+        });
+    }
+
+    // DNS never holds the tunnel mutex; each answer updates only its new routes.
+    fn watch_domains(shared: Shared) {
+        std::thread::spawn(move || loop {
+            let snapshot = {
+                let h = shared.lock().unwrap();
+                h.active.as_ref().filter(|a| a.net.split.mode != amz_ipc::SplitMode::All)
+                    .map(|a| (a.net.split.entries.clone(), a.dns.clone()))
+            };
+            let Some((entries, control)) = snapshot else {
+                std::thread::sleep(std::time::Duration::from_secs(1)); continue;
+            };
+            let mut changes = 0;
+            let result = amz_tunnel::preparation::resolve_with(&entries, &control, |nets| {
+                control.check()?;
+                let mut h = shared.lock().unwrap();
+                let a = h.active.as_mut().filter(|a| Arc::ptr_eq(&a.dns, &control))
+                    .ok_or_else(|| anyhow!("Подключение изменилось"))?;
+                changes += refresh_split(&mut a.net, nets, &control)?;
+                if changes >= 128 {
+                    fs::write(STATE_FILE, serde_json::to_vec(&a.net)?)?;
+                    changes = 0;
+                }
+                Ok(())
+            });
+            {
+                let h = shared.lock().unwrap();
+                if let Some(a) = h.active.as_ref().filter(|a| Arc::ptr_eq(&a.dns, &control)) {
+                    let _ = fs::write(STATE_FILE, serde_json::to_vec(&a.net).unwrap_or_default());
+                    match result {
+                        Ok((_, failed)) => log(format!("фоновое обновление сайтов завершено; не найдены адреса {} сайтов", failed.len())),
+                        Err(e) => log(format!("фоновое обновление сайтов: {e:#}")),
+                    }
+                }
+            }
+            for _ in 0..600 {
+                if control.check().is_err() { break; }
+                std::thread::sleep(std::time::Duration::from_secs(1));
             }
         });
     }
@@ -177,7 +211,11 @@ mod macos {
         if matches!(req, Request::Status) {
             let s = match shared.try_lock() {
                 Ok(h) => status(&h),
-                Err(_) => Status { busy: true, progress: preparation().message(), helper_version: BUILD.into(), ..Default::default() },
+                Err(_) => {
+                    let mut s = last_status().lock().unwrap().clone();
+                    if s.busy { s.progress = preparation().message(); }
+                    s
+                },
             };
             return write_line(&mut w, Response::Ok { status: s });
         }
@@ -189,6 +227,7 @@ mod macos {
             }
         } else { shared.lock().unwrap() };
         if matches!(req, Request::Up { .. }) { preparation().start(); }
+        *last_status().lock().unwrap() = Status { busy: true, helper_version: BUILD.into(), ..Default::default() };
         let res = match &req {
             Request::Up { conf, name, options } => up(&mut h, conf, name, options),
             Request::Down => {
@@ -201,6 +240,7 @@ mod macos {
             Ok(()) => Response::Ok { status: status(&h) },
             Err(e) => {
                 log(format!("ошибка: {e:#}"));
+                status(&h);
                 Response::Error { message: format!("{e:#}") }
             }
         };
@@ -238,6 +278,7 @@ mod macos {
         }
         let shared: Shared = Arc::new(Mutex::new(helper));
         watch_network(shared.clone());
+        watch_domains(shared.clone());
         let on_exit = shared.clone();
         ctrlc::set_handler(move || {
             preparation().cancel();

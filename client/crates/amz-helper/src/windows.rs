@@ -84,6 +84,7 @@ struct Active {
     listed: Vec<String>,
     plan: NetPlan,
     status: Status,
+    dns: Arc<amz_tunnel::preparation::Preparation>,
 }
 
 #[derive(Default)]
@@ -100,9 +101,12 @@ struct Saved {
 }
 
 type Shared = Arc<Mutex<Helper>>;
+static LAST_STATUS: OnceLock<Mutex<Status>> = OnceLock::new();
+fn last_status() -> &'static Mutex<Status> { LAST_STATUS.get_or_init(|| Mutex::new(Status { helper_version: BUILD.into(), ..Default::default() })) }
 
 fn stop_tunnel(h: &mut Helper) {
     if let Some(a) = h.active.take() {
+        a.dns.cancel();
         log(format!("отключение {}", a.status.name));
         // closing the device removes the adapter with its routes and DNS, and lifts the kill switch
         drop(a.dev);
@@ -146,15 +150,8 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
     })?;
     // a crash block stays until the new tunnel is up: no gap without protection
     stop_tunnel(h);
-    let listed = if opts.split.mode == SplitMode::All {
-        vec![]
-    } else {
-        let (listed, failed) = amz_tunnel::preparation::resolve(&opts.split.entries, preparation())?;
-        if !failed.is_empty() {
-            log(format!("не удалось найти адреса {} сайтов", failed.len()));
-        }
-        listed
-    };
+    let listed = if opts.split.mode == SplitMode::All { vec![] }
+        else { amz_tunnel::preparation::known_entries(&opts.split.entries) };
     preparation().check()?;
     preparation().report("Настройка сети…".into());
     let dev = Device::up(IFACE, cfg.mtu, &cfg.uapi)?;
@@ -177,7 +174,7 @@ fn up(h: &mut Helper, conf: &str, name: &str, opts: &UpOptions) -> Result<()> {
                 cfg.endpoint, net.kill_switch, opts.split.mode, opts.split.entries.len(), net.routes.len()));
     let status = Status { connected: true, name: name.into(), iface: dev.name().into(), endpoint: cfg.endpoint.to_string(),
                           since, kill_switch: net.kill_switch, ..Default::default() };
-    h.active = Some(Active { dev, cfg, opts: opts.clone(), listed, plan: net, status });
+    h.active = Some(Active { dev, cfg, opts: opts.clone(), listed, plan: net, status, dns: Arc::new(Default::default()) });
     Ok(())
 }
 
@@ -186,39 +183,54 @@ fn status(h: &Helper) -> Status {
         Some(a) => Status { stats: parse_stats(&a.dev.config()), ..a.status.clone() },
         None => Status { blocked: h.blocked.is_some(), kill_switch: h.blocked.is_some(), ..Default::default() },
     };
-    Status { helper_version: BUILD.into(), ..s }
+    let s = Status { helper_version: BUILD.into(), ..s };
+    *last_status().lock().unwrap() = s.clone();
+    s
 }
 
-/// Every 10 minutes: new addresses of split-tunnel domains.
+fn apply_resolved(shared: &Shared, control: &Arc<amz_tunnel::preparation::Preparation>, nets: &[String]) -> Result<()> {
+    control.check()?;
+    let mut h = shared.lock().unwrap();
+    let a = h.active.as_mut().filter(|a| Arc::ptr_eq(&a.dns, control))
+        .ok_or_else(|| anyhow!("Подключение изменилось"))?;
+    let mut listed = a.listed.clone();
+    for net in nets { if !listed.contains(net) { listed.push(net.clone()); } }
+    if listed.len() != a.listed.len() {
+        let net = plan(&a.cfg, &a.opts, &listed);
+        a.dev.set_net(&net)?;
+        a.listed = listed;
+        a.plan = net;
+    }
+    Ok(())
+}
+
+// Resolve after connection, without holding the tunnel lock. Apply new routes in batches.
 fn watch_split(shared: Shared) {
     std::thread::spawn(move || loop {
-        std::thread::sleep(Duration::from_secs(600));
-        let mut h = shared.lock().unwrap();
-        let Some(a) = h.active.as_mut() else { continue };
-        if a.opts.split.mode == SplitMode::All {
-            continue;
-        }
-        preparation().start();
-        let (fresh, _) = match amz_tunnel::preparation::resolve(&a.opts.split.entries, preparation()) {
-            Ok(result) => result,
-            Err(e) => { log(format!("обновление адресов: {e}")); continue; }
+        let snapshot = {
+            let h = shared.lock().unwrap();
+            h.active.as_ref().filter(|a| a.opts.split.mode != SplitMode::All)
+                .map(|a| (a.opts.split.entries.clone(), a.dns.clone()))
         };
-        let before = a.listed.len();
-        for n in fresh {
-            if !a.listed.contains(&n) {
-                a.listed.push(n);
+        let Some((entries, control)) = snapshot else { std::thread::sleep(Duration::from_secs(1)); continue; };
+        let mut pending = vec![];
+        let result = amz_tunnel::preparation::resolve_with(&entries, &control, |nets| {
+            pending.extend_from_slice(nets);
+            if pending.len() >= 128 {
+                apply_resolved(&shared, &control, &pending)?;
+                pending.clear();
             }
+            Ok(())
+        });
+        if result.is_ok() && !pending.is_empty() { let _ = apply_resolved(&shared, &control, &pending); }
+        match result {
+            Ok((_, failed)) => log(format!("фоновое обновление сайтов завершено; не найдены адреса {} сайтов", failed.len())),
+            Err(e) if control.check().is_ok() => log(format!("фоновое обновление сайтов: {e:#}")),
+            _ => {}
         }
-        if a.listed.len() == before {
-            continue;
-        }
-        let net = plan(&a.cfg, &a.opts, &a.listed);
-        match a.dev.set_net(&net) {
-            Ok(()) => {
-                log(format!("раздельное туннелирование: добавлено новых адресов {}", a.listed.len() - before));
-                a.plan = net;
-            }
-            Err(e) => log(format!("обновление адресов сайтов: {e:#}")),
+        for _ in 0..600 {
+            if control.check().is_err() { break; }
+            std::thread::sleep(Duration::from_secs(1));
         }
     });
 }
@@ -275,7 +287,11 @@ fn handle(pipe: &File, shared: &Shared) -> Result<()> {
     if matches!(req, Request::Status) {
         let s = match shared.try_lock() {
             Ok(h) => status(&h),
-            Err(_) => Status { busy: true, progress: preparation().message(), helper_version: BUILD.into(), ..Default::default() },
+            Err(_) => {
+                let mut s = last_status().lock().unwrap().clone();
+                if s.busy { s.progress = preparation().message(); }
+                s
+            },
         };
         return write_line(&mut w, Response::Ok { status: s });
     }
@@ -287,6 +303,7 @@ fn handle(pipe: &File, shared: &Shared) -> Result<()> {
         }
     } else { shared.lock().unwrap() };
     if matches!(req, Request::Up { .. }) { preparation().start(); }
+    *last_status().lock().unwrap() = Status { busy: true, helper_version: BUILD.into(), ..Default::default() };
     let res = match &req {
         Request::Up { conf, name, options } => up(&mut h, conf, name, options),
         Request::Down => {
@@ -299,6 +316,7 @@ fn handle(pipe: &File, shared: &Shared) -> Result<()> {
         Ok(()) => Response::Ok { status: status(&h) },
         Err(e) => {
             log(format!("ошибка: {e:#}"));
+            status(&h);
             Response::Error { message: format!("{e:#}") }
         }
     };

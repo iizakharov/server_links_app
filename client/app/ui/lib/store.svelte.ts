@@ -100,7 +100,7 @@ export async function switchExit(id: string) {
     app.error = errorText(e);
     await refreshStatus();
   } finally {
-    app.busy = "";
+    if (app.busy === "connecting") app.busy = "";
   }
 }
 
@@ -114,6 +114,7 @@ export async function cancelConnection() {
 export async function toggleConnection() {
   app.error = "";
   const p = selectedProfile();
+  const action = app.status?.connected || app.status?.blocked ? "disconnecting" : "connecting";
   try {
     if (app.status?.connected || app.status?.blocked) {
       app.busy = "disconnecting";
@@ -126,6 +127,6 @@ export async function toggleConnection() {
     app.error = errorText(e);
     await refreshStatus();
   } finally {
-    app.busy = "";
+    if (app.busy === action) app.busy = "";
   }
 }
