@@ -18,7 +18,7 @@ pub struct NetPlan {
     pub mtu: u32,
     /// block everything outside the tunnel (WFP; lifted automatically if the helper dies)
     pub kill_switch: bool,
-    /// with the kill switch: still allow the local network
+    /// keep local destinations outside the tunnel and allow them through the kill switch
     pub allow_lan: bool,
 }
 
@@ -99,6 +99,9 @@ pub fn plan(cfg: &TunnelConfig, opts: &UpOptions, listed: &[String]) -> NetPlan 
         SplitMode::Except => (cfg.allowed_ips.clone(), listed.to_vec()),
     };
     exclude.push(cfg.endpoint.ip().to_string());
+    if opts.allow_lan {
+        exclude.extend(crate::local_exclusions(&crate::keep_in_tunnel(&cfg.dns, &opts.split)));
+    }
     NetPlan {
         addresses: cfg.addresses.clone(),
         routes: routes(&allowed, &exclude),

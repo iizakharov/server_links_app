@@ -37,9 +37,15 @@
     <Toggle checked={s.kill_switch} label="Kill switch" disabled={s.split.mode !== "all"}
             hint={s.split.mode !== "all" ? "Недоступно при раздельном туннелировании" : "Блокировать интернет, если VPN отключится сам"}
             onchange={(v) => saveSettings({ kill_switch: v })} />
-    {#if s.kill_switch && s.split.mode === "all"}
-      <Toggle checked={s.allow_lan} label="Разрешить локальную сеть" hint="Принтеры, роутер, NAS доступны при kill switch"
-              onchange={(v) => saveSettings({ allow_lan: v })} />
+    <Toggle checked={s.allow_lan} label="Разрешить локальную сеть" hint="Локальные и частные корпоративные адреса идут вне AMneZinu. Применяется при переподключении"
+            onchange={(v) => saveSettings({ allow_lan: v })} />
+    {#if !isWindows}
+      <label class="field">
+        <span class="label">Корпоративные домены</span>
+        <input value={(s.corporate_domains ?? []).join(" ")} spellcheck="false" placeholder="corp.example intranet.example"
+               onchange={(e) => saveSettings({ corporate_domains: e.currentTarget.value.split(/[\s,]+/).filter(Boolean) })} />
+        <span class="small muted">Для другого VPN, который не сообщает свои домены. Применяется при переподключении</span>
+      </label>
     {/if}
     <Toggle checked={s.autoconnect} label="Подключаться при запуске" hint="К выбранному серверу"
             onchange={(v) => saveSettings({ autoconnect: v })} />
@@ -110,6 +116,8 @@
 <style>
   .notes { white-space: pre-line; max-height: 8em; overflow: auto; }
   .col { display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field .label { font-weight: 560; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); flex: none; }
   .dot.ok { background: var(--ok); }
   .dot.warn { background: var(--accent); }

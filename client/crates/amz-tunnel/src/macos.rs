@@ -27,6 +27,12 @@ pub struct NetState {
     /// networks routed into the tunnel in "only" mode
     #[serde(default)]
     pub only_routes: Vec<String>,
+    /// Never install routes for local destinations, including resolved split domains.
+    #[serde(default)]
+    pub allow_lan: bool,
+    /// Temporary public and corporate resolvers in the dynamic store.
+    #[serde(default)]
+    pub split_dns: bool,
 }
 
 const PF_ANCHOR: &str = "com.apple/amnezinu";
@@ -44,7 +50,7 @@ pub fn kill_switch_rules(iface: &str, endpoint: std::net::SocketAddr, allow_lan:
     ];
     if allow_lan {
         r.push("pass out quick inet from any to { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 224.0.0.0/4, 255.255.255.255 }".into());
-        r.push("pass out quick inet6 from any to { fe80::/10, ff00::/8 }".into());
+        r.push("pass out quick inet6 from any to { fc00::/7, fe80::/10, ff00::/8 }".into());
     }
     r.push("block drop out all".into());
     r.join("\n") + "\n"
@@ -104,6 +110,7 @@ pub fn refresh_split(state: &mut NetState, listed: &[String], progress: &crate::
         return Ok(0);
     }
     let mut added = 0;
+    let listed = crate::exclude_local(listed, state.allow_lan, &crate::keep_in_tunnel(&[], &state.split));
     for net in listed.iter().filter(|n| !n.contains(':')) {
         progress.check()?;
         if state.endpoint_route.as_ref().is_some_and(|(ep, _)| net.split('/').next() == Some(ep.as_str())) { continue; }
@@ -219,6 +226,8 @@ pub fn tunnel_routes(allowed: &[String]) -> Vec<(bool, String)> {
 pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut NetState, progress: &crate::preparation::Preparation) -> Result<()> {
     let listed = if opts.split.mode == SplitMode::All { vec![] }
         else { crate::preparation::known_entries(&opts.split.entries) };
+    let keep = crate::keep_in_tunnel(&cfg.dns, &opts.split);
+    let listed = crate::exclude_local(&listed, opts.allow_lan, &keep);
     progress.check()?;
     progress.report("Настройка сети…".into());
     state.iface = iface.into();
@@ -243,13 +252,14 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
     state.endpoint_route = Some((ep_s.clone(), gw.clone()));
 
     state.split = opts.split.clone();
+    state.allow_lan = opts.allow_lan;
     if opts.split.mode == SplitMode::Only {
         state.only_routes = listed.clone();
     }
     let routes: Vec<(bool, String)> = match opts.split.mode {
         // only the listed sites (and our DNS servers, so names resolve the same way) go into the tunnel
         SplitMode::Only => listed.iter().map(|n| (n.contains(':'), n.clone())).collect(),
-        _ => tunnel_routes(&cfg.allowed_ips),
+        _ => tunnel_routes(&crate::exclude_local(&cfg.allowed_ips, opts.allow_lan, &keep)),
     };
     for (v6, net) in routes {
         progress.check()?;
@@ -276,11 +286,27 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
 
     // in "only" mode the rest of the traffic is not ours: leave the system DNS alone
     if !cfg.dns.is_empty() && opts.split.mode != SplitMode::Only {
-        let dns: Vec<String> = cfg.dns.iter().map(|d| d.to_string()).collect();
-        for svc in hardware_services()? {
-            let before = get_dns(&svc)?;
-            state.dns_backup.push((svc.clone(), before));
-            set_dns(&svc, &dns)?;
+        let other = crate::macos_dns::other_vpn(&run("scutil", &["--dns"])?, iface);
+        if !other.servers.is_empty() {
+            let mut domains = other.domains;
+            for d in opts.corporate_domains.iter().filter_map(|d| crate::macos_dns::normalize_domain(d)) {
+                if !domains.contains(&d) { domains.push(d); }
+            }
+            if domains.is_empty() {
+                // Unknown corporate names: overriding its catch-all resolver would break them.
+                eprintln!("amz-helper: DNS другого VPN оставлен без изменений: не указаны корпоративные домены");
+            } else {
+                // Record ownership before writing so failed setup also removes partial DNS state.
+                state.split_dns = true;
+                crate::macos_dns::install(&cfg.dns, &other.servers, &domains)?;
+            }
+        } else {
+            let dns: Vec<String> = cfg.dns.iter().map(|d| d.to_string()).collect();
+            for svc in hardware_services()? {
+                let before = get_dns(&svc)?;
+                state.dns_backup.push((svc.clone(), before));
+                set_dns(&svc, &dns)?;
+            }
         }
     }
     Ok(())
@@ -289,6 +315,9 @@ pub fn configure(iface: &str, cfg: &TunnelConfig, opts: &UpOptions, state: &mut 
 /// Undoes what `configure` did; tunnel routes go away with the interface. Best effort: collects errors.
 pub fn restore(state: &NetState) -> Vec<String> {
     let mut errors = kill_switch_off(state);
+    if state.split_dns {
+        if let Err(e) = crate::macos_dns::clear() { errors.push(e.to_string()); }
+    }
     for net in &state.bypass {
         let _ = run("route", &["-q", "-n", "delete", "-inet", net]);
     }

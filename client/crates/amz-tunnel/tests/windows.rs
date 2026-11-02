@@ -39,7 +39,7 @@ Endpoint = 5.6.7.8:51820\nAllowedIPs = 0.0.0.0/0, ::/0\n";
 #[test]
 fn plan_by_split_mode() {
     let cfg = tunnel_config(CONF, |_, _| None).unwrap();
-    let opts = |mode, kill| UpOptions { kill_switch: kill, allow_lan: false, split: Split { mode, entries: vec![] } };
+    let opts = |mode, kill| UpOptions { kill_switch: kill, allow_lan: false, split: Split { mode, entries: vec![] }, ..Default::default() };
 
     let all = plan(&cfg, &opts(SplitMode::All, true), &[]);
     assert!(all.kill_switch && !all.allow_lan);
@@ -53,4 +53,26 @@ fn plan_by_split_mode() {
     let except = plan(&cfg, &opts(SplitMode::Except, false), &s(&["9.9.9.9"]));
     assert_eq!(v4_size(&except.routes), (1u64 << 32) - 2);
     assert!(!except.routes.iter().any(|r| r == "9.9.9.9/32" || r == "5.6.7.8/32"));
+}
+
+#[test]
+fn local_access_excludes_corporate_networks_in_every_mode() {
+    let cfg = tunnel_config(CONF, |_, _| None).unwrap();
+    for mode in [SplitMode::All, SplitMode::Only, SplitMode::Except] {
+        let opts = UpOptions { allow_lan: true, kill_switch: false, split: Split { mode, entries: vec![] }, ..Default::default() };
+        let net = plan(&cfg, &opts, &s(&["0.0.0.0/1", "10.2.3.3", "fd00::1"]));
+        for host in ["10.2.3.3", "10.2.3.1", "192.168.1.1", "fd00::1"] {
+            assert_eq!(routes(&net.routes, &s(&[host])), net.routes, "{mode:?}: {host}");
+        }
+    }
+}
+
+#[test]
+fn local_access_keeps_explicit_only_entries() {
+    let cfg = tunnel_config(CONF, |_, _| None).unwrap();
+    let opts = UpOptions { allow_lan: true, split: Split { mode: SplitMode::Only, entries: s(&["10.0.5.0/24", "gitlab.example.corp"]) },
+                           ..Default::default() };
+    // 10.2.3.3 is what gitlab.example.corp resolved to: it keeps the other VPN's route.
+    let net = plan(&cfg, &opts, &s(&["10.0.5.0/24", "10.2.3.3"]));
+    assert_eq!(net.routes, s(&["10.0.5.0/24"]));
 }

@@ -35,9 +35,11 @@ pub enum Request {
 pub struct UpOptions {
     /// block all traffic outside the tunnel while connected (and after a crash, until Down)
     pub kill_switch: bool,
-    /// with the kill switch: still allow the local network (printers, NAS, router page)
+    /// keep local destinations outside the tunnel; also allow them through the kill switch
     pub allow_lan: bool,
     pub split: Split,
+    /// macOS, another VPN without its own domains: names that go to that VPN's resolvers
+    pub corporate_domains: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]

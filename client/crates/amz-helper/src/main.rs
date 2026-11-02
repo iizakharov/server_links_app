@@ -259,6 +259,8 @@ mod macos {
         if unsafe { libc::geteuid() } != 0 {
             bail!("нужны права root: sudo amz-helper --allow-uid $(id -u)");
         }
+        // Also handles a crash during configure, before NetState was saved.
+        if let Err(e) = amz_tunnel::macos_dns::clear() { log(format!("очистка DNS: {e:#}")); }
         // a previous run died with the tunnel up: undo its routes and DNS;
         // with the kill switch on, traffic stays blocked until the user connects or disconnects
         let mut helper = Helper::default();

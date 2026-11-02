@@ -16,6 +16,7 @@ export type Settings = {
   allow_lan: boolean;
   autoconnect: boolean;
   split: { mode: SplitMode; entries: string[] };
+  corporate_domains: string[];
 };
 export type View = { profiles: ProfileView[]; selected: string | null; settings: Settings };
 export type Stats = { rx: number; tx: number; handshake: number };

@@ -88,12 +88,14 @@ pub struct Settings {
     /// connect to the selected server when the app starts
     pub autoconnect: bool,
     pub split: amz_ipc::Split,
+    /// macOS: names for another VPN's resolvers when it announces none itself
+    pub corporate_domains: Vec<String>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Settings { theme: "system".into(), kill_switch: false, allow_lan: true, autoconnect: false,
-                   split: Default::default() }
+                   split: Default::default(), corporate_domains: vec![] }
     }
 }
 
@@ -103,7 +105,8 @@ impl Settings {
         let split = if self.split.mode == amz_ipc::SplitMode::All {
             amz_ipc::Split::default()
         } else { self.split.clone() };
-        amz_ipc::UpOptions { kill_switch: self.kill_switch, allow_lan: self.allow_lan, split }
+        amz_ipc::UpOptions { kill_switch: self.kill_switch, allow_lan: self.allow_lan, split,
+                            corporate_domains: self.corporate_domains.clone() }
     }
 }
 

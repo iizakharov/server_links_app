@@ -28,7 +28,7 @@ let view: View = {
       group: null, exit: null, title: "Рига" },
   ],
   selected: "p1",
-  settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } },
+  settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] }, corporate_domains: [] },
 };
 let status: Status = { connected: false, name: "", iface: "", endpoint: "", since: 0, stats: { rx: 0, tx: 0, handshake: 0 },
                       blocked: false, kill_switch: false, helper_version: "0.1.8+mock" };

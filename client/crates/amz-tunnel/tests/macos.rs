@@ -3,6 +3,25 @@
 use amz_tunnel::macos::{parse_gateway, parse_services, tunnel_routes};
 
 #[test]
+fn background_domain_updates_never_override_corporate_routes() {
+    use amz_ipc::{Split, SplitMode};
+    use amz_tunnel::{macos::{refresh_split, NetState}, preparation::Preparation};
+    for mode in [SplitMode::Only, SplitMode::Except] {
+        let mut state = NetState {
+            iface: "utun10".into(), allow_lan: true,
+            endpoint_route: Some(("198.51.100.1".into(), vec!["-gateway".into(), "192.168.1.1".into()])),
+            split: Split { mode, entries: vec!["gitlab.example.corp".into()] },
+            ..NetState::default()
+        };
+        let before = state.clone();
+        let resolved = vec!["10.2.3.3".into(), "10.2.3.1".into(), "fd00::1".into()];
+        assert_eq!(refresh_split(&mut state, &resolved, &Preparation::default()).unwrap(), 0);
+        // Nothing to re-point on Wi-Fi change or delete on disconnect.
+        assert_eq!(state, before);
+    }
+}
+
+#[test]
 fn gateway_skips_other_vpn_defaults() {
     let netstat = "Routing tables\n\nInternet:\nDestination        Gateway            Flags               Netif Expire\n\
                    default            link#23            UCSg                utun8       \n\

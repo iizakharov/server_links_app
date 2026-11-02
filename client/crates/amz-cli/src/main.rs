@@ -205,7 +205,7 @@ async fn main() -> Result<()> {
                 (_, false) => amz_ipc::Split { mode: amz_ipc::SplitMode::Except, entries: except },
                 _ => Default::default(),
             };
-            let options = amz_ipc::UpOptions { kill_switch, allow_lan, split };
+            let options = amz_ipc::UpOptions { kill_switch, allow_lan, split, ..Default::default() };
             print_status(&amz_ipc::call(&amz_ipc::Request::Up { conf, name, options })?);
         }
         Cmd::Validate { id } => {

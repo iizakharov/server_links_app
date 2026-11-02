@@ -6,7 +6,7 @@ export type Tab = "home" | "servers" | "share" | "settings" | "add" | "split" | 
 export const app = $state({
   tab: "home" as Tab,
   view: { profiles: [], selected: null,
-          settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] } } } as View,
+          settings: { theme: "system", kill_switch: false, allow_lan: true, autoconnect: false, split: { mode: "all", entries: [] }, corporate_domains: [] } } as View,
   status: null as Status | null,
   /** connecting | disconnecting while a request is in flight */
   busy: "" as "" | "connecting" | "disconnecting",
