@@ -111,6 +111,11 @@ impl Host {
             if inner.starts_with("cat ") {
                 return Ok(self.files.get(words[1]).cloned().unwrap_or_default());
             }
+            if inner.starts_with("sed -i -E 's/^(RandomTrailers|DisableCookies)") {
+                let f = self.files.get_mut(*words.last().unwrap()).unwrap();
+                *f = f.replace("RandomTrailers = true", "RandomTrailers = 1").replace("DisableCookies = true", "DisableCookies = 1");
+                return Ok(String::new());
+            }
         }
         Ok(String::new())
     }
@@ -354,6 +359,17 @@ async fn cascade_with_awg3_container() {
     let conf = ops::render(&env.s, &made[0]).unwrap().conf;
     assert!(conf.contains("Address = 10.9.3.2/32") && conf.contains("HeaderProtectionKey = "), "{conf}");
     assert!(!env.file(EXIT2_IP, "/opt/amnezia/awg/wg0.conf").contains("10.9.3.2")); // main instance untouched
+
+    // a container set up by 0.1.10 has "true", which awg-quick rejects: it is fixed before adding a client
+    {
+        let mut h = env.host(EXIT2_IP);
+        let f = h.files.get_mut("/opt/cascade/awgv3.conf").unwrap();
+        *f = f.replace("RandomTrailers = 1", "RandomTrailers = true").replace("DisableCookies = 1", "DisableCookies = true");
+    }
+    let made = ops::create_clients(&env.conn, &env.store, &mut env.s, "phone", std::slice::from_ref(&v.cascade.id)).await.unwrap();
+    let conf = ops::render(&env.s, &made[0]).unwrap().conf;
+    assert!(conf.contains("RandomTrailers = 1") && !conf.contains("true"), "{conf}");
+    assert!(env.file(EXIT2_IP, "/opt/cascade/awgv3.conf").contains("DisableCookies = 1"));
 }
 
 #[tokio::test]

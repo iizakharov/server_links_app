@@ -118,7 +118,31 @@ pub async fn detect_instance<R: Remote>(r: &mut R, instance: &str) -> Result<Opt
         mode: instance.into(), container: Some(inst.container.into()), tool: "awg".into(),
         iface: inst.iface.into(), conf_path: format!("/opt/cascade/{}.conf", inst.iface), ..Default::default()
     };
-    read_info(r, info).await.map(Some)
+    let info = read_info(r, info).await?;
+    // 0.1.10 wrote "true", which awg-quick rejects, so the interface never came up: fix the file and restart
+    if info.params.iter().any(|(k, v)| ["RandomTrailers", "DisableCookies"].contains(&k.as_str()) && v == "true") {
+        rx(r, &info, &format!("sed -i -E 's/^(RandomTrailers|DisableCookies) *= *true *$/\\1 = 1/' {}", info.conf_path),
+           None, true).await?;
+        r.run(&format!("docker restart {} >/dev/null", inst.container)).await?;
+        if !wait_up(r, inst.container, inst.iface, info.listen_port as u32).await? {
+            let tail = r.run_ok(&format!("docker logs --tail 20 {} 2>&1", inst.container)).await?;
+            bail!("[{}] контейнер {} не поднял {}:\n{tail}", r.host(), inst.container, inst.iface);
+        }
+        return read_info(r, info).await.map(Some);
+    }
+    Ok(Some(info))
+}
+
+/// Waits until the interface in the container listens on the port.
+async fn wait_up<R: Remote>(r: &mut R, container: &str, iface: &str, port: u32) -> Result<bool> {
+    for _ in 0..30 {
+        tokio::time::sleep(POLL / 5).await;
+        let lp = r.run(&format!("docker exec {container} awg show {iface} listen-port 2>/dev/null || true")).await?;
+        if lp.trim() == port.to_string() {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// "main" (the server's own AmneziaWG) or one of our instances.
@@ -201,16 +225,7 @@ pub async fn install_instance<R: Remote>(r: &mut R, instance: &str, main: Option
          --device /dev/net/tun --sysctl net.ipv4.ip_forward=1 -p {port}:{port}/udp -v {d}:/opt/cascade \
          --entrypoint /bin/sh {img} /opt/cascade/start.sh >/dev/null",
         c = inst.container, d = inst.dir, img = quote(&image))).await?;
-    let mut up = false;
-    for _ in 0..30 {
-        tokio::time::sleep(POLL / 5).await;
-        let lp = r.run(&format!("docker exec {} awg show {} listen-port 2>/dev/null || true", inst.container, inst.iface)).await?;
-        if lp.trim() == port.to_string() {
-            up = true;
-            break;
-        }
-    }
-    if !up {
+    if !wait_up(r, inst.container, inst.iface, port).await? {
         let tail = r.run_ok(&format!("docker logs --tail 20 {} 2>&1", inst.container)).await?;
         bail!("[{host}] контейнер {} не поднял {}:\n{tail}", inst.container, inst.iface);
     }
