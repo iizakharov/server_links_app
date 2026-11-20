@@ -3,7 +3,7 @@ module github.com/iizakharov/amnezinu-vpn/libawg
 go 1.27.1
 
 require (
-	github.com/amnezia-vpn/amneziawg-go/v3 v3.1.20260828
+	github.com/amnezia-vpn/amneziawg-go/v3 v3.1.20261116
 	golang.org/x/sys v0.43.0
 	golang.zx2c4.com/wireguard/windows v1.1.1
 )

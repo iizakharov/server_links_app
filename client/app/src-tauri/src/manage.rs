@@ -226,8 +226,8 @@ fn save_server(store: &Storage, s: &mut State, server: ServerIn) -> Res<String> 
 }
 
 #[tauri::command]
-pub async fn manage_server_delete(app: AppHandle, id: String) -> Res<()> {
-    with_state(&app, async |_, store, s| ops::delete_server(store, s, &id).map_err(err)).await
+pub async fn manage_server_delete(app: AppHandle, id: String, cascades: bool) -> Res<()> {
+    with_state(&app, async |_, store, s| ops::delete_server(store, s, &id, cascades).map_err(err)).await
 }
 
 #[tauri::command]
@@ -294,6 +294,12 @@ pub async fn manage_cascade_delete(app: AppHandle, id: String) -> Res<OpLog> {
     with_state(&app, async |conn, store, s| Ok(ops::delete_cascade(conn, store, s, &id).await)).await
 }
 
+/// Removes a cascade from the app only (its servers are unreachable).
+#[tauri::command]
+pub async fn manage_cascade_forget(app: AppHandle, id: String) -> Res<()> {
+    with_state(&app, async |_, store, s| ops::forget_cascade(store, s, &id).map_err(err)).await
+}
+
 #[tauri::command]
 pub async fn manage_cascade_check(app: AppHandle, id: String) -> Res<OpLog> {
     with_state(&app, async |conn, _, s| Ok(ops::check_cascade(conn, s, &id).await)).await
@@ -309,6 +315,12 @@ pub async fn manage_client_create(app: AppHandle, name: String, cascade_ids: Vec
 #[tauri::command]
 pub async fn manage_client_delete(app: AppHandle, id: String) -> Res<OpLog> {
     with_state(&app, async |conn, store, s| Ok(ops::delete_client(conn, store, s, &id).await)).await
+}
+
+/// Removes a client from the app only (its exit server is unreachable).
+#[tauri::command]
+pub async fn manage_client_forget(app: AppHandle, id: String) -> Res<()> {
+    with_state(&app, async |_, store, s| ops::forget_client(store, s, &id).map_err(err)).await
 }
 
 #[tauri::command]

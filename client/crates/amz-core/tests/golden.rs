@@ -113,7 +113,14 @@ fn random_params_have_the_right_version() {
         let p: Params = awg::random_params(ver);
         assert_eq!(awg::awg_version(&p), expected, "{p:?}");
         let n = |k: &str| p[k].parse::<u32>().unwrap();
-        assert!(n("S1") != n("S2") && n("S1") + 56 != n("S2") && n("S2") + 56 != n("S1"));
+        let v3 = ver == "v3";
+        if v3 {
+            assert!(["S2", "S3", "S4"].iter().all(|k| n(k) == n("S1")), "{p:?}");
+        } else {
+            assert!(n("S1") != n("S2") && n("S1") + 56 != n("S2") && n("S2") + 56 != n("S1"));
+        }
+        assert_eq!(p.get("RandomTrailers").map(String::as_str), v3.then_some("true"));
+        assert_eq!(p.get("DisableCookies").map(String::as_str), v3.then_some("true"));
     }
 }
 

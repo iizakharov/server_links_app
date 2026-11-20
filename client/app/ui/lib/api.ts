@@ -61,18 +61,20 @@ export type ServerIn = { id: string | null; name: string; host: string; ssh_port
 export const manage = {
   view: () => call<ManageView>("manage_view"),
   saveServer: (server: ServerIn) => call<string>("manage_server_save", { server }),
-  deleteServer: (id: string) => call<void>("manage_server_delete", { id }),
+  deleteServer: (id: string, cascades: boolean) => call<void>("manage_server_delete", { id, cascades }),
   scan: (id: string) => call<string>("manage_server_scan", { id }),
   createCascades: (req: { proxy_id: string; exit_ids: string[]; port: number | null; instance: string }) =>
     call<OpLog>("manage_cascade_create", { req }),
   adopt: (proxy_id: string, exit_id: string, port: number) => call<void>("manage_cascade_adopt", { proxyId: proxy_id, exitId: exit_id, port }),
   deleteCascade: (id: string) => call<OpLog>("manage_cascade_delete", { id }),
+  forgetCascade: (id: string) => call<void>("manage_cascade_forget", { id }),
   direct: (exit_id: string, instance: string) => call<OpLog>("manage_cascade_direct", { exitId: exit_id, instance }),
   setupOwn: (server: ServerIn, instance: string, device: string) =>
     call<View>("manage_setup_own", { req: { server, instance, device } }),
   check: (id: string) => call<OpLog>("manage_cascade_check", { id }),
   createClient: (name: string, cascade_ids: string[]) => call<string[]>("manage_client_create", { name, cascadeIds: cascade_ids }),
   deleteClient: (id: string) => call<OpLog>("manage_client_delete", { id }),
+  forgetClient: (id: string) => call<void>("manage_client_forget", { id }),
   traffic: () => call<OpLog>("manage_traffic"),
   share: (id: string) => call<Share>("manage_client_share", { id }),
   toDevice: (id: string) => call<View>("manage_client_to_device", { id }),

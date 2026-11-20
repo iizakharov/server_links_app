@@ -7,7 +7,7 @@ use amz_core::model::{Server, State};
 use amz_core::storage::Storage;
 use amz_core::{decode_vpn_key, keys, parse_conf};
 use amz_remote::ops::{self, CascadeRequest, Connector};
-use amz_remote::{proxy, Remote};
+use amz_remote::{foreign, proxy, Remote};
 use anyhow::{anyhow, bail, Result};
 
 const PROXY_IP: &str = "198.51.100.1";
@@ -407,4 +407,54 @@ async fn direct_connection_without_proxy() {
 
     let r = ops::delete_cascade(&env.conn, &env.store, &mut env.s, &cid).await;
     assert!(r.ok && env.s.cascades.is_empty() && env.s.clients.is_empty(), "{:?}", r.log);
+}
+
+#[tokio::test]
+async fn exit_servers_stop_answering_ping() {
+    let mut env = setup(true).await;
+    let r = { let req = env.cascade_req(&["nl"], None, "auto"); ops::create_cascades(&env.conn, &env.store, &mut env.s, &req).await };
+    assert!(r.ok && r.log.iter().any(|l| l.contains("ping (ICMP echo) запрещён")), "{:?}", r.log);
+    let unit = env.file(EXIT2_IP, foreign::NO_PING_UNIT_PATH);
+    assert!(unit.contains("iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null || \
+                           iptables -I INPUT 1 -p icmp --icmp-type echo-request -j DROP"), "{unit}");
+    assert!(!env.host(PROXY_IP).files.contains_key(foreign::NO_PING_UNIT_PATH)); // the proxy still answers
+
+    let praga = env.ids["praga"].clone();
+    assert!(ops::create_direct(&env.conn, &env.store, &mut env.s, &praga, "auto").await.ok);
+    assert_eq!(env.file(EXIT_IP, foreign::NO_PING_UNIT_PATH), foreign::NO_PING_UNIT);
+}
+
+#[tokio::test]
+async fn unreachable_servers_can_be_forgotten() {
+    let mut env = setup(true).await;
+    let (adopted, client) = adopt_praga_and_add_client(&mut env).await;
+    let r = { let req = env.cascade_req(&["nl"], None, "auto"); ops::create_cascades(&env.conn, &env.store, &mut env.s, &req).await };
+    assert!(r.ok, "{:?}", r.log);
+    let managed = env.s.cascades[1].id.clone();
+    let other = ops::create_clients(&env.conn, &env.store, &mut env.s, "tablet", std::slice::from_ref(&managed)).await.unwrap();
+
+    // the exit is gone: revoking fails, forgetting works and is saved
+    env.host(EXIT_IP).down = true;
+    assert!(!ops::delete_client(&env.conn, &env.store, &mut env.s, &client).await.ok);
+    ops::forget_client(&env.store, &mut env.s, &client).unwrap();
+    assert!(env.s.clients.iter().all(|c| c.id != client));
+    assert!(ops::forget_client(&env.store, &mut env.s, &client).is_err());
+
+    // the proxy is gone: deleting the managed cascade fails and keeps it, forgetting removes it with its clients
+    env.host(PROXY_IP).down = true;
+    assert!(!ops::delete_cascade(&env.conn, &env.store, &mut env.s, &managed).await.ok);
+    assert_eq!(env.s.cascades.len(), 2);
+    ops::forget_cascade(&env.store, &mut env.s, &managed).unwrap();
+    assert!(env.s.cascades.iter().all(|c| c.id != managed));
+    assert!(env.s.clients.iter().all(|c| c.id != other[0]));
+    assert_eq!(env.store.load().unwrap(), env.s);
+
+    // a server used by a cascade goes only together with its cascades and their clients
+    let praga = env.ids["praga"].clone();
+    env.s.clients.push(amz_core::model::Client { id: "c1".into(), cascade_id: adopted.clone(), ..Default::default() });
+    assert!(ops::delete_server(&env.store, &mut env.s, &praga, false).is_err());
+    ops::delete_server(&env.store, &mut env.s, &praga, true).unwrap();
+    assert!(env.s.servers.iter().all(|x| x.id != praga));
+    assert!(env.s.cascades.is_empty() && env.s.clients.is_empty());
+    assert_eq!(env.store.load().unwrap(), env.s);
 }

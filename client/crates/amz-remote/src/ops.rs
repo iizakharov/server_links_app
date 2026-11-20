@@ -173,11 +173,15 @@ pub fn external_not_adopted<C: Connector>(conn: &C, s: &State) -> Vec<ExternalCa
 
 // ---------- servers ----------
 
-pub fn delete_server(store: &Storage, s: &mut State, sid: &str) -> Result<()> {
-    if s.cascades.iter().any(|c| c.proxy_id == sid || c.exit_id == sid) {
+/// Removes a server from the app (nothing changes on it). `with_cascades` also forgets its cascades and their clients.
+pub fn delete_server(store: &Storage, s: &mut State, sid: &str, with_cascades: bool) -> Result<()> {
+    let used: Vec<String> = s.cascades.iter().filter(|c| c.proxy_id == sid || c.exit_id == sid).map(|c| c.id.clone()).collect();
+    if !used.is_empty() && !with_cascades {
         bail!("Сервер используется в каскаде — сначала удалите каскад");
     }
     server(s, sid)?;
+    s.cascades.retain(|c| !used.contains(&c.id));
+    s.clients.retain(|c| !used.contains(&c.cascade_id));
     s.servers.retain(|x| x.id != sid);
     store.save(s)?;
     Ok(())
@@ -237,6 +241,7 @@ async fn prepare_exit<C: Connector>(conn: &C, s: &mut State, eid: &str, want: &s
             (awg, want.to_string())
         }
     };
+    foreign::block_ping(&mut r, &l).await?;
     set_awg(s, eid, &instance, Some(awg.clone()))?;
     if let Some(m) = main {
         set_awg(s, eid, "main", Some(m))?;
@@ -380,6 +385,15 @@ pub async fn delete_cascade<C: Connector>(conn: &C, store: &Storage, s: &mut Sta
     log.finish(res)
 }
 
+/// Removes a cascade and its clients from the app only, when its servers cannot be reached.
+pub fn forget_cascade(store: &Storage, s: &mut State, cid: &str) -> Result<()> {
+    cascade(s, cid)?;
+    s.cascades.retain(|x| x.id != cid);
+    s.clients.retain(|x| x.cascade_id != cid);
+    store.save(s)?;
+    Ok(())
+}
+
 /// Sends UDP probes proxy <-> exit and reports whether the cascade can work at all.
 pub async fn check_cascade<C: Connector>(conn: &C, s: &mut State, cid: &str) -> OpLog {
     let log = Logger::new(conn);
@@ -516,6 +530,14 @@ pub async fn delete_client<C: Connector>(conn: &C, store: &Storage, s: &mut Stat
         Ok(())
     }.await;
     log.finish(res)
+}
+
+/// Removes a client from the app only, when its exit server cannot be reached (its access is not revoked there).
+pub fn forget_client(store: &Storage, s: &mut State, cid: &str) -> Result<()> {
+    find(&s.clients, cid, "Клиент", |x| &x.id)?;
+    s.clients.retain(|x| x.id != cid);
+    store.save(s)?;
+    Ok(())
 }
 
 // ---------- configs ----------

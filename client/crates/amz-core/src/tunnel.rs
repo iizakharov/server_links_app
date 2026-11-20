@@ -46,6 +46,11 @@ const AWG_KEYS: &[(&str, &str)] = &[
     ("h1", "h1"), ("h2", "h2"), ("h3", "h3"), ("h4", "h4"),
     ("i1", "i1"), ("i2", "i2"), ("i3", "i3"), ("i4", "i4"), ("i5", "i5"),
     ("contentpaddingaddition", "content_padding_addition"),
+    // AWG 3.1
+    ("randomtrailers", "random_trailers"), ("disablecookies", "disable_cookies"),
+    ("rekeyaftertime", "rekey_after_time"), ("rekeytimeout", "rekey_timeout"),
+    ("rejectaftertime", "reject_after_time"), ("keepalivetimeout", "keepalive_timeout"),
+    ("maxhandshakeattempts", "max_handshake_attempts"),
 ];
 
 fn key_hex(key: &str, value: &str) -> Result<String, ConfError> {
@@ -144,4 +149,23 @@ pub fn parse_stats(uapi_get: &str) -> TunnelStats {
         }
     }
     s
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn awg31_keys_become_uapi_lines() {
+        let key = STANDARD.encode([7u8; 32]);
+        let conf = format!("[Interface]\nPrivateKey = {key}\nAddress = 10.9.3.2/32\n\
+            RandomTrailers = true\nDisableCookies = true\nRekeyAfterTime = 100-120\nRekeyTimeout = 5\n\
+            RejectAfterTime = 180\nKeepaliveTimeout = 10-15\nMaxHandshakeAttempts = 20\n\
+            [Peer]\nPublicKey = {key}\nEndpoint = 5.5.5.5:51820\nAllowedIPs = 0.0.0.0/0\n");
+        let t = tunnel_config(&conf, |_, _| None).unwrap();
+        for line in ["random_trailers=true", "disable_cookies=true", "rekey_after_time=100-120", "rekey_timeout=5",
+                     "reject_after_time=180", "keepalive_timeout=10-15", "max_handshake_attempts=20"] {
+            assert!(t.uapi.lines().any(|l| l == line), "{line} missing in\n{}", t.uapi);
+        }
+    }
 }

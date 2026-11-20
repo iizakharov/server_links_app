@@ -171,7 +171,7 @@ async fn main() -> Result<()> {
             store.save(&s)?;
             println!("{id}");
         }
-        Cmd::RmServer { id } => ops::delete_server(&store, &mut s, &id)?,
+        Cmd::RmServer { id } => ops::delete_server(&store, &mut s, &id, false)?,
         Cmd::Scan { id } => println!("{}", ops::scan_server(&conn, &store, &mut s, &id).await?),
         Cmd::Cascade { proxy, exits, port, instance } => {
             let req = CascadeRequest { proxy_id: proxy, exit_ids: exits, port, instance };

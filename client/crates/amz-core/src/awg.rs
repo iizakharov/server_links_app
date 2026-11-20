@@ -31,7 +31,7 @@ pub fn instance(key: &str) -> Option<&'static Instance> {
 }
 
 /// pinned on purpose: this build runs 1.0/2.0/3.x configs, newer images may change defaults
-pub const AWG_IMAGE: &str = "amneziavpn/amneziawg-go:3.1.20260828";
+pub const AWG_IMAGE: &str = "amneziavpn/amneziawg-go:3.1.20261116";
 const AWG1_KEYS: &[&str] = &["jc", "jmin", "jmax", "s1", "s2", "h1", "h2", "h3", "h4"];
 
 /// True if the server speaks plain AmneziaWG 1.0 (no S3/S4/I*, single-number H1-H4), i.e. routers can connect.
@@ -101,6 +101,14 @@ pub fn random_params(version: &str) -> Params {
         p.insert("HeaderProtectionKey".into(), gen_psk());
         p.insert("ContentPaddingAddition".into(),
                  format!("{}-{}", rng.gen_range(8..=32u32), rng.gen_range(64..=160u32)));
+        // AWG 3.1: random trailers make sizes random, so upstream advises equal S1-S4
+        // (15.. stays above the 12-byte header protection nonce)
+        let s = rng.gen_range(15..=150u32).to_string();
+        for k in ["S1", "S2", "S3", "S4"] {
+            p.insert(k.into(), s.clone());
+        }
+        p.insert("RandomTrailers".into(), "true".into());
+        p.insert("DisableCookies".into(), "true".into());
     }
     p
 }

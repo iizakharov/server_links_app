@@ -266,7 +266,7 @@ pub fn run() {
             manage::manage_view, manage::manage_server_save, manage::manage_server_delete, manage::manage_server_scan,
             manage::manage_cascade_create, manage::manage_cascade_adopt, manage::manage_cascade_delete,
             manage::manage_cascade_direct, manage::manage_setup_own,
-            manage::manage_cascade_check, manage::manage_client_create, manage::manage_client_delete,
+            manage::manage_cascade_check, manage::manage_cascade_forget, manage::manage_client_create, manage::manage_client_delete, manage::manage_client_forget,
             manage::manage_traffic, manage::manage_client_share, manage::manage_client_to_device,
             manage::manage_import_panel
         ])

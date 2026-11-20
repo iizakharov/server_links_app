@@ -11,7 +11,9 @@
   let error = $state("");
 
   // operation in progress / finished: live log
-  let op = $state<{ title: string; lines: string[]; done: boolean; ok: boolean } | null>(null);
+  // fallback: offered when the operation failed (e.g. server unreachable)
+  type Fallback = { text: string; label: string; action: () => void };
+  let op = $state<{ title: string; lines: string[]; done: boolean; ok: boolean; fallback?: Fallback } | null>(null);
   let serverForm = $state<ServerIn | null>(null);
   let cascadeForm = $state<{ proxy_id: string; exit_ids: string[]; instance: string; port: string } | null>(null);
   let clientForm = $state<{ name: string; cascade_ids: string[] } | null>(null);
@@ -41,9 +43,9 @@
   });
 
   /** Runs an operation with the live log sheet. */
-  async function run(title: string, f: () => Promise<OpLog | string | unknown>) {
+  async function run(title: string, f: () => Promise<OpLog | string | unknown>, fallback?: Fallback) {
     error = "";
-    op = { title, lines: [], done: false, ok: false };
+    op = { title, lines: [], done: false, ok: false, fallback };
     try {
       const r = await f();
       if (r && typeof r === "object" && "log" in r) {
@@ -60,6 +62,19 @@
     }
     op.done = true;
     await load();
+  }
+
+  /** Removes a record from the app only, without touching its servers. */
+  const forget = (title: string, f: () => Promise<void>) => () =>
+    run(title, async () => { await f(); return "Удалено из приложения"; });
+
+  function deleteServer(s: MServer) {
+    const cas = v.cascades.filter((c) => c.proxy_id === s.id || c.exit_id === s.id);
+    const ids = new Set(cas.map((c) => c.id));
+    const cls = v.clients.filter((c) => ids.has(c.cascade_id)).length;
+    const also = cas.length ? ` Вместе с ним из приложения исчезнут каскады: ${cas.length}, клиенты: ${cls}.` : "";
+    confirm = { text: `Удалить сервер «${s.name}» из приложения? На самом сервере ничего не изменится.${also}`,
+                action: () => run(`Удаление ${s.name}`, () => manage.deleteServer(s.id, cas.length > 0)) };
   }
 
   function editServer(s?: MServer) {
@@ -177,8 +192,7 @@
             <button class="btn grow" onclick={() => run(`Сканирование ${s.name}`, () => manage.scan(s.id))}><Icon name="scan" size={18} /> Сканировать</button>
             <button class="btn" onclick={() => editServer(s)} aria-label="Изменить"><Icon name="edit" size={18} /></button>
             <button class="btn danger" aria-label="Удалить"
-                    onclick={() => (confirm = { text: `Удалить сервер «${s.name}» из приложения? На самом сервере ничего не изменится.`,
-                                                action: () => run(`Удаление ${s.name}`, () => manage.deleteServer(s.id)) })}>
+                    onclick={() => deleteServer(s)}>
               <Icon name="trash" size={18} /></button>
           </div>
         </li>
@@ -199,7 +213,10 @@
             <button class="btn grow" onclick={() => run(`Проверка ${route(c)}`, () => manage.check(c.id))}>Проверить связь</button>
             <button class="btn danger" aria-label="Удалить"
                     onclick={() => (confirm = { text: `Удалить ${route(c)}? Его клиенты перестанут работать.`,
-                                                action: () => run("Удаление каскада", () => manage.deleteCascade(c.id)) })}>
+                                                action: () => run("Удаление каскада", () => manage.deleteCascade(c.id), {
+                                                  label: "Удалить только из приложения",
+                                                  text: "Правила на прокси не удалены. Клиенты каскада тоже будут убраны из приложения.",
+                                                  action: forget("Удаление каскада", () => manage.forgetCascade(c.id)) }) })}>
               <Icon name="trash" size={18} /></button>
           </div>
         </li>
@@ -234,7 +251,10 @@
             <button class="btn grow" onclick={() => share(c.id)}><Icon name="share" size={18} /> Ключ</button>
             <button class="btn danger" aria-label="Отозвать"
                     onclick={() => (confirm = { text: `Отозвать доступ «${c.name}»? Ключ перестанет работать.`,
-                                                action: () => run(`Отзыв ${c.name}`, () => manage.deleteClient(c.id)) })}>
+                                                action: () => run(`Отзыв ${c.name}`, () => manage.deleteClient(c.id), {
+                                                  label: "Удалить только из приложения",
+                                                  text: "Доступ на сервере не отозван: если сервер снова заработает, ключ продолжит действовать.",
+                                                  action: forget(`Удаление ${c.name}`, () => manage.forgetClient(c.id)) }) })}>
               <Icon name="trash" size={18} /></button>
           </div>
         </li>
@@ -332,6 +352,10 @@
     </div>
     {#if op.done}
       <p class:ok={op.ok} class:error={!op.ok}>{op.ok ? "Готово" : "Не получилось"}</p>
+      {#if !op.ok && op.fallback}
+        <p class="small muted">{op.fallback.text}</p>
+        <button class="btn danger wide" onclick={op.fallback.action}>{op.fallback.label}</button>
+      {/if}
       <button class="btn wide" onclick={() => (op = null)}>Закрыть</button>
     {/if}
   </Sheet>

@@ -21,6 +21,32 @@ const INSTALL_TIMEOUT: Duration = Duration::from_secs(40 * 60);
 /// Delay between polls of a detached job; tests run with paused tokio time.
 pub const POLL: Duration = Duration::from_secs(5);
 
+pub const NO_PING_UNIT_PATH: &str = "/etc/systemd/system/amz-no-ping.service";
+
+// re-applied on boot after netfilter-persistent/ufw restore their tables; -C keeps it from piling up
+pub const NO_PING_UNIT: &str = "[Unit]
+Description=Drop ICMP echo requests (exit server of an AmneziaWG cascade)
+After=network-online.target docker.service netfilter-persistent.service ufw.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'iptables -C INPUT -p icmp --icmp-type echo-request -j DROP 2>/dev/null || iptables -I INPUT 1 -p icmp --icmp-type echo-request -j DROP'
+
+[Install]
+WantedBy=multi-user.target
+";
+
+/// The exit server stops answering ping (now and after reboots).
+pub async fn block_ping<R: Remote>(r: &mut R, log: Log<'_>) -> Result<()> {
+    r.run("command -v iptables >/dev/null || (apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -y -q iptables)").await?;
+    r.put(NO_PING_UNIT_PATH, NO_PING_UNIT, "644").await?;
+    r.run("systemctl daemon-reload && systemctl enable amz-no-ping.service >/dev/null 2>&1 && systemctl restart amz-no-ping.service").await?;
+    log(format!("[{}] ping (ICMP echo) запрещён", r.host()));
+    Ok(())
+}
+
 pub fn start_script(inst: &Instance) -> String {
     let net = network(inst.subnet).map(|(ip, len)| format!("{ip}/{len}")).unwrap_or_default();
     format!(
