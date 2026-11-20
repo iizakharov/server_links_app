@@ -107,8 +107,8 @@ pub fn random_params(version: &str) -> Params {
         for k in ["S1", "S2", "S3", "S4"] {
             p.insert(k.into(), s.clone());
         }
-        p.insert("RandomTrailers".into(), "true".into());
-        p.insert("DisableCookies".into(), "true".into());
+        p.insert("RandomTrailers".into(), "1".into());
+        p.insert("DisableCookies".into(), "1".into());
     }
     p
 }

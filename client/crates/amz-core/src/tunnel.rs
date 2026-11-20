@@ -86,6 +86,8 @@ pub fn tunnel_config(text: &str, resolve: impl Fn(&str, u16) -> Option<SocketAdd
         if lk == "headerprotectionkey" {
             uapi.push(format!("header_protection_key={}", key_hex(k, v)?));
         } else if let Some((_, u)) = AWG_KEYS.iter().find(|(c, _)| *c == lk) {
+            // awg-quick writes on/off, the UAPI (strconv.ParseBool) does not take them
+            let v = match v.to_ascii_lowercase().as_str() { "on" => "1", "off" => "0", _ => v.as_str() };
             uapi.push(format!("{u}={v}"));
         } else {
             return Err(ConfError::UnknownKey(k.clone()));
@@ -159,11 +161,11 @@ mod tests {
     fn awg31_keys_become_uapi_lines() {
         let key = STANDARD.encode([7u8; 32]);
         let conf = format!("[Interface]\nPrivateKey = {key}\nAddress = 10.9.3.2/32\n\
-            RandomTrailers = true\nDisableCookies = true\nRekeyAfterTime = 100-120\nRekeyTimeout = 5\n\
+            RandomTrailers = 1\nDisableCookies = on\nRekeyAfterTime = 100-120\nRekeyTimeout = 5\n\
             RejectAfterTime = 180\nKeepaliveTimeout = 10-15\nMaxHandshakeAttempts = 20\n\
             [Peer]\nPublicKey = {key}\nEndpoint = 5.5.5.5:51820\nAllowedIPs = 0.0.0.0/0\n");
         let t = tunnel_config(&conf, |_, _| None).unwrap();
-        for line in ["random_trailers=true", "disable_cookies=true", "rekey_after_time=100-120", "rekey_timeout=5",
+        for line in ["random_trailers=1", "disable_cookies=1", "rekey_after_time=100-120", "rekey_timeout=5",
                      "reject_after_time=180", "keepalive_timeout=10-15", "max_handshake_attempts=20"] {
             assert!(t.uapi.lines().any(|l| l == line), "{line} missing in\n{}", t.uapi);
         }

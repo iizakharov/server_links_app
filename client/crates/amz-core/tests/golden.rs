@@ -119,8 +119,8 @@ fn random_params_have_the_right_version() {
         } else {
             assert!(n("S1") != n("S2") && n("S1") + 56 != n("S2") && n("S2") + 56 != n("S1"));
         }
-        assert_eq!(p.get("RandomTrailers").map(String::as_str), v3.then_some("true"));
-        assert_eq!(p.get("DisableCookies").map(String::as_str), v3.then_some("true"));
+        assert_eq!(p.get("RandomTrailers").map(String::as_str), v3.then_some("1"));
+        assert_eq!(p.get("DisableCookies").map(String::as_str), v3.then_some("1"));
     }
 }
 
